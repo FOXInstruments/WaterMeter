@@ -239,7 +239,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
   },
   // *** Flow measure Cluster *** //
   {
-    ZCL_CLUSTER_ID_MS_FLOW_MEASUREMENT,
+    ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
     { // Attribute record
       ATTRID_IOV_BASIC_DESCRIPTION,
       ZCL_DATATYPE_CHAR_STR,
@@ -248,7 +248,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     }
   },
   {
-    ZCL_CLUSTER_ID_MS_FLOW_MEASUREMENT,
+    ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
     { // Attribute record
       ATTRID_IOV_BASIC_PRESENT_VALUE,
       ZCL_DATATYPE_UINT32,
@@ -257,7 +257,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     }
   },
   {
-    ZCL_CLUSTER_ID_MS_FLOW_MEASUREMENT,
+    ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
     { // Attribute record
       ATTRID_IOV_BASIC_RESOLUTION,
       ZCL_DATATYPE_UINT16,
@@ -266,7 +266,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     }
   },
     {
-    ZCL_CLUSTER_ID_MS_FLOW_MEASUREMENT,
+    ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
     { // Attribute record
       ATTRID_IOV_BASIC_ENGINEERING_UNITS,
       ZCL_DATATYPE_CHAR_STR,
@@ -275,7 +275,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     }
   },
 {
-    ZCL_CLUSTER_ID_MS_FLOW_MEASUREMENT,
+    ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
     { // Attribute record
       ATTRID_IOV_BASIC_STATUS_FLAG,
       ZCL_DATATYPE_UINT8,
@@ -284,7 +284,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     }
   },
   {
-    ZCL_CLUSTER_ID_MS_FLOW_MEASUREMENT,
+    ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
     { // Attribute record
       ATTRID_IOV_BASIC_DESCRIPTION,
       ZCL_DATATYPE_CHAR_STR,
@@ -293,7 +293,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     }
   },
   {
-    ZCL_CLUSTER_ID_MS_FLOW_MEASUREMENT,
+    ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
     { // Attribute record
       ATTRID_IOV_BASIC_PRESENT_VALUE,
       ZCL_DATATYPE_UINT32,
@@ -302,7 +302,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     }
   },
   {
-    ZCL_CLUSTER_ID_MS_FLOW_MEASUREMENT,
+    ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
     { // Attribute record
       ATTRID_IOV_BASIC_RESOLUTION,
       ZCL_DATATYPE_UINT16,
@@ -310,26 +310,32 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
       (void *)&zclWaterCounter_Flow2Multiplyer
     }
   },
-    {
-    ZCL_CLUSTER_ID_MS_FLOW_MEASUREMENT,
+  {
+    ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
     { // Attribute record
       ATTRID_IOV_BASIC_ENGINEERING_UNITS,
-      ZCL_DATATYPE_CHAR_STR,
-      ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE,
+      ZCL_DATATYPE_CHAR_STR, ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE,
       (void *)&zclWaterCounter_Flow2Unit
     }
   },
-{
-    ZCL_CLUSTER_ID_MS_FLOW_MEASUREMENT,
+  {
+    ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
     { // Attribute record
       ATTRID_IOV_BASIC_STATUS_FLAG,
-      ZCL_DATATYPE_UINT8,
-      ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE,
+      ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE,
       (void *)&zclWaterCounter_Flow2Status
     }
   },
   {
-    ZCL_CLUSTER_ID_MS_FLOW_MEASUREMENT,
+    ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
+    { // Attribute record
+      ATTRID_IOV_BASIC_APP_TYPE,
+      ZCL_DATATYPE_UINT16, ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE,
+      (void *)&zclWaterCounter_FlowUpdateTime
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
     {  // Attribute record
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16,
@@ -360,7 +366,7 @@ const cId_t zclWaterCounter_InClusterList[] =
 {
   ZCL_CLUSTER_ID_GEN_BASIC,
   ZCL_CLUSTER_ID_GEN_IDENTIFY,
-  ZCL_CLUSTER_ID_MS_FLOW_MEASUREMENT
+  ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC
 };
 
 #define ZCLWATERCOUNTER_MAX_INCLUSTERS    ( sizeof( zclWaterCounter_InClusterList ) / sizeof( zclWaterCounter_InClusterList[0] ))
@@ -368,7 +374,7 @@ const cId_t zclWaterCounter_InClusterList[] =
 const cId_t zclWaterCounter_OutClusterList[] =
 {
   ZCL_CLUSTER_ID_GEN_IDENTIFY,
-  ZCL_CLUSTER_ID_MS_FLOW_MEASUREMENT,
+  ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
   ZCL_CLUSTER_ID_GEN_GROUPS,
 };
 
