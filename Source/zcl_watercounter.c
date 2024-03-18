@@ -115,12 +115,6 @@ byte zclWaterCounter_TaskID;
 
 uint8 zclWaterCounterSeqNum;
 
-uint32   zclWaterCounter_Flow1Value;
-uint8    zclWaterCounter_Flow1Status;
-
-uint32   zclWaterCounter_Flow2Value;
-uint8    zclWaterCounter_Flow2Status;
-
 /*********************************************************************
  * GLOBAL FUNCTIONS
  */

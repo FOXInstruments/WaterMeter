@@ -85,14 +85,16 @@ extern CONST zclAttrRec_t zclWaterCounter_Attrs[];
 extern uint8    zclWaterCounter_Flow1Desc[];
 extern uint32   zclWaterCounter_Flow1Value;
 extern uint16   zclWaterCounter_Flow1Multiplyer;
-extern uint8    zclWaterCounter_Flow1Unit[];
+extern uint16   zclWaterCounter_Flow1Unit;
 extern uint8    zclWaterCounter_Flow1Status;
 
 extern uint8    zclWaterCounter_Flow2Desc[];
 extern uint32   zclWaterCounter_Flow2Value;
 extern uint16   zclWaterCounter_Flow2Multiplyer;
-extern uint8    zclWaterCounter_Flow2Unit[];
+extern uint16   zclWaterCounter_Flow2Unit;
 extern uint8    zclWaterCounter_Flow2Status;
+
+extern uint16   zclWaterCounter_FlowReportInterval;
 
 extern uint16   zclWaterCounter_IdentifyTime;
 

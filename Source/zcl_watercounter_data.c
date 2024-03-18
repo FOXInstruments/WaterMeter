@@ -79,6 +79,22 @@
 #define DEFAULT_DEVICE_ENABLE_STATE DEVICE_ENABLED
 #define DEFAULT_IDENTIFY_TIME 0
 
+#define ENGINEERING_UNIT_VOLUME_L      82
+#define ENGINEERING_UNIT_VOLUME_M3     80
+#define ENGINEERING_UNIT_TIME_SEC      73
+#define ENGINEERING_UNIT_TIME_MIN      72
+#define ENGINEERING_UNIT_TIME_HOUR     71
+#define ENGINEERING_UNIT_TIME_DAY      70
+
+#define WC_NV_ITEM_DESC1        0x0404
+#define WC_NV_ITEM_DESC2        WC_NV_ITEM_DESC1 + WATERCOUNTER_DESCSIZE
+#define WC_NV_ITEM_BLOCK1       WC_NV_ITEM_DESC2 + 4
+#define WC_NV_ITEM_BLOCK2       WC_NV_ITEM_BLOCK1 + 4
+#define WC_NV_ITEM_REPORT       WC_NV_ITEM_BLOCK2 + 4
+#define WC_NV_ITEM_VALUE1       WC_NV_ITEM_REPORT + 4
+#define WC_NV_ITEM_VALUE2       WC_NV_ITEM_VALUE1 + 4
+#define WC_NV_ITEM_VALUEX       WC_NV_ITEM_VALUE2 + 4
+
 /*********************************************************************
  * TYPEDEFS
  */
@@ -102,17 +118,25 @@ const uint8 zclWaterCounter_ModelId[] = { 15, 'F','O','X','0','0','1',' ',' ',' 
 const uint8 zclWaterCounter_DateCode[] = { 15, '2','0','2','4','0','2','0','2',' ',' ',' ',' ',' ',' ',' ' };
 const uint8 zclWaterCounter_PowerSource = POWER_SOURCE_BATTERY;
 
-uint8    zclWaterCounter_Flow1Desc[WATERCOUNTER_DESCSIZE];
-uint16   zclWaterCounter_Flow1Multiplyer;
-uint8    zclWaterCounter_Flow1Unit[WATERCOUNTER_UNITSIZE];
+uint8 zclWaterCounter_Flow1Desc[WATERCOUNTER_DESCSIZE];
+uint32 zclWaterCounter_Flow1Value;
+uint16 zclWaterCounter_Flow1Multiplyer;
+uint16 zclWaterCounter_Flow1Unit;
+uint8 zclWaterCounter_Flow1Status;
 
-uint8    zclWaterCounter_Flow2Desc[WATERCOUNTER_DESCSIZE];
-uint16   zclWaterCounter_Flow2Multiplyer;
-uint8    zclWaterCounter_Flow2Unit[WATERCOUNTER_UNITSIZE];
+uint8 zclWaterCounter_Flow2Desc[WATERCOUNTER_DESCSIZE];
+uint32 zclWaterCounter_Flow2Value;
+uint16 zclWaterCounter_Flow2Multiplyer;
+uint16 zclWaterCounter_Flow2Unit;
+uint8 zclWaterCounter_Flow2Status;
+
+uint16 zclWaterCounter_FlowReportInterval;
 
 uint8 zclWaterCounter_LocationDescription[16];
 uint8 zclWaterCounter_PhysicalEnvironment;
 uint8 zclWaterCounter_DeviceEnable = DEVICE_ENABLED;
+
+uint8 zclWaterCounter_NVItemsInitStatus;
 
 // Identify Cluster
 uint16 zclWaterCounter_IdentifyTime = 0;
@@ -131,8 +155,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     ZCL_CLUSTER_ID_GEN_BASIC,
     { // Attribute record
       ATTRID_BASIC_ZCL_VERSION,
-      ZCL_DATATYPE_UINT8,
-      ACCESS_CONTROL_READ,
+      ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ,
       (void *)&zclWaterCounter_ZCLVersion
     }
   },  
@@ -149,8 +172,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     ZCL_CLUSTER_ID_GEN_BASIC,
     { // Attribute record
       ATTRID_BASIC_MANUFACTURER_NAME,
-      ZCL_DATATYPE_CHAR_STR,
-      ACCESS_CONTROL_READ,
+      ZCL_DATATYPE_CHAR_STR, ACCESS_CONTROL_READ,
       (void *)zclWaterCounter_ManufacturerName
     }
   },
@@ -158,8 +180,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     ZCL_CLUSTER_ID_GEN_BASIC,
     { // Attribute record
       ATTRID_BASIC_MODEL_ID,
-      ZCL_DATATYPE_CHAR_STR,
-      ACCESS_CONTROL_READ,
+      ZCL_DATATYPE_CHAR_STR, ACCESS_CONTROL_READ,
       (void *)zclWaterCounter_ModelId
     }
   },
@@ -167,8 +188,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     ZCL_CLUSTER_ID_GEN_BASIC,
     { // Attribute record
       ATTRID_BASIC_DATE_CODE,
-      ZCL_DATATYPE_CHAR_STR,
-      ACCESS_CONTROL_READ,
+      ZCL_DATATYPE_CHAR_STR, ACCESS_CONTROL_READ,
       (void *)zclWaterCounter_DateCode
     }
   },
@@ -176,8 +196,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     ZCL_CLUSTER_ID_GEN_BASIC,
     { // Attribute record
       ATTRID_BASIC_POWER_SOURCE,
-      ZCL_DATATYPE_ENUM8,
-      ACCESS_CONTROL_READ,
+      ZCL_DATATYPE_ENUM8, ACCESS_CONTROL_READ,
       (void *)&zclWaterCounter_PowerSource
     }
   },
@@ -185,8 +204,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     ZCL_CLUSTER_ID_GEN_BASIC,
     { // Attribute record
       ATTRID_BASIC_LOCATION_DESC,
-      ZCL_DATATYPE_CHAR_STR,
-      (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
+      ZCL_DATATYPE_CHAR_STR, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)zclWaterCounter_LocationDescription
     }
   },
@@ -194,8 +212,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     ZCL_CLUSTER_ID_GEN_BASIC,
     { // Attribute record
       ATTRID_BASIC_PHYSICAL_ENV,
-      ZCL_DATATYPE_ENUM8,
-      (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
+      ZCL_DATATYPE_ENUM8, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWaterCounter_PhysicalEnvironment
     }
   },
@@ -203,8 +220,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     ZCL_CLUSTER_ID_GEN_BASIC,
     { // Attribute record
       ATTRID_BASIC_DEVICE_ENABLED,
-      ZCL_DATATYPE_BOOLEAN,
-      (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
+      ZCL_DATATYPE_BOOLEAN, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWaterCounter_DeviceEnable
     }
   },
@@ -212,8 +228,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     ZCL_CLUSTER_ID_GEN_BASIC,
     {  // Attribute record
       ATTRID_CLUSTER_REVISION,
-      ZCL_DATATYPE_UINT16,
-      ACCESS_CONTROL_READ,
+      ZCL_DATATYPE_UINT16, ACCESS_CONTROL_READ,
       (void *)&zclWaterCounter_clusterRevision_all
     }
   },  
@@ -223,8 +238,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     ZCL_CLUSTER_ID_GEN_IDENTIFY,
     { // Attribute record
       ATTRID_IDENTIFY_TIME,
-      ZCL_DATATYPE_UINT16,
-      (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWaterCounter_IdentifyTime
     }
   },  
@@ -232,124 +246,113 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     ZCL_CLUSTER_ID_GEN_IDENTIFY,
     {  // Attribute record
       ATTRID_CLUSTER_REVISION,
-      ZCL_DATATYPE_UINT16,
-      ACCESS_CONTROL_READ | ACCESS_GLOBAL,
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_GLOBAL),
       (void *)&zclWaterCounter_clusterRevision_all
     }
   },
-  // *** Flow measure Cluster *** //
+  // ********* Flow measure Cluster ********* //
   {
     ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
-    { // Attribute record
+    { 
       ATTRID_IOV_BASIC_DESCRIPTION,
-      ZCL_DATATYPE_CHAR_STR,
-      ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE,
+      ZCL_DATATYPE_CHAR_STR, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWaterCounter_Flow1Desc
     }
   },
   {
     ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
-    { // Attribute record
+    { 
       ATTRID_IOV_BASIC_PRESENT_VALUE,
-      ZCL_DATATYPE_UINT32,
-      ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE,
+      ZCL_DATATYPE_UINT32, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE | ACCESS_REPORTABLE),
       (void *)&zclWaterCounter_Flow1Value
     }
   },
   {
     ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
-    { // Attribute record
+    { 
       ATTRID_IOV_BASIC_RESOLUTION,
-      ZCL_DATATYPE_UINT16,
-      ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE,
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWaterCounter_Flow1Multiplyer
     }
   },
     {
     ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
-    { // Attribute record
+    { 
       ATTRID_IOV_BASIC_ENGINEERING_UNITS,
-      ZCL_DATATYPE_CHAR_STR,
-      ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE,
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWaterCounter_Flow1Unit
     }
   },
 {
     ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
-    { // Attribute record
+    { 
       ATTRID_IOV_BASIC_STATUS_FLAG,
-      ZCL_DATATYPE_UINT8,
-      ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE,
+      ZCL_DATATYPE_UINT8, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWaterCounter_Flow1Status
     }
   },
-  {
+  { // ********* Flow2 *********
     ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
-    { // Attribute record
+    { 
       ATTRID_IOV_BASIC_DESCRIPTION,
-      ZCL_DATATYPE_CHAR_STR,
-      ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE,
+      ZCL_DATATYPE_CHAR_STR, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWaterCounter_Flow2Desc
     }
   },
   {
     ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
-    { // Attribute record
+    { 
       ATTRID_IOV_BASIC_PRESENT_VALUE,
-      ZCL_DATATYPE_UINT32,
-      ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE,
+      ZCL_DATATYPE_UINT32, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE | ACCESS_REPORTABLE),
       (void *)&zclWaterCounter_Flow2Value
     }
   },
   {
     ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
-    { // Attribute record
+    { 
       ATTRID_IOV_BASIC_RESOLUTION,
-      ZCL_DATATYPE_UINT16,
-      ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE,
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWaterCounter_Flow2Multiplyer
     }
   },
   {
     ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
-    { // Attribute record
+    { 
       ATTRID_IOV_BASIC_ENGINEERING_UNITS,
-      ZCL_DATATYPE_CHAR_STR, ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE,
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWaterCounter_Flow2Unit
     }
   },
   {
     ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
-    { // Attribute record
+    { 
       ATTRID_IOV_BASIC_STATUS_FLAG,
-      ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE,
+      ZCL_DATATYPE_UINT8, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWaterCounter_Flow2Status
     }
   },
   {
     ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
-    { // Attribute record
+    { 
       ATTRID_IOV_BASIC_APP_TYPE,
-      ZCL_DATATYPE_UINT16, ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE,
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWaterCounter_FlowUpdateTime
     }
   },
   {
     ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
-    {  // Attribute record
+    {  
       ATTRID_CLUSTER_REVISION,
-      ZCL_DATATYPE_UINT16,
-      ACCESS_CONTROL_READ | ACCESS_CLIENT,
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
       (void *)&zclWaterCounter_clusterRevision_all
     }
   },
   // *** Groups Cluster *** //
   {
     ZCL_CLUSTER_ID_GEN_GROUPS,
-    {  // Attribute record
+    {  
       ATTRID_CLUSTER_REVISION,
-      ZCL_DATATYPE_UINT16,
-      ACCESS_CONTROL_READ | ACCESS_CLIENT,
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
       (void *)&zclWaterCounter_clusterRevision_all
     }
   }
@@ -402,6 +405,34 @@ SimpleDescriptionFormat_t zclWaterCounter_SimpleDesc =
  */
 
 /*********************************************************************
+ * @fn      zclWaterCounter_InitAttributesNV
+ *
+ * @brief   Initialize items in NV for Attribute values.
+ *
+ * @param   none
+ *
+ * @return  SUCCESS, FAILURE
+ */
+uint8 zclWaterCounter_ResetAttributesToDefaultValues(void)
+{
+  uint8 result = 0;
+  
+  result |= osal_nv_item_init(WC_NV_ITEM_DESC1, WATERCOUNTER_DESCSIZE, NULL); 
+  result |= osal_nv_item_init(WC_NV_ITEM_DESC2, WATERCOUNTER_DESCSIZE, NULL); 
+  result |= osal_nv_item_init(WC_NV_ITEM_BLOCK1, 4, NULL); 
+  result |= osal_nv_item_init(WC_NV_ITEM_BLOCK2, 4, NULL); 
+  result |= osal_nv_item_init(WC_NV_ITEM_REPORT, 4, NULL); 
+  result |= osal_nv_item_init(WC_NV_ITEM_VALUE1, sizeof(zclWaterCounter_Flow1Value), NULL); 
+  result |= osal_nv_item_init(WC_NV_ITEM_VALUE2, sizeof(zclWaterCounter_Flow2Value), NULL);
+  
+  if (result == SUCCESS) {
+    zclWaterCounter_NVItemsInitStatus = SUCCESS
+  } else {
+    zclWaterCounter_NVItemsInitStatus = FAILURE
+  }
+}
+
+/*********************************************************************
  * @fn      zclWaterCounter_ResetAttributesToDefaultValues
  *
  * @brief   Reset all writable attributes to their default values.
@@ -414,7 +445,6 @@ void zclWaterCounter_ResetAttributesToDefaultValues(void)
 {
   const uint8 Desc1[WATERCOUNTER_DESCSIZE] = {WATERCOUNTER_DESCSIZE - 1, 'C', 'o', 'l', 'd', ' ', ' ', ' ' };
   const uint8 Desc2[WATERCOUNTER_DESCSIZE] = {WATERCOUNTER_DESCSIZE - 1, 'H', 'o', 't', ' ', ' ', ' ', ' ' };
-  const uint8 Unit[WATERCOUNTER_UNITSIZE] = {WATERCOUNTER_UNITSIZE - 1, 'L', ' ', ' '};
   int i;
   
   zclWaterCounter_LocationDescription[0] = 15;
@@ -430,8 +460,8 @@ void zclWaterCounter_ResetAttributesToDefaultValues(void)
   
   osal_memcpy(zclWaterCounter_Flow1Desc, Desc1, WATERCOUNTER_DESCSIZE);
   osal_memcpy(zclWaterCounter_Flow2Desc, Desc2, WATERCOUNTER_DESCSIZE);
-  osal_memcpy(zclWaterCounter_Flow1Unit, Unit, WATERCOUNTER_UNITSIZE);
-  osal_memcpy(zclWaterCounter_Flow2Unit, Unit, WATERCOUNTER_UNITSIZE);
+  Flow1Unit = ENGINEERING_UNIT_VOLUME_L;
+  Flow2Unit = ENGINEERING_UNIT_VOLUME_L;
   
   zclWaterCounter_Flow1Value = 0;
   zclWaterCounter_Flow2Value = 0;
