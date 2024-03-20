@@ -55,7 +55,7 @@ extern "C"
 /*********************************************************************
  * CONSTANTS
  */
-#define WATERCOUNTER_ENDPOINT               8
+#define WC_ENDPOINT               8
 
 // Events for the sample app
 #define SAMPLEAPP_END_DEVICE_REJOIN_EVT   0x0001
