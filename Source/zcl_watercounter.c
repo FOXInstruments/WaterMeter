@@ -111,7 +111,7 @@
 /*********************************************************************
  * GLOBAL VARIABLES
  */
-byte zclWaterCounter_TaskID;
+byte zclWC_TaskID;
 
 uint8 zclWaterCounterSeqNum;
 
@@ -122,21 +122,21 @@ uint8 zclWaterCounterSeqNum;
 /*********************************************************************
  * LOCAL VARIABLES
  */
-afAddrType_t zclWaterCounter_DstAddr;
+afAddrType_t zclWC_DstAddr;
 
 // Endpoint to allow SYS_APP_MSGs
 static endPointDesc_t waterCounter_TestEp =
 {
   WATERCOUNTER_ENDPOINT,                  // endpoint
   0,
-  &zclWaterCounter_TaskID,
+  &zclWC_TaskID,
   (SimpleDescriptionFormat_t *)NULL,  // No Simple description for this test endpoint
   (afNetworkLatencyReq_t)0            // No Network Latency req
 };
 
 //static uint8 aProcessCmd[] = { 1, 0, 0, 0 }; // used for reset command, { length + cmd0 + cmd1 + data }
 
-devStates_t zclWaterCounter_NwkState = DEV_INIT;
+devStates_t zclWC_NwkState = DEV_INIT;
 
 #if defined (OTA_CLIENT) && (OTA_CLIENT == TRUE)
 #define DEVICE_POLL_RATE                 8000   // Poll rate for end device
@@ -146,32 +146,32 @@ devStates_t zclWaterCounter_NwkState = DEV_INIT;
 /*********************************************************************
  * LOCAL FUNCTIONS
  */
-static void zclWaterCounter_HandleKeys( byte shift, byte keys );
-static void zclWaterCounter_BasicResetCB( void );
+static void zclWC_HandleKeys(byte shift, byte keys);
+static void zclWC_BasicResetCB(void);
 
-static void zclWaterCounter_ProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommissioningModeMsg);
+static void zclWC_ProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommissioningModeMsg);
 
 
 // Functions to process ZCL Foundation incoming Command/Response messages
-static void zclWaterCounter_ProcessIncomingMsg( zclIncomingMsg_t *msg );
+static void zclWC_ProcessIncomingMsg(zclIncomingMsg_t *msg);
 #ifdef ZCL_READ
-static uint8 zclWaterCounter_ProcessInReadRspCmd( zclIncomingMsg_t *pInMsg );
+static uint8 zclWC_ProcessInReadRspCmd(zclIncomingMsg_t *pInMsg);
 #endif
 #ifdef ZCL_WRITE
-static uint8 zclWaterCounter_ProcessInWriteRspCmd( zclIncomingMsg_t *pInMsg );
+static uint8 zclWC_ProcessInWriteRspCmd(zclIncomingMsg_t *pInMsg);
 #endif
-static uint8 zclWaterCounter_ProcessInDefaultRspCmd( zclIncomingMsg_t *pInMsg );
+static uint8 zclWC_ProcessInDefaultRspCmd(zclIncomingMsg_t *pInMsg);
 #ifdef ZCL_DISCOVER
-static uint8 zclWaterCounter_ProcessInDiscCmdsRspCmd( zclIncomingMsg_t *pInMsg );
-static uint8 zclWaterCounter_ProcessInDiscAttrsRspCmd( zclIncomingMsg_t *pInMsg );
-static uint8 zclWaterCounter_ProcessInDiscAttrsExtRspCmd( zclIncomingMsg_t *pInMsg );
+static uint8 zclWC_ProcessInDiscCmdsRspCmd(zclIncomingMsg_t *pInMsg);
+static uint8 zclWC_ProcessInDiscAttrsRspCmd(zclIncomingMsg_t *pInMsg);
+static uint8 zclWC_ProcessInDiscAttrsExtRspCmd(zclIncomingMsg_t *pInMsg);
 #endif
 
 #if defined (OTA_CLIENT) && (OTA_CLIENT == TRUE)
-static void zclWaterCounter_ProcessOTAMsgs( zclOTA_CallbackMsg_t* pMsg );
+static void zclWC_ProcessOTAMsgs(zclOTA_CallbackMsg_t* pMsg);
 #endif
 
-static void zclSampleApp_BatteryWarningCB( uint8 voltLevel);
+static void zclSampleApp_BatteryWarningCB(uint8 voltLevel);
 
 
 /*********************************************************************
@@ -186,9 +186,9 @@ extern int16 zdpExternalStateTaskID;
 /*********************************************************************
  * ZCL General Profile Callback table
  */
-static zclGeneral_AppCallbacks_t zclWaterCounter_CmdCallbacks =
+static zclGeneral_AppCallbacks_t zclWC_CmdCallbacks =
 {
-  zclWaterCounter_BasicResetCB,               // Basic Cluster Reset command
+  zclWC_BasicResetCB,               // Basic Cluster Reset command
   NULL,                                   // Identify Trigger Effect command
   NULL,                                   // On/Off cluster commands
   NULL,                                   // On/Off cluster enhanced command Off with Effect
@@ -220,54 +220,55 @@ static zclGeneral_AppCallbacks_t zclWaterCounter_CmdCallbacks =
 };
 
 /*********************************************************************
- * @fn          zclWaterCounter_Init
+ * @fn          zclWC_Init
  *
  * @brief       Initialization function for the zclGeneral layer.
  *
- * @param       none
+ * @param       task_id
  *
  * @return      none
  */
-void zclWaterCounter_Init( byte task_id )
+void zclWC_Init(byte task_id)
 {
-  zclWaterCounter_TaskID = task_id;
+  zclWC_TaskID = task_id;
 
   // Set destination address to indirect
-  zclWaterCounter_DstAddr.addrMode = (afAddrMode_t)AddrNotPresent;
-  zclWaterCounter_DstAddr.endPoint = 0;
-  zclWaterCounter_DstAddr.addr.shortAddr = 0;
+  zclWC_DstAddr.addrMode = (afAddrMode_t)AddrNotPresent;
+  zclWC_DstAddr.endPoint = 0;
+  zclWC_DstAddr.addr.shortAddr = 0;
 
   // Register the Simple Descriptor for this application
-  bdb_RegisterSimpleDescriptor( &zclWaterCounter_SimpleDesc );
+  bdb_RegisterSimpleDescriptor(&zclWC_SimpleDesc);
 
   // Register the ZCL General Cluster Library callback functions
-  zclGeneral_RegisterCmdCallbacks( WATERCOUNTER_ENDPOINT, &zclWaterCounter_CmdCallbacks );
+  zclGeneral_RegisterCmdCallbacks(WATERCOUNTER_ENDPOINT, &zclWC_CmdCallbacks);
 
-  zclWaterCounter_ResetAttributesToDefaultValues();
+  zclWC_InitNVItems();
+  zclWC_ResetAttributesToDefaultValues();
   
   // Register the application's attribute list
-  zcl_registerAttrList( WATERCOUNTER_ENDPOINT, zclWaterCounter_NumAttributes, zclWaterCounter_Attrs );
+  zcl_registerAttrList(WATERCOUNTER_ENDPOINT, zclWC_NumAttributes, zclWC_Attrs);
 
   // Register the Application to receive the unprocessed Foundation command/response messages
-  zcl_registerForMsg( zclWaterCounter_TaskID );
+  zcl_registerForMsg(zclWC_TaskID);
   
   // Register low voltage NV memory protection application callback
-  RegisterVoltageWarningCB( zclSampleApp_BatteryWarningCB );
+  RegisterVoltageWarningCB(zclSampleApp_BatteryWarningCB);
 
   // Register for all key events - This app will handle all key events
-  RegisterForKeys( zclWaterCounter_TaskID );
+  RegisterForKeys(zclWC_TaskID);
   
-  bdb_RegisterCommissioningStatusCB( zclWaterCounter_ProcessCommissioningStatus );
+  bdb_RegisterCommissioningStatusCB(zclWC_ProcessCommissioningStatus);
 
   // Register for a test endpoint
-  afRegister( &waterCounter_TestEp );
+  afRegister(&waterCounter_TestEp);
   
 #ifdef ZCL_DIAGNOSTIC
   // Register the application's callback function to read/write attribute data.
   // This is only required when the attribute data format is unknown to ZCL.
-  zcl_registerReadWriteCB( WATERCOUNTER_ENDPOINT, zclDiagnostic_ReadWriteAttrCB, NULL );
+  zcl_registerReadWriteCB(WATERCOUNTER_ENDPOINT, zclDiagnostic_ReadWriteAttrCB, NULL);
 
-  if ( zclDiagnostic_InitStats() == ZSuccess )
+  if (zclDiagnostic_InitStats() == ZSuccess)
   {
     // Here the user could start the timer to save Diagnostics to NV
   }
@@ -275,10 +276,10 @@ void zclWaterCounter_Init( byte task_id )
 
 #if defined (OTA_CLIENT) && (OTA_CLIENT == TRUE)
   // Register for callback events from the ZCL OTA
-  zclOTA_Register(zclWaterCounter_TaskID);
+  zclOTA_Register(zclWC_TaskID);
 #endif
 
-  zdpExternalStateTaskID = zclWaterCounter_TaskID;
+  zdpExternalStateTaskID = zclWC_TaskID;
 
   // Configure pins P0_2, P0_3 as Timer1 channels
   PERCFG &= ~BV(6);        // T1CFG set Timer1 alternative 1 location
@@ -305,35 +306,34 @@ void zclWaterCounter_Init( byte task_id )
  *
  * @return      none
  */
-uint16 zclWaterCounter_event_loop( uint8 task_id, uint16 events )
+uint16 zclWC_event_loop(uint8 task_id, uint16 events)
 {
   afIncomingMSGPacket_t *MSGpkt;
   (void)task_id;  // Intentionally unreferenced parameter
 
   //Send toggle every 500ms
-  if( events & WATERCOUNTER_TOGGLE_TEST_EVT )
+  if(events & WATERCOUNTER_TOGGLE_TEST_EVT)
   {
-    osal_start_timerEx(zclWaterCounter_TaskID,WATERCOUNTER_TOGGLE_TEST_EVT,500);
-    // zclGeneral_SendOnOff_CmdToggle( WATERCOUNTER_ENDPOINT, &zclWaterCounter_DstAddr, FALSE, 0 );
+    osal_start_timerEx(zclWC_TaskID, WATERCOUNTER_TOGGLE_TEST_EVT, 500);
+    // zclGeneral_SendOnOff_CmdToggle(WATERCOUNTER_ENDPOINT, &zclWC_DstAddr, FALSE, 0);
     
     // return unprocessed events
     return (events ^ WATERCOUNTER_TOGGLE_TEST_EVT);
   }
   
-  
-  if ( events & SYS_EVENT_MSG )
+  if (events & SYS_EVENT_MSG)
   {
-    while ( (MSGpkt = (afIncomingMSGPacket_t *)osal_msg_receive( zclWaterCounter_TaskID )) )
+    while ((MSGpkt = (afIncomingMSGPacket_t *)osal_msg_receive(zclWC_TaskID)))
     {
-      switch ( MSGpkt->hdr.event )
+      switch (MSGpkt->hdr.event)
       {
         case ZCL_INCOMING_MSG:
           // Incoming ZCL Foundation command/response messages
-          zclWaterCounter_ProcessIncomingMsg( (zclIncomingMsg_t *)MSGpkt );
+          zclWC_ProcessIncomingMsg((zclIncomingMsg_t *)MSGpkt);
           break;
 
         case KEY_CHANGE:
-          zclWaterCounter_HandleKeys( ((keyChange_t *)MSGpkt)->state, ((keyChange_t *)MSGpkt)->keys );
+          zclWC_HandleKeys(((keyChange_t *)MSGpkt)->state, ((keyChange_t *)MSGpkt)->keys);
           break;
 
         case ZDO_STATE_CHANGE:
@@ -342,47 +342,43 @@ uint16 zclWaterCounter_event_loop( uint8 task_id, uint16 events )
 
 #if defined (OTA_CLIENT) && (OTA_CLIENT == TRUE)
         case ZCL_OTA_CALLBACK_IND:
-          zclWaterCounter_ProcessOTAMsgs( (zclOTA_CallbackMsg_t*)MSGpkt  );
+          zclWC_ProcessOTAMsgs((zclOTA_CallbackMsg_t*)MSGpkt);
           break;
 #endif
-
+          
         default:
           break;
       }
-
       // Release the memory
-      osal_msg_deallocate( (uint8 *)MSGpkt );
+      osal_msg_deallocate((uint8 *)MSGpkt);
     }
-
     // return unprocessed events
     return (events ^ SYS_EVENT_MSG);
   }
 
 #if ZG_BUILD_ENDDEVICE_TYPE    
-  if ( events & SAMPLEAPP_END_DEVICE_REJOIN_EVT )
+  if (events & SAMPLEAPP_END_DEVICE_REJOIN_EVT)
   {
     bdb_ZedAttemptRecoverNwk();
-    return ( events ^ SAMPLEAPP_END_DEVICE_REJOIN_EVT );
+    return (events ^ SAMPLEAPP_END_DEVICE_REJOIN_EVT);
   }
 #endif
 
-  if ( events & SAMPLEAPP_LCD_AUTO_UPDATE_EVT )
-  {
-    // UI_UpdateLcd();
-    return ( events ^ SAMPLEAPP_LCD_AUTO_UPDATE_EVT );
+  if (events & SAMPLEAPP_LCD_AUTO_UPDATE_EVT)
+  { // UI_UpdateLcd();
+    return (events ^ SAMPLEAPP_LCD_AUTO_UPDATE_EVT);
   }
 
-  if ( events & SAMPLEAPP_KEY_AUTO_REPEAT_EVT )
-  {
-    // UI_MainStateMachine(UI_KEY_AUTO_PRESSED);
-    return ( events ^ SAMPLEAPP_KEY_AUTO_REPEAT_EVT );
+  if (events & SAMPLEAPP_KEY_AUTO_REPEAT_EVT)
+  { // UI_MainStateMachine(UI_KEY_AUTO_PRESSED);
+    return (events ^ SAMPLEAPP_KEY_AUTO_REPEAT_EVT);
   }
   // Discard unknown events
   return 0;
 }
 
 /*********************************************************************
- * @fn      zclWaterCounter_HandleKeys
+ * @fn      zclWC_HandleKeys
  *
  * @brief   Handles all key events for this device.
  *
@@ -395,14 +391,13 @@ uint16 zclWaterCounter_event_loop( uint8 task_id, uint16 events )
  *
  * @return  none
  */
-static void zclWaterCounter_HandleKeys( byte shift, byte keys )
+static void zclWC_HandleKeys(byte shift, byte keys)
 {
   // UI_MainStateMachine(keys);
 }
 
-
 /*********************************************************************
- * @fn      zclWaterCounter_ProcessCommissioningStatus
+ * @fn      zclWC_ProcessCommissioningStatus
  *
  * @brief   Callback in which the status of the commissioning process are reported
  *
@@ -410,7 +405,7 @@ static void zclWaterCounter_HandleKeys( byte shift, byte keys )
  *
  * @return  none
  */
-static void zclWaterCounter_ProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommissioningModeMsg)
+static void zclWC_ProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommissioningModeMsg)
 {
   switch(bdbCommissioningModeMsg->bdbCommissioningMode)
   {
@@ -468,7 +463,7 @@ static void zclWaterCounter_ProcessCommissioningStatus(bdbCommissioningModeMsg_t
       else
       {
         //Parent not found, attempt to rejoin again after a fixed delay
-        osal_start_timerEx(zclWaterCounter_TaskID, SAMPLEAPP_END_DEVICE_REJOIN_EVT, SAMPLEAPP_END_DEVICE_REJOIN_DELAY);
+        osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_END_DEVICE_REJOIN_EVT, SAMPLEAPP_END_DEVICE_REJOIN_DELAY);
       }
     break;
 #endif 
@@ -478,7 +473,7 @@ static void zclWaterCounter_ProcessCommissioningStatus(bdbCommissioningModeMsg_t
 }
 
 /*********************************************************************
- * @fn      zclWaterCounter_BasicResetCB
+ * @fn      zclWC_BasicResetCB
  *
  * @brief   Callback from the ZCL General Cluster Library
  *          to set all the Basic Cluster attributes to  default values.
@@ -487,9 +482,9 @@ static void zclWaterCounter_ProcessCommissioningStatus(bdbCommissioningModeMsg_t
  *
  * @return  none
  */
-static void zclWaterCounter_BasicResetCB( void )
+static void zclWC_BasicResetCB(void)
 {
-  zclWaterCounter_ResetAttributesToDefaultValues();
+  zclWC_ResetAttributesToDefaultValues();
 }
 
 /*********************************************************************
@@ -501,13 +496,13 @@ static void zclWaterCounter_BasicResetCB( void )
  *
  * @return  none
  */
-void zclSampleApp_BatteryWarningCB( uint8 voltLevel )
+void zclSampleApp_BatteryWarningCB(uint8 voltLevel)
 {
-  if ( voltLevel == VOLT_LEVEL_CAUTIOUS )
+  if (voltLevel == VOLT_LEVEL_CAUTIOUS)
   {
     // Send warning message to the gateway and blink LED
   }
-  else if ( voltLevel == VOLT_LEVEL_BAD )
+  else if (voltLevel == VOLT_LEVEL_BAD)
   {
     // Shut down the system
   }
@@ -520,7 +515,7 @@ void zclSampleApp_BatteryWarningCB( uint8 voltLevel )
  *****************************************************************************/
 
 /*********************************************************************
- * @fn      zclWaterCounter_ProcessIncomingMsg
+ * @fn      zclWC_ProcessIncomingMsg
  *
  * @brief   Process ZCL Foundation incoming message
  *
@@ -528,73 +523,73 @@ void zclSampleApp_BatteryWarningCB( uint8 voltLevel )
  *
  * @return  none
  */
-static void zclWaterCounter_ProcessIncomingMsg( zclIncomingMsg_t *pInMsg )
+static void zclWC_ProcessIncomingMsg(zclIncomingMsg_t *pInMsg)
 {
-  switch ( pInMsg->zclHdr.commandID )
+  switch (pInMsg->zclHdr.commandID)
   {
 #ifdef ZCL_READ
     case ZCL_CMD_READ_RSP:
-      zclWaterCounter_ProcessInReadRspCmd( pInMsg );
+      zclWC_ProcessInReadRspCmd(pInMsg);
       break;
 #endif
 #ifdef ZCL_WRITE
     case ZCL_CMD_WRITE_RSP:
-      zclWaterCounter_ProcessInWriteRspCmd( pInMsg );
+      zclWC_ProcessInWriteRspCmd(pInMsg);
       break;
 #endif
 #ifdef ZCL_REPORT
     // See ZCL Test Applicaiton (zcl_testapp.c) for sample code on Attribute Reporting
     case ZCL_CMD_CONFIG_REPORT:
-      //zclWaterCounter_ProcessInConfigReportCmd( pInMsg );
+      //zclWC_ProcessInConfigReportCmd(pInMsg);
       break;
 
     case ZCL_CMD_CONFIG_REPORT_RSP:
-      //zclWaterCounter_ProcessInConfigReportRspCmd( pInMsg );
+      //zclWC_ProcessInConfigReportRspCmd(pInMsg);
       break;
 
     case ZCL_CMD_READ_REPORT_CFG:
-      //zclWaterCounter_ProcessInReadReportCfgCmd( pInMsg );
+      //zclWC_ProcessInReadReportCfgCmd(pInMsg);
       break;
 
     case ZCL_CMD_READ_REPORT_CFG_RSP:
-      //zclWaterCounter_ProcessInReadReportCfgRspCmd( pInMsg );
+      //zclWC_ProcessInReadReportCfgRspCmd(pInMsg);
       break;
 
     case ZCL_CMD_REPORT:
-      //zclWaterCounter_ProcessInReportCmd( pInMsg );
+      //zclWC_ProcessInReportCmd(pInMsg);
       break;
 #endif
     case ZCL_CMD_DEFAULT_RSP:
-      zclWaterCounter_ProcessInDefaultRspCmd( pInMsg );
+      zclWC_ProcessInDefaultRspCmd(pInMsg);
       break;
 #ifdef ZCL_DISCOVER
     case ZCL_CMD_DISCOVER_CMDS_RECEIVED_RSP:
-      zclWaterCounter_ProcessInDiscCmdsRspCmd( pInMsg );
+      zclWC_ProcessInDiscCmdsRspCmd(pInMsg);
       break;
 
     case ZCL_CMD_DISCOVER_CMDS_GEN_RSP:
-      zclWaterCounter_ProcessInDiscCmdsRspCmd( pInMsg );
+      zclWC_ProcessInDiscCmdsRspCmd(pInMsg);
       break;
 
     case ZCL_CMD_DISCOVER_ATTRS_RSP:
-      zclWaterCounter_ProcessInDiscAttrsRspCmd( pInMsg );
+      zclWC_ProcessInDiscAttrsRspCmd(pInMsg);
       break;
 
     case ZCL_CMD_DISCOVER_ATTRS_EXT_RSP:
-      zclWaterCounter_ProcessInDiscAttrsExtRspCmd( pInMsg );
+      zclWC_ProcessInDiscAttrsExtRspCmd(pInMsg);
       break;
 #endif
     default:
       break;
   }
 
-  if ( pInMsg->attrCmd )
-    osal_mem_free( pInMsg->attrCmd );
+  if (pInMsg->attrCmd)
+    osal_mem_free(pInMsg->attrCmd);
 }
 
 #ifdef ZCL_READ
 /*********************************************************************
- * @fn      zclWaterCounter_ProcessInReadRspCmd
+ * @fn      zclWC_ProcessInReadRspCmd
  *
  * @brief   Process the "Profile" Read Response Command
  *
@@ -602,7 +597,7 @@ static void zclWaterCounter_ProcessIncomingMsg( zclIncomingMsg_t *pInMsg )
  *
  * @return  none
  */
-static uint8 zclWaterCounter_ProcessInReadRspCmd( zclIncomingMsg_t *pInMsg )
+static uint8 zclWC_ProcessInReadRspCmd(zclIncomingMsg_t *pInMsg)
 {
   zclReadRspCmd_t *readRspCmd;
   uint8 i;
@@ -621,7 +616,7 @@ static uint8 zclWaterCounter_ProcessInReadRspCmd( zclIncomingMsg_t *pInMsg )
 
 #ifdef ZCL_WRITE
 /*********************************************************************
- * @fn      zclWaterCounter_ProcessInWriteRspCmd
+ * @fn      zclWC_ProcessInWriteRspCmd
  *
  * @brief   Process the "Profile" Write Response Command
  *
@@ -629,7 +624,7 @@ static uint8 zclWaterCounter_ProcessInReadRspCmd( zclIncomingMsg_t *pInMsg )
  *
  * @return  none
  */
-static uint8 zclWaterCounter_ProcessInWriteRspCmd( zclIncomingMsg_t *pInMsg )
+static uint8 zclWC_ProcessInWriteRspCmd(zclIncomingMsg_t *pInMsg)
 {
   zclWriteRspCmd_t *writeRspCmd;
   uint8 i;
@@ -646,7 +641,7 @@ static uint8 zclWaterCounter_ProcessInWriteRspCmd( zclIncomingMsg_t *pInMsg )
 #endif // ZCL_WRITE
 
 /*********************************************************************
- * @fn      zclWaterCounter_ProcessInDefaultRspCmd
+ * @fn      zclWC_ProcessInDefaultRspCmd
  *
  * @brief   Process the "Profile" Default Response Command
  *
@@ -654,7 +649,7 @@ static uint8 zclWaterCounter_ProcessInWriteRspCmd( zclIncomingMsg_t *pInMsg )
  *
  * @return  none
  */
-static uint8 zclWaterCounter_ProcessInDefaultRspCmd( zclIncomingMsg_t *pInMsg )
+static uint8 zclWC_ProcessInDefaultRspCmd(zclIncomingMsg_t *pInMsg)
 {
   // zclDefaultRspCmd_t *defaultRspCmd = (zclDefaultRspCmd_t *)pInMsg->attrCmd;
   // Device is notified of the Default Response command.
@@ -664,7 +659,7 @@ static uint8 zclWaterCounter_ProcessInDefaultRspCmd( zclIncomingMsg_t *pInMsg )
 
 #ifdef ZCL_DISCOVER
 /*********************************************************************
- * @fn      zclWaterCounter_ProcessInDiscCmdsRspCmd
+ * @fn      zclWC_ProcessInDiscCmdsRspCmd
  *
  * @brief   Process the Discover Commands Response Command
  *
@@ -672,13 +667,13 @@ static uint8 zclWaterCounter_ProcessInDefaultRspCmd( zclIncomingMsg_t *pInMsg )
  *
  * @return  none
  */
-static uint8 zclWaterCounter_ProcessInDiscCmdsRspCmd( zclIncomingMsg_t *pInMsg )
+static uint8 zclWC_ProcessInDiscCmdsRspCmd(zclIncomingMsg_t *pInMsg)
 {
   zclDiscoverCmdsCmdRsp_t *discoverRspCmd;
   uint8 i;
 
   discoverRspCmd = (zclDiscoverCmdsCmdRsp_t *)pInMsg->attrCmd;
-  for ( i = 0; i < discoverRspCmd->numCmd; i++ )
+  for (i = 0; i < discoverRspCmd->numCmd; i++)
   {
     // Device is notified of the result of its attribute discovery command.
   }
@@ -687,7 +682,7 @@ static uint8 zclWaterCounter_ProcessInDiscCmdsRspCmd( zclIncomingMsg_t *pInMsg )
 }
 
 /*********************************************************************
- * @fn      zclWaterCounter_ProcessInDiscAttrsRspCmd
+ * @fn      zclWC_ProcessInDiscAttrsRspCmd
  *
  * @brief   Process the "Profile" Discover Attributes Response Command
  *
@@ -695,13 +690,13 @@ static uint8 zclWaterCounter_ProcessInDiscCmdsRspCmd( zclIncomingMsg_t *pInMsg )
  *
  * @return  none
  */
-static uint8 zclWaterCounter_ProcessInDiscAttrsRspCmd( zclIncomingMsg_t *pInMsg )
+static uint8 zclWC_ProcessInDiscAttrsRspCmd(zclIncomingMsg_t *pInMsg)
 {
   zclDiscoverAttrsRspCmd_t *discoverRspCmd;
   uint8 i;
 
   discoverRspCmd = (zclDiscoverAttrsRspCmd_t *)pInMsg->attrCmd;
-  for ( i = 0; i < discoverRspCmd->numAttr; i++ )
+  for (i = 0; i < discoverRspCmd->numAttr; i++)
   {
     // Device is notified of the result of its attribute discovery command.
   }
@@ -710,7 +705,7 @@ static uint8 zclWaterCounter_ProcessInDiscAttrsRspCmd( zclIncomingMsg_t *pInMsg 
 }
 
 /*********************************************************************
- * @fn      zclWaterCounter_ProcessInDiscAttrsExtRspCmd
+ * @fn      zclWC_ProcessInDiscAttrsExtRspCmd
  *
  * @brief   Process the "Profile" Discover Attributes Extended Response Command
  *
@@ -718,13 +713,13 @@ static uint8 zclWaterCounter_ProcessInDiscAttrsRspCmd( zclIncomingMsg_t *pInMsg 
  *
  * @return  none
  */
-static uint8 zclWaterCounter_ProcessInDiscAttrsExtRspCmd( zclIncomingMsg_t *pInMsg )
+static uint8 zclWC_ProcessInDiscAttrsExtRspCmd(zclIncomingMsg_t *pInMsg)
 {
   zclDiscoverAttrsExtRsp_t *discoverRspCmd;
   uint8 i;
 
   discoverRspCmd = (zclDiscoverAttrsExtRsp_t *)pInMsg->attrCmd;
-  for ( i = 0; i < discoverRspCmd->numAttr; i++ )
+  for (i = 0; i < discoverRspCmd->numAttr; i++)
   {
     // Device is notified of the result of its attribute discovery command.
   }
@@ -735,7 +730,7 @@ static uint8 zclWaterCounter_ProcessInDiscAttrsExtRspCmd( zclIncomingMsg_t *pInM
 
 #if defined (OTA_CLIENT) && (OTA_CLIENT == TRUE)
 /*********************************************************************
- * @fn      zclWaterCounter_ProcessOTAMsgs
+ * @fn      zclWC_ProcessOTAMsgs
  *
  * @brief   Called to process callbacks from the ZCL OTA.
  *
@@ -743,7 +738,7 @@ static uint8 zclWaterCounter_ProcessInDiscAttrsExtRspCmd( zclIncomingMsg_t *pInM
  *
  * @return  none
  */
-static void zclWaterCounter_ProcessOTAMsgs( zclOTA_CallbackMsg_t* pMsg )
+static void zclWC_ProcessOTAMsgs(zclOTA_CallbackMsg_t* pMsg)
 {
   uint8 RxOnIdle;
 
@@ -754,8 +749,8 @@ static void zclWaterCounter_ProcessOTAMsgs( zclOTA_CallbackMsg_t* pMsg )
     {
       // Speed up the poll rate
       RxOnIdle = TRUE;
-      ZMacSetReq( ZMacRxOnIdle, &RxOnIdle );
-      NLME_SetPollRate( 2000 );
+      ZMacSetReq(ZMacRxOnIdle, &RxOnIdle);
+      NLME_SetPollRate(2000);
     }
     break;
 
@@ -772,7 +767,7 @@ static void zclWaterCounter_ProcessOTAMsgs( zclOTA_CallbackMsg_t* pMsg )
 #if (ZG_BUILD_ENDDEVICE_TYPE)    
       // slow the poll rate back down.
       RxOnIdle = FALSE;
-      ZMacSetReq( ZMacRxOnIdle, &RxOnIdle );
+      ZMacSetReq(ZMacRxOnIdle, &RxOnIdle);
       NLME_SetPollRate(DEVICE_POLL_RATE);
 #endif
     }

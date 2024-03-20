@@ -66,14 +66,15 @@
  * CONSTANTS
  */
 
-#define WATERCOUNTER_DEVICE_VERSION     1
-#define WATERCOUNTER_FLAGS              0
+#define WC_DEVICE_VERSION     1
+#define WC_FLAGS              0
 
-#define WATERCOUNTER_HWVERSION          0
-#define WATERCOUNTER_ZCLVERSION         0
+#define WC_HWVERSION          0
+#define WC_ZCLVERSION         0
 
-#define WATERCOUNTER_DESCSIZE           8
-#define WATERCOUNTER_UNITSIZE           4
+#define WC_DESCSIZE           8
+#define WC_MULTIPLYER         10 // Weight of one count
+#define WC_REPORT_INTERVAL    60 // minutes
 
 #define DEFAULT_PHYSICAL_ENVIRONMENT 0
 #define DEFAULT_DEVICE_ENABLE_STATE DEVICE_ENABLED
@@ -87,7 +88,7 @@
 #define ENGINEERING_UNIT_TIME_DAY      70
 
 #define WC_NV_ITEM_DESC1        0x0404
-#define WC_NV_ITEM_DESC2        WC_NV_ITEM_DESC1 + WATERCOUNTER_DESCSIZE
+#define WC_NV_ITEM_DESC2        WC_NV_ITEM_DESC1 + WC_DESCSIZE
 #define WC_NV_ITEM_BLOCK1       WC_NV_ITEM_DESC2 + 4
 #define WC_NV_ITEM_BLOCK2       WC_NV_ITEM_BLOCK1 + 4
 #define WC_NV_ITEM_REPORT       WC_NV_ITEM_BLOCK2 + 4
@@ -108,38 +109,41 @@
  */
 
 //global attributes
-const uint16 zclWaterCounter_clusterRevision_all = 0x0001; //currently all cluster implementations are according to ZCL6, which has revision #1. In the future it is possible that different clusters will have different revisions, so they will have to use separate attribute variables.
+const uint16 zclWC_clusterRevision_all = 0x0001; //currently all cluster implementations are according to ZCL6, which has revision #1. In the future it is possible that different clusters will have different revisions, so they will have to use separate attribute variables.
 
 // Basic Cluster
-const uint8 zclWaterCounter_HWRevision = WATERCOUNTER_HWVERSION;
-const uint8 zclWaterCounter_ZCLVersion = WATERCOUNTER_ZCLVERSION;
-const uint8 zclWaterCounter_ManufacturerName[] = { 15, 'F','o','x','.','I','n','s','t','r','u','m','e','n','t','s' };
-const uint8 zclWaterCounter_ModelId[] = { 15, 'F','O','X','0','0','1',' ',' ',' ',' ',' ',' ',' ',' ',' ' };
-const uint8 zclWaterCounter_DateCode[] = { 15, '2','0','2','4','0','2','0','2',' ',' ',' ',' ',' ',' ',' ' };
-const uint8 zclWaterCounter_PowerSource = POWER_SOURCE_BATTERY;
+const uint8 zclWC_HWRevision = WC_HWVERSION;
+const uint8 zclWC_ZCLVersion = WC_ZCLVERSION;
+const uint8 zclWC_ManufacturerName[] = { 15, 'F','o','x','.','I','n','s','t','r','u','m','e','n','t','s' };
+const uint8 zclWC_ModelId[] = { 15, 'F','O','X','0','0','1',' ',' ',' ',' ',' ',' ',' ',' ',' ' };
+const uint8 zclWC_DateCode[] = { 15, '2','0','2','4','0','2','0','2',' ',' ',' ',' ',' ',' ',' ' };
+const uint8 zclWC_PowerSource = POWER_SOURCE_BATTERY;
 
-uint8 zclWaterCounter_Flow1Desc[WATERCOUNTER_DESCSIZE];
-uint32 zclWaterCounter_Flow1Value;
-uint16 zclWaterCounter_Flow1Multiplyer;
-uint16 zclWaterCounter_Flow1Unit;
-uint8 zclWaterCounter_Flow1Status;
+const uint8 zclWC_Desc1[WC_DESCSIZE] = {WC_DESCSIZE - 1, 'C', 'o', 'l', 'd', ' ', ' ', ' ' };
+const uint8 zclWC_Desc2[WC_DESCSIZE] = {WC_DESCSIZE - 1, 'H', 'o', 't', ' ', ' ', ' ', ' ' };
 
-uint8 zclWaterCounter_Flow2Desc[WATERCOUNTER_DESCSIZE];
-uint32 zclWaterCounter_Flow2Value;
-uint16 zclWaterCounter_Flow2Multiplyer;
-uint16 zclWaterCounter_Flow2Unit;
-uint8 zclWaterCounter_Flow2Status;
+uint8 zclWC_Flow1Desc[WC_DESCSIZE];
+uint32 zclWC_Flow1Value;
+uint16 zclWC_Flow1Multiplyer;
+uint16 zclWC_Flow1Unit;
+uint8 zclWC_Flow1Status;
 
-uint16 zclWaterCounter_FlowReportInterval;
+uint8 zclWC_Flow2Desc[WC_DESCSIZE];
+uint32 zclWC_Flow2Value;
+uint16 zclWC_Flow2Multiplyer;
+uint16 zclWC_Flow2Unit;
+uint8 zclWC_Flow2Status;
 
-uint8 zclWaterCounter_LocationDescription[16];
-uint8 zclWaterCounter_PhysicalEnvironment;
-uint8 zclWaterCounter_DeviceEnable = DEVICE_ENABLED;
+uint32 zclWC_FlowReportInterval; // Time interval in minutes
 
-uint8 zclWaterCounter_NVItemsInitStatus;
+uint8 zclWC_LocationDescription[16];
+uint8 zclWC_PhysicalEnvironment;
+uint8 zclWC_DeviceEnable = DEVICE_ENABLED;
+
+uint8 zclWC_NVItemsInitStatus;
 
 // Identify Cluster
-uint16 zclWaterCounter_IdentifyTime = 0;
+uint16 zclWC_IdentifyTime = 0;
 
 /*********************************************************************
  * ATTRIBUTE DEFINITIONS - Uses REAL cluster IDs
@@ -148,7 +152,7 @@ uint16 zclWaterCounter_IdentifyTime = 0;
   // NOTE: The attributes listed in the AttrRec must be in ascending order 
   // per cluster to allow right function of the Foundation discovery commands
  
-CONST zclAttrRec_t zclWaterCounter_Attrs[] =
+CONST zclAttrRec_t zclWC_Attrs[] =
 {
   // *** General Basic Cluster Attributes ***
   {
@@ -156,7 +160,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     { // Attribute record
       ATTRID_BASIC_ZCL_VERSION,
       ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ,
-      (void *)&zclWaterCounter_ZCLVersion
+      (void *)&zclWC_ZCLVersion
     }
   },  
   {
@@ -165,7 +169,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
       ATTRID_BASIC_HW_VERSION,            // Attribute ID - Found in Cluster Library header (ie. zcl_general.h)
       ZCL_DATATYPE_UINT8,                 // Data Type - found in zcl.h
       ACCESS_CONTROL_READ,                // Variable access control - found in zcl.h
-      (void *)&zclWaterCounter_HWRevision  // Pointer to attribute variable
+      (void *)&zclWC_HWRevision  // Pointer to attribute variable
     }
   },
   {
@@ -173,7 +177,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     { // Attribute record
       ATTRID_BASIC_MANUFACTURER_NAME,
       ZCL_DATATYPE_CHAR_STR, ACCESS_CONTROL_READ,
-      (void *)zclWaterCounter_ManufacturerName
+      (void *)zclWC_ManufacturerName
     }
   },
   {
@@ -181,7 +185,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     { // Attribute record
       ATTRID_BASIC_MODEL_ID,
       ZCL_DATATYPE_CHAR_STR, ACCESS_CONTROL_READ,
-      (void *)zclWaterCounter_ModelId
+      (void *)zclWC_ModelId
     }
   },
   {
@@ -189,7 +193,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     { // Attribute record
       ATTRID_BASIC_DATE_CODE,
       ZCL_DATATYPE_CHAR_STR, ACCESS_CONTROL_READ,
-      (void *)zclWaterCounter_DateCode
+      (void *)zclWC_DateCode
     }
   },
   {
@@ -197,7 +201,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     { // Attribute record
       ATTRID_BASIC_POWER_SOURCE,
       ZCL_DATATYPE_ENUM8, ACCESS_CONTROL_READ,
-      (void *)&zclWaterCounter_PowerSource
+      (void *)&zclWC_PowerSource
     }
   },
   {
@@ -205,7 +209,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     { // Attribute record
       ATTRID_BASIC_LOCATION_DESC,
       ZCL_DATATYPE_CHAR_STR, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)zclWaterCounter_LocationDescription
+      (void *)zclWC_LocationDescription
     }
   },
   {
@@ -213,7 +217,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     { // Attribute record
       ATTRID_BASIC_PHYSICAL_ENV,
       ZCL_DATATYPE_ENUM8, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWaterCounter_PhysicalEnvironment
+      (void *)&zclWC_PhysicalEnvironment
     }
   },
   {
@@ -221,7 +225,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     { // Attribute record
       ATTRID_BASIC_DEVICE_ENABLED,
       ZCL_DATATYPE_BOOLEAN, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWaterCounter_DeviceEnable
+      (void *)&zclWC_DeviceEnable
     }
   },
   {
@@ -229,7 +233,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     {  // Attribute record
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, ACCESS_CONTROL_READ,
-      (void *)&zclWaterCounter_clusterRevision_all
+      (void *)&zclWC_clusterRevision_all
     }
   },  
 
@@ -239,7 +243,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     { // Attribute record
       ATTRID_IDENTIFY_TIME,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWaterCounter_IdentifyTime
+      (void *)&zclWC_IdentifyTime
     }
   },  
   {
@@ -247,7 +251,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     {  // Attribute record
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_GLOBAL),
-      (void *)&zclWaterCounter_clusterRevision_all
+      (void *)&zclWC_clusterRevision_all
     }
   },
   // ********* Flow measure Cluster ********* //
@@ -256,7 +260,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     { 
       ATTRID_IOV_BASIC_DESCRIPTION,
       ZCL_DATATYPE_CHAR_STR, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWaterCounter_Flow1Desc
+      (void *)zclWC_Flow1Desc
     }
   },
   {
@@ -264,7 +268,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     { 
       ATTRID_IOV_BASIC_PRESENT_VALUE,
       ZCL_DATATYPE_UINT32, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE | ACCESS_REPORTABLE),
-      (void *)&zclWaterCounter_Flow1Value
+      (void *)&zclWC_Flow1Value
     }
   },
   {
@@ -272,7 +276,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     { 
       ATTRID_IOV_BASIC_RESOLUTION,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWaterCounter_Flow1Multiplyer
+      (void *)&zclWC_Flow1Multiplyer
     }
   },
     {
@@ -280,7 +284,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     { 
       ATTRID_IOV_BASIC_ENGINEERING_UNITS,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWaterCounter_Flow1Unit
+      (void *)&zclWC_Flow1Unit
     }
   },
 {
@@ -288,7 +292,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     { 
       ATTRID_IOV_BASIC_STATUS_FLAG,
       ZCL_DATATYPE_UINT8, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWaterCounter_Flow1Status
+      (void *)&zclWC_Flow1Status
     }
   },
   { // ********* Flow2 *********
@@ -296,7 +300,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     { 
       ATTRID_IOV_BASIC_DESCRIPTION,
       ZCL_DATATYPE_CHAR_STR, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWaterCounter_Flow2Desc
+      (void *)zclWC_Flow2Desc
     }
   },
   {
@@ -304,7 +308,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     { 
       ATTRID_IOV_BASIC_PRESENT_VALUE,
       ZCL_DATATYPE_UINT32, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE | ACCESS_REPORTABLE),
-      (void *)&zclWaterCounter_Flow2Value
+      (void *)&zclWC_Flow2Value
     }
   },
   {
@@ -312,7 +316,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     { 
       ATTRID_IOV_BASIC_RESOLUTION,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWaterCounter_Flow2Multiplyer
+      (void *)&zclWC_Flow2Multiplyer
     }
   },
   {
@@ -320,7 +324,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     { 
       ATTRID_IOV_BASIC_ENGINEERING_UNITS,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWaterCounter_Flow2Unit
+      (void *)&zclWC_Flow2Unit
     }
   },
   {
@@ -328,15 +332,15 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     { 
       ATTRID_IOV_BASIC_STATUS_FLAG,
       ZCL_DATATYPE_UINT8, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWaterCounter_Flow2Status
+      (void *)&zclWC_Flow2Status
     }
   },
   {
     ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
     { 
       ATTRID_IOV_BASIC_APP_TYPE,
-      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWaterCounter_FlowUpdateTime
+      ZCL_DATATYPE_UINT32, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
+      (void *)&zclWC_FlowReportInterval
     }
   },
   {
@@ -344,7 +348,7 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     {  
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
-      (void *)&zclWaterCounter_clusterRevision_all
+      (void *)&zclWC_clusterRevision_all
     }
   },
   // *** Groups Cluster *** //
@@ -353,47 +357,47 @@ CONST zclAttrRec_t zclWaterCounter_Attrs[] =
     {  
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
-      (void *)&zclWaterCounter_clusterRevision_all
+      (void *)&zclWC_clusterRevision_all
     }
   }
 };
 
-uint8 CONST zclWaterCounter_NumAttributes = ( sizeof(zclWaterCounter_Attrs) / sizeof(zclWaterCounter_Attrs[0]) );
+uint8 CONST zclWC_NumAttributes = ( sizeof(zclWC_Attrs) / sizeof(zclWC_Attrs[0]) );
 
 /*********************************************************************
  * SIMPLE DESCRIPTOR
  */
 // This is the Cluster ID List and should be filled with Application
 // specific cluster IDs.
-const cId_t zclWaterCounter_InClusterList[] =
+const cId_t zclWC_InClusterList[] =
 {
   ZCL_CLUSTER_ID_GEN_BASIC,
   ZCL_CLUSTER_ID_GEN_IDENTIFY,
   ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC
 };
 
-#define ZCLWATERCOUNTER_MAX_INCLUSTERS    ( sizeof( zclWaterCounter_InClusterList ) / sizeof( zclWaterCounter_InClusterList[0] ))
+#define ZCLWC_MAX_INCLUSTERS    ( sizeof( zclWC_InClusterList ) / sizeof( zclWC_InClusterList[0] ))
 
-const cId_t zclWaterCounter_OutClusterList[] =
+const cId_t zclWC_OutClusterList[] =
 {
   ZCL_CLUSTER_ID_GEN_IDENTIFY,
   ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
   ZCL_CLUSTER_ID_GEN_GROUPS,
 };
 
-#define ZCLWATERCOUNTER_MAX_OUTCLUSTERS   ( sizeof( zclWaterCounter_OutClusterList ) / sizeof( zclWaterCounter_OutClusterList[0] ))
+#define ZCLWC_MAX_OUTCLUSTERS   ( sizeof( zclWC_OutClusterList ) / sizeof( zclWC_OutClusterList[0] ))
 
-SimpleDescriptionFormat_t zclWaterCounter_SimpleDesc =
+SimpleDescriptionFormat_t zclWC_SimpleDesc =
 {
-  WATERCOUNTER_ENDPOINT,                  //  int Endpoint;
+  WC_ENDPOINT,                  //  int Endpoint;
   ZCL_HA_PROFILE_ID,                    //  uint16 AppProfId[2];
   ZCL_HA_DEVICEID_FLOW_SENSOR,          //  uint16 AppDeviceId[2];
-  WATERCOUNTER_DEVICE_VERSION,            //  int   AppDevVer:4;
-  WATERCOUNTER_FLAGS,                     //  int   AppFlags:4;
-  ZCLWATERCOUNTER_MAX_INCLUSTERS,         //  byte  AppNumInClusters;
-  (cId_t *)zclWaterCounter_InClusterList, //  byte *pAppInClusterList;
-  ZCLWATERCOUNTER_MAX_OUTCLUSTERS,        //  byte  AppNumInClusters;
-  (cId_t *)zclWaterCounter_OutClusterList //  byte *pAppInClusterList;
+  WC_DEVICE_VERSION,            //  int   AppDevVer:4;
+  WC_FLAGS,                     //  int   AppFlags:4;
+  ZCLWC_MAX_INCLUSTERS,         //  byte  AppNumInClusters;
+  (cId_t *)zclWC_InClusterList, //  byte *pAppInClusterList;
+  ZCLWC_MAX_OUTCLUSTERS,        //  byte  AppNumInClusters;
+  (cId_t *)zclWC_OutClusterList //  byte *pAppInClusterList;
 };
 
 /*********************************************************************
@@ -405,7 +409,7 @@ SimpleDescriptionFormat_t zclWaterCounter_SimpleDesc =
  */
 
 /*********************************************************************
- * @fn      zclWaterCounter_InitAttributesNV
+ * @fn      zclWC_InitNVItems
  *
  * @brief   Initialize items in NV for Attribute values.
  *
@@ -413,27 +417,78 @@ SimpleDescriptionFormat_t zclWaterCounter_SimpleDesc =
  *
  * @return  SUCCESS, FAILURE
  */
-uint8 zclWaterCounter_ResetAttributesToDefaultValues(void)
+void zclWC_InitNVItems(void)
 {
   uint8 result = 0;
   
-  result |= osal_nv_item_init(WC_NV_ITEM_DESC1, WATERCOUNTER_DESCSIZE, NULL); 
-  result |= osal_nv_item_init(WC_NV_ITEM_DESC2, WATERCOUNTER_DESCSIZE, NULL); 
+  result |= osal_nv_item_init(WC_NV_ITEM_DESC1, WC_DESCSIZE, NULL); 
+  result |= osal_nv_item_init(WC_NV_ITEM_DESC2, WC_DESCSIZE, NULL); 
   result |= osal_nv_item_init(WC_NV_ITEM_BLOCK1, 4, NULL); 
   result |= osal_nv_item_init(WC_NV_ITEM_BLOCK2, 4, NULL); 
   result |= osal_nv_item_init(WC_NV_ITEM_REPORT, 4, NULL); 
-  result |= osal_nv_item_init(WC_NV_ITEM_VALUE1, sizeof(zclWaterCounter_Flow1Value), NULL); 
-  result |= osal_nv_item_init(WC_NV_ITEM_VALUE2, sizeof(zclWaterCounter_Flow2Value), NULL);
+  result |= osal_nv_item_init(WC_NV_ITEM_VALUE1, sizeof(zclWC_Flow1Value), NULL); 
+  result |= osal_nv_item_init(WC_NV_ITEM_VALUE2, sizeof(zclWC_Flow2Value), NULL);
   
   if (result == SUCCESS) {
-    zclWaterCounter_NVItemsInitStatus = SUCCESS
+    zclWC_NVItemsInitStatus = SUCCESS;
   } else {
-    zclWaterCounter_NVItemsInitStatus = FAILURE
+    zclWC_NVItemsInitStatus = FAILURE;
   }
 }
 
 /*********************************************************************
- * @fn      zclWaterCounter_ResetAttributesToDefaultValues
+ * @fn      zclWC_CheckNVItem
+ *
+ * @brief   Check NV item whether it was stored in NV memory.
+ *
+ * @param   id - NV item id number
+ *
+ * @return  SUCCESS, FAILURE
+ */
+uint8 zclWC_CheckNVItem(uint16 id)
+{
+  uint32 buf;
+  
+  if (zclWC_NVItemsInitStatus == SUCCESS)
+  {
+    if (osal_nv_read(id, 0, 4, &buf) == SUCCESS)
+    {
+      if (buf != 0xFFFFFFFF)
+      {
+        return SUCCESS;
+      }
+    }
+  }
+  return FAILURE;
+}
+
+/*********************************************************************
+ * @fn      zclWC_InitAttribute
+ *
+ * @brief   Init attribute from NV stored item or Default value.
+ *
+ * @param   none
+ *
+ * @return  none
+ */
+void zclWC_InitAttribute(uint16 id, uint16 len, const void *src, void *buf)
+{
+  uint8 result;
+  
+  result = zclWC_CheckNVItem(id);
+  if (result == SUCCESS)
+  {
+      result |= osal_nv_read(id, 0, len, buf);
+  }
+  
+  if (result != SUCCESS)
+  {
+    osal_memcpy(buf, src, len);
+  }
+}
+
+/*********************************************************************
+ * @fn      zclWC_ResetAttributesToDefaultValues
  *
  * @brief   Reset all writable attributes to their default values.
  *
@@ -441,34 +496,45 @@ uint8 zclWaterCounter_ResetAttributesToDefaultValues(void)
  *
  * @return  none
  */
-void zclWaterCounter_ResetAttributesToDefaultValues(void)
+void zclWC_ResetAttributesToDefaultValues(void)
 {
-  const uint8 Desc1[WATERCOUNTER_DESCSIZE] = {WATERCOUNTER_DESCSIZE - 1, 'C', 'o', 'l', 'd', ' ', ' ', ' ' };
-  const uint8 Desc2[WATERCOUNTER_DESCSIZE] = {WATERCOUNTER_DESCSIZE - 1, 'H', 'o', 't', ' ', ' ', ' ', ' ' };
   int i;
+  uint32 src, dst;
+ // uint8 result;
   
-  zclWaterCounter_LocationDescription[0] = 15;
+  zclWC_LocationDescription[0] = 15;
   for (i = 1; i <= 15; i++)
   {
-    zclWaterCounter_LocationDescription[i] = ' ';
+    zclWC_LocationDescription[i] = ' ';
   }
   
-  zclWaterCounter_PhysicalEnvironment = DEFAULT_PHYSICAL_ENVIRONMENT;
-  zclWaterCounter_DeviceEnable = DEFAULT_DEVICE_ENABLE_STATE;
+  zclWC_PhysicalEnvironment = DEFAULT_PHYSICAL_ENVIRONMENT;
+  zclWC_DeviceEnable = DEFAULT_DEVICE_ENABLE_STATE;
   
-  zclWaterCounter_IdentifyTime = DEFAULT_IDENTIFY_TIME;
+  zclWC_IdentifyTime = DEFAULT_IDENTIFY_TIME;
   
-  osal_memcpy(zclWaterCounter_Flow1Desc, Desc1, WATERCOUNTER_DESCSIZE);
-  osal_memcpy(zclWaterCounter_Flow2Desc, Desc2, WATERCOUNTER_DESCSIZE);
-  Flow1Unit = ENGINEERING_UNIT_VOLUME_L;
-  Flow2Unit = ENGINEERING_UNIT_VOLUME_L;
+  zclWC_InitAttribute(WC_NV_ITEM_DESC1, WC_DESCSIZE, zclWC_Desc1, zclWC_Flow1Desc);
+  zclWC_InitAttribute(WC_NV_ITEM_DESC2, WC_DESCSIZE, zclWC_Desc2, zclWC_Flow2Desc);
   
-  zclWaterCounter_Flow1Value = 0;
-  zclWaterCounter_Flow2Value = 0;
-  zclWaterCounter_Flow1Multiplyer = 10;
-  zclWaterCounter_Flow2Multiplyer = 10;
-  zclWaterCounter_Flow1Status = 1;
-  zclWaterCounter_Flow2Status = 1;
+  src = WC_MULTIPLYER;
+  src = (src << 16) | ENGINEERING_UNIT_VOLUME_L;
+  zclWC_InitAttribute(WC_NV_ITEM_BLOCK1, 4, &src, &dst);
+  zclWC_Flow1Multiplyer = (dst >> 16) & 0xFFFF;
+  zclWC_Flow1Unit = dst & 0xFFFF;
+    
+  zclWC_InitAttribute(WC_NV_ITEM_BLOCK2, 4, &src, &dst);
+  zclWC_Flow2Multiplyer = (dst >> 16) & 0xFFFF;
+  zclWC_Flow2Unit = dst & 0xFFFF;
+
+  src = WC_REPORT_INTERVAL;
+  zclWC_InitAttribute(WC_NV_ITEM_REPORT, 4, &src, &zclWC_FlowReportInterval);
+
+  src = 0;
+  zclWC_InitAttribute(WC_NV_ITEM_VALUE1, 4, &src, &zclWC_Flow1Value);
+  zclWC_InitAttribute(WC_NV_ITEM_VALUE2, 4, &src, &zclWC_Flow2Value);
+  
+  zclWC_Flow1Status = 0;
+  zclWC_Flow2Status = 0;
 }
 
 /****************************************************************************

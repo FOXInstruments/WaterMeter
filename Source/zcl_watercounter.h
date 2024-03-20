@@ -76,29 +76,27 @@ extern "C"
 /*********************************************************************
  * VARIABLES
  */
-extern SimpleDescriptionFormat_t zclWaterCounter_SimpleDesc;
+extern SimpleDescriptionFormat_t zclWC_SimpleDesc;
 
-extern SimpleDescriptionFormat_t zclWaterCounter9_SimpleDesc;
+extern CONST zclAttrRec_t zclWC_Attrs[];
 
-extern CONST zclAttrRec_t zclWaterCounter_Attrs[];
+extern uint8    zclWC_Flow1Desc[];
+extern uint32   zclWC_Flow1Value;
+extern uint16   zclWC_Flow1Multiplyer;
+extern uint16   zclWC_Flow1Unit;
+extern uint8    zclWC_Flow1Status;
 
-extern uint8    zclWaterCounter_Flow1Desc[];
-extern uint32   zclWaterCounter_Flow1Value;
-extern uint16   zclWaterCounter_Flow1Multiplyer;
-extern uint16   zclWaterCounter_Flow1Unit;
-extern uint8    zclWaterCounter_Flow1Status;
+extern uint8    zclWC_Flow2Desc[];
+extern uint32   zclWC_Flow2Value;
+extern uint16   zclWC_Flow2Multiplyer;
+extern uint16   zclWC_Flow2Unit;
+extern uint8    zclWC_Flow2Status;
 
-extern uint8    zclWaterCounter_Flow2Desc[];
-extern uint32   zclWaterCounter_Flow2Value;
-extern uint16   zclWaterCounter_Flow2Multiplyer;
-extern uint16   zclWaterCounter_Flow2Unit;
-extern uint8    zclWaterCounter_Flow2Status;
+extern uint32   zclWC_FlowReportInterval;
 
-extern uint16   zclWaterCounter_FlowReportInterval;
+extern uint16   zclWC_IdentifyTime;
 
-extern uint16   zclWaterCounter_IdentifyTime;
-
-extern CONST uint8 zclWaterCounter_NumAttributes;
+extern CONST uint8 zclWC_NumAttributes;
 
 /*********************************************************************
  * FUNCTIONS
@@ -107,17 +105,20 @@ extern CONST uint8 zclWaterCounter_NumAttributes;
  /*
   * Initialization for the task
   */
-extern void zclWaterCounter_Init( byte task_id );
+extern void zclWC_Init(byte task_id);
 
 /*
  *  Event Process for the task
  */
-extern UINT16 zclWaterCounter_event_loop( byte task_id, UINT16 events );
+extern UINT16 zclWC_event_loop(byte task_id, UINT16 events);
 
 /*
  *  Reset all writable attributes to their default values.
  */
-extern void zclWaterCounter_ResetAttributesToDefaultValues(void); //implemented in zcl_watercounter_data.c
+extern void zclWC_ResetAttributesToDefaultValues(void); //implemented in zcl_watercounter_data.c
+extern void zclWC_InitNVItems(void);
+extern uint8 zclWC_CheckNVItem(uint16 id);
+extern void zclWC_InitAttribute(uint16 id, uint16 len, const void *src, void *buf);
 
 /*********************************************************************
 *********************************************************************/
