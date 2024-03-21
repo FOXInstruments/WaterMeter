@@ -116,8 +116,8 @@ extern UINT16 zclWC_event_loop(byte task_id, UINT16 events);
  *  Reset all writable attributes to their default values.
  */
 extern void zclWC_ResetAttributesToDefaultValues(void); //implemented in zcl_watercounter_data.c
-extern void zclWC_InitNVItems(void);
-extern uint8 zclWC_CheckNVItem(uint16 id);
+extern void zclWC_NVInitItems(void);
+extern uint8 zclWC_NVItemCheck(uint16 id);
 extern void zclWC_InitAttribute(uint16 id, uint16 len, const void *src, void *buf);
 
 /*********************************************************************

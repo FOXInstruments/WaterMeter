@@ -127,7 +127,7 @@ afAddrType_t zclWC_DstAddr;
 // Endpoint to allow SYS_APP_MSGs
 static endPointDesc_t waterCounter_TestEp =
 {
-  WATERCOUNTER_ENDPOINT,                  // endpoint
+  WC_ENDPOINT,                  // endpoint
   0,
   &zclWC_TaskID,
   (SimpleDescriptionFormat_t *)NULL,  // No Simple description for this test endpoint
@@ -241,13 +241,13 @@ void zclWC_Init(byte task_id)
   bdb_RegisterSimpleDescriptor(&zclWC_SimpleDesc);
 
   // Register the ZCL General Cluster Library callback functions
-  zclGeneral_RegisterCmdCallbacks(WATERCOUNTER_ENDPOINT, &zclWC_CmdCallbacks);
+  zclGeneral_RegisterCmdCallbacks(WC_ENDPOINT, &zclWC_CmdCallbacks);
 
-  zclWC_InitNVItems();
+  zclWC_NVInitItems();
   zclWC_ResetAttributesToDefaultValues();
   
   // Register the application's attribute list
-  zcl_registerAttrList(WATERCOUNTER_ENDPOINT, zclWC_NumAttributes, zclWC_Attrs);
+  zcl_registerAttrList(WC_ENDPOINT, zclWC_NumAttributes, zclWC_Attrs);
 
   // Register the Application to receive the unprocessed Foundation command/response messages
   zcl_registerForMsg(zclWC_TaskID);
@@ -266,7 +266,7 @@ void zclWC_Init(byte task_id)
 #ifdef ZCL_DIAGNOSTIC
   // Register the application's callback function to read/write attribute data.
   // This is only required when the attribute data format is unknown to ZCL.
-  zcl_registerReadWriteCB(WATERCOUNTER_ENDPOINT, zclDiagnostic_ReadWriteAttrCB, NULL);
+  zcl_registerReadWriteCB(WC_ENDPOINT, zclDiagnostic_ReadWriteAttrCB, NULL);
 
   if (zclDiagnostic_InitStats() == ZSuccess)
   {

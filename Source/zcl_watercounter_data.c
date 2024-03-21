@@ -417,7 +417,7 @@ SimpleDescriptionFormat_t zclWC_SimpleDesc =
  *
  * @return  SUCCESS, FAILURE
  */
-void zclWC_InitNVItems(void)
+void zclWC_NVInitItems(void)
 {
   uint8 result = 0;
   
@@ -445,7 +445,7 @@ void zclWC_InitNVItems(void)
  *
  * @return  SUCCESS, FAILURE
  */
-uint8 zclWC_CheckNVItem(uint16 id)
+uint8 zclWC_NVItemCheck(uint16 id)
 {
   uint32 buf;
   
@@ -475,7 +475,7 @@ void zclWC_InitAttribute(uint16 id, uint16 len, const void *src, void *buf)
 {
   uint8 result;
   
-  result = zclWC_CheckNVItem(id);
+  result = zclWC_NVItemCheck(id);
   if (result == SUCCESS)
   {
       result |= osal_nv_read(id, 0, len, buf);
