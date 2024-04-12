@@ -281,20 +281,20 @@ void zclWC_Init(byte task_id)
 
   zdpExternalStateTaskID = zclWC_TaskID;
 
-  // Configure pins P0_2, P0_3 as Timer1 channels
-  PERCFG &= ~BV(6);        // T1CFG set Timer1 alternative 1 location
-  P0SEL |= BV(2);         // Switch Pin to peripheral function (Timer1 ch0
-  P0SEL |= BV(3);         // Switch Pin to peripheral function (Timer1 ch1
-  P0DIR &= ~BV(2);         // Select direction (input) ch0
-  P0DIR &= ~BV(3);         // ch1
-  P0INP &= ~BV(2);         // Set Input mode to Pullup or pulldown ch0
-  P0INP &= ~BV(3);         // Set Input mode to Pullup or pulldown ch1
+  // Configure pins P0_2, P0_3 as inputs to count flows
+  P0SEL &= ~BV(2);         // Set Pin0_2 as GPIO
+  P0SEL &= ~BV(3);         // Set Pin0_3 as GPIO
+  P0DIR &= ~BV(2);         // Select direction (input) Pin0_2
+  P0DIR &= ~BV(3);         // Pin0_3
+  P0INP &= ~BV(2);         // Set Input mode to Pullup or pulldown
+  P0INP &= ~BV(3);         // Set Input mode to Pullup or pulldown
   P2INP &= ~BV(5);         // Set Input mode to Pullup for Port 0 
-  // Configure Timer1 channel 0 and 1
   // Configure pin interrupts
   PICTL |= BV(0);          // Set Falling edge gives interrupt for Port0 pins 0-7
   P0IEN |= BV(2);          // Eneble interrupt for pin P0_2  
   P0IEN |= BV(3);          // Eneble interrupt for pin P0_3  
+  // P0_1 control key
+  // P0_4 LED indicator
 }
 
 /*********************************************************************
