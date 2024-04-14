@@ -502,8 +502,8 @@
                     <state>$PROJ_DIR$\..\Source</state>
                     <state>$ZSTACKDIR$\Projects\zstack\HomeAutomation\Source</state>
                     <state>$ZSTACKDIR$\Projects\zstack\ZMain\TI2530DB</state>
-                    <state>$ZSTACKDIR$\Components\hal\include</state>
-                    <state>$ZSTACKDIR$\Components\hal\target\CC2530EB</state>
+                    <state>$PROJ_DIR$\..\hal\include</state>
+                    <state>$PROJ_DIR$\..\hal\target\CC2530DEV</state>
                     <state>$ZSTACKDIR$\Components\mac\include</state>
                     <state>$ZSTACKDIR$\Components\mac\high_level</state>
                     <state>$ZSTACKDIR$\Components\mac\low_level\srf04</state>
@@ -1672,8 +1672,8 @@
                     <state>$PROJ_DIR$\..\Source</state>
                     <state>$ZSTACKDIR$\Projects\zstack\HomeAutomation\Source</state>
                     <state>$ZSTACKDIR$\Projects\zstack\ZMain\TI2530DB</state>
-                    <state>$ZSTACKDIR$\Components\hal\include</state>
-                    <state>$ZSTACKDIR$\Components\hal\target\CC2530EB</state>
+                    <state>$PROJ_DIR$\..\hal\include</state>
+                    <state>$PROJ_DIR$\..\hal\target\CC2530DEV</state>
                     <state>$ZSTACKDIR$\Components\mac\include</state>
                     <state>$ZSTACKDIR$\Components\mac\high_level</state>
                     <state>$ZSTACKDIR$\Components\mac\low_level\srf04</state>
@@ -2844,8 +2844,8 @@
                     <state>$PROJ_DIR$\..\Source</state>
                     <state>$ZSTACKDIR$\Projects\zstack\HomeAutomation\Source</state>
                     <state>$ZSTACKDIR$\Projects\zstack\ZMain\TI2530DB</state>
-                    <state>$ZSTACKDIR$\Components\hal\include</state>
-                    <state>$ZSTACKDIR$\Components\hal\target\CC2530EB</state>
+                    <state>$PROJ_DIR$\..\hal\include</state>
+                    <state>$PROJ_DIR$\..\hal\target\CC2530DEV</state>
                     <state>$ZSTACKDIR$\Components\mac\include</state>
                     <state>$ZSTACKDIR$\Components\mac\high_level</state>
                     <state>$ZSTACKDIR$\Components\mac\low_level\srf04</state>
@@ -3843,6 +3843,10 @@
                     <state>xMT_ZDO_MGMT</state>
                     <state>xMT_APP_CNF_FUNC</state>
                     <state>xLCD_SUPPORTED=DEBUG</state>
+                    <state>HAL_LED_4_ENABLE</state>
+                    <state>HAL_PUSH_1_ENABLE</state>
+                    <state>LED_POLARITY=ACTIVE_LOW</state>
+                    <state>PUSH_POLARITY=ACTIVE_LOW</state>
                     <state>ZCL_READ</state>
                     <state>ZCL_DISCOVER</state>
                     <state>ZCL_WRITE</state>
@@ -4017,8 +4021,8 @@
                     <state>$PROJ_DIR$\..\Source</state>
                     <state>$ZSTACKDIR$\Projects\zstack\HomeAutomation\Source</state>
                     <state>$ZSTACKDIR$\Projects\zstack\ZMain\TI2530DB</state>
-                    <state>$ZSTACKDIR$\Components\hal\include</state>
-                    <state>$ZSTACKDIR$\Components\hal\target\CC2530EB</state>
+                    <state>$PROJ_DIR$\..\hal\include</state>
+                    <state>$PROJ_DIR$\..\hal\target\CC2530DEV</state>
                     <state>$ZSTACKDIR$\Components\mac\include</state>
                     <state>$ZSTACKDIR$\Components\mac\high_level</state>
                     <state>$ZSTACKDIR$\Components\mac\low_level\srf04</state>
@@ -5189,8 +5193,8 @@
                     <state>$PROJ_DIR$\..\Source</state>
                     <state>$ZSTACKDIR$\Projects\zstack\HomeAutomation\Source</state>
                     <state>$ZSTACKDIR$\Projects\zstack\ZMain\TI2530DB</state>
-                    <state>$ZSTACKDIR$\Components\hal\include</state>
-                    <state>$ZSTACKDIR$\Components\hal\target\CC2530EB</state>
+                    <state>$PROJ_DIR$\..\hal\include</state>
+                    <state>$PROJ_DIR$\..\hal\target\CC2530DEV</state>
                     <state>$ZSTACKDIR$\Components\mac\include</state>
                     <state>$ZSTACKDIR$\Components\mac\high_level</state>
                     <state>$ZSTACKDIR$\Components\mac\low_level\srf04</state>
@@ -5910,7 +5914,7 @@
             <name>$ZSTACKDIR$\Components\stack\bdb\bdb_touchlink.c</name>
         </file>
         <file>
-            <name>$ZSTACKDIR$\Components\stack\bdb\bdb_touchlink.h</name>
+            <name>$ZSTACKDIR$\Components\stack\bdb\bdb_touchLink.h</name>
         </file>
         <file>
             <name>$ZSTACKDIR$\Components\stack\bdb\bdb_touchlink_initiator.c</name>
@@ -5951,83 +5955,83 @@
         <group>
             <name>Common</name>
             <file>
-                <name>$ZSTACKDIR$\Components\hal\common\hal_assert.c</name>
+                <name>$PROJ_DIR$\..\hal\common\hal_assert.c</name>
             </file>
             <file>
-                <name>$ZSTACKDIR$\Components\hal\common\hal_drivers.c</name>
+                <name>$PROJ_DIR$\..\hal\common\hal_drivers.c</name>
             </file>
         </group>
         <group>
             <name>Include</name>
             <file>
-                <name>$ZSTACKDIR$\Components\hal\include\hal_adc.h</name>
+                <name>$PROJ_DIR$\..\hal\include\hal_adc.h</name>
             </file>
             <file>
-                <name>$ZSTACKDIR$\Components\hal\include\hal_assert.h</name>
+                <name>$PROJ_DIR$\..\hal\include\hal_assert.h</name>
             </file>
             <file>
-                <name>$ZSTACKDIR$\Components\hal\include\hal_board.h</name>
+                <name>$PROJ_DIR$\..\hal\include\hal_board.h</name>
             </file>
             <file>
-                <name>$ZSTACKDIR$\Components\hal\include\hal_defs.h</name>
+                <name>$PROJ_DIR$\..\hal\include\hal_defs.h</name>
             </file>
             <file>
-                <name>$ZSTACKDIR$\Components\hal\include\hal_drivers.h</name>
+                <name>$PROJ_DIR$\..\hal\include\hal_drivers.h</name>
             </file>
             <file>
-                <name>$ZSTACKDIR$\Components\hal\include\hal_flash.h</name>
+                <name>$PROJ_DIR$\..\hal\include\hal_flash.h</name>
             </file>
             <file>
-                <name>$ZSTACKDIR$\Components\hal\include\hal_key.h</name>
+                <name>$PROJ_DIR$\..\hal\include\hal_key.h</name>
             </file>
             <file>
-                <name>$ZSTACKDIR$\Components\hal\include\hal_lcd.h</name>
+                <name>$PROJ_DIR$\..\hal\include\hal_lcd.h</name>
             </file>
             <file>
-                <name>$ZSTACKDIR$\Components\hal\include\hal_led.h</name>
+                <name>$PROJ_DIR$\..\hal\include\hal_led.h</name>
             </file>
             <file>
-                <name>$ZSTACKDIR$\Components\hal\include\hal_sleep.h</name>
+                <name>$PROJ_DIR$\..\hal\include\hal_sleep.h</name>
             </file>
             <file>
-                <name>$ZSTACKDIR$\Components\hal\include\hal_timer.h</name>
+                <name>$PROJ_DIR$\..\hal\include\hal_timer.h</name>
             </file>
             <file>
-                <name>$ZSTACKDIR$\Components\hal\include\hal_uart.h</name>
+                <name>$PROJ_DIR$\..\hal\include\hal_uart.h</name>
             </file>
         </group>
         <group>
             <name>Target</name>
             <group>
-                <name>CC2530EB</name>
+                <name>CC2530DEV</name>
                 <group>
                     <name>Config</name>
                     <file>
-                        <name>$ZSTACKDIR$\Components\hal\target\CC2530EB\hal_board_cfg.h</name>
+                        <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_board_cfg.h</name>
                     </file>
                 </group>
                 <group>
                     <name>Drivers</name>
                     <file>
-                        <name>$ZSTACKDIR$\Components\hal\target\CC2530EB\hal_adc.c</name>
+                        <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_adc.c</name>
                     </file>
                     <file>
-                        <name>$ZSTACKDIR$\Components\hal\target\CC2530EB\hal_dma.c</name>
+                        <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_dma.c</name>
                     </file>
                     <file>
-                        <name>$ZSTACKDIR$\Components\hal\target\CC2530EB\hal_flash.c</name>
+                        <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_flash.c</name>
                     </file>
                     <file>
-                        <name>$ZSTACKDIR$\Components\hal\target\CC2530EB\hal_key.c</name>
+                        <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_key.c</name>
                     </file>
                     <file>
-                        <name>$ZSTACKDIR$\Components\hal\target\CC2530EB\hal_lcd.c</name>
+                        <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_lcd.c</name>
                     </file>
                     <file>
-                        <name>$ZSTACKDIR$\Components\hal\target\CC2530EB\hal_led.c</name>
+                        <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_led.c</name>
                     </file>
                     <file>
-                        <name>$ZSTACKDIR$\Components\hal\target\CC2530EB\hal_ota.c</name>
+                        <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_ota.c</name>
                         <excluded>
                             <configuration>CoordinatorEB</configuration>
                             <configuration>RouterEB</configuration>
@@ -6035,34 +6039,34 @@
                         </excluded>
                     </file>
                     <file>
-                        <name>$ZSTACKDIR$\Components\hal\target\CC2530EB\hal_sleep.c</name>
+                        <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_sleep.c</name>
                     </file>
                     <file>
-                        <name>$ZSTACKDIR$\Components\hal\target\CC2530EB\hal_startup.c</name>
+                        <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_startup.c</name>
                     </file>
                     <file>
-                        <name>$ZSTACKDIR$\Components\hal\target\CC2530EB\hal_timer.c</name>
+                        <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_timer.c</name>
                     </file>
                     <file>
-                        <name>$ZSTACKDIR$\Components\hal\target\CC2530EB\hal_uart.c</name>
+                        <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_uart.c</name>
                     </file>
                 </group>
                 <group>
                     <name>Includes</name>
                     <file>
-                        <name>$ZSTACKDIR$\Components\hal\target\CC2530EB\hal_aes.h</name>
+                        <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_aes.h</name>
                     </file>
                     <file>
-                        <name>$ZSTACKDIR$\Components\hal\target\CC2530EB\hal_ccm.h</name>
+                        <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_ccm.h</name>
                     </file>
                     <file>
-                        <name>$ZSTACKDIR$\Components\hal\target\CC2530EB\hal_dma.h</name>
+                        <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_dma.h</name>
                     </file>
                     <file>
-                        <name>$ZSTACKDIR$\Components\hal\target\CC2530EB\hal_mcu.h</name>
+                        <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_mcu.h</name>
                     </file>
                     <file>
-                        <name>$ZSTACKDIR$\Components\hal\target\CC2530EB\hal_ota.h</name>
+                        <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_ota.h</name>
                         <excluded>
                             <configuration>CoordinatorEB</configuration>
                             <configuration>RouterEB</configuration>
@@ -6070,7 +6074,7 @@
                         </excluded>
                     </file>
                     <file>
-                        <name>$ZSTACKDIR$\Components\hal\target\CC2530EB\hal_types.h</name>
+                        <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_types.h</name>
                     </file>
                 </group>
             </group>
