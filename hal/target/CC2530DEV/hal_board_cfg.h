@@ -100,65 +100,115 @@
  *                                       LED Configuration
  * ------------------------------------------------------------------------------------------------
  */
+#define HAL_LED3_ENABLE
+#define HAL_LED7_ENABLE
+   
 #if defined (HAL_BOARD_CC2530DEV) && !defined (HAL_PA_LNA) && \
     !defined (HAL_PA_LNA_CC2590) && !defined (HAL_PA_LNA_SE2431L) && \
     !defined (HAL_PA_LNA_CC2592)
-  #ifdef HAL_LED_0_ENABLE
-    #undef HAL_LED_0_ENABLE
-    #define HAL_LED_0_ENABLE    1
+  #ifdef HAL_LED0_ENABLE
+    #undef HAL_LED0_ENABLE
+    #define HAL_LED0_ENABLE    1
+    #define HAL_FIRST_LED      0
+    #define HAL_LAST_LED       0
   #else
-    #define HAL_LED_0_ENABLE    0      
-  #endif
-  #ifdef HAL_LED_1_ENABLE
-    #undef HAL_LED_1_ENABLE
-    #define HAL_LED_1_ENABLE    1
-  #else
-    #define HAL_LED_1_ENABLE    0      
-  #endif
-  #ifdef HAL_LED_2_ENABLE
-    #undef HAL_LED_2_ENABLE
-    #define HAL_LED_2_ENABLE    1
-  #else
-    #define HAL_LED_2_ENABLE    0      
-  #endif
-  #ifdef HAL_LED_3_ENABLE
-    #undef HAL_LED_3_ENABLE
-    #define HAL_LED_3_ENABLE    1
-  #else
-    #define HAL_LED_3_ENABLE    0      
-  #endif
-  #ifdef HAL_LED_4_ENABLE
-    #undef HAL_LED_4_ENABLE
-    #define HAL_LED_4_ENABLE    1
-  #else
-    #define HAL_LED_4_ENABLE    0      
-  #endif
-  #ifdef HAL_LED_5_ENABLE
-    #undef HAL_LED_5_ENABLE
-    #define HAL_LED_5_ENABLE    1
-  #else
-    #define HAL_LED_5_ENABLE    0      
-  #endif
-  #ifdef HAL_LED_6_ENABLE
-    #undef HAL_LED_6_ENABLE
-    #define HAL_LED_6_ENABLE    1
-  #else
-    #define HAL_LED_6_ENABLE    0      
-  #endif
-  #ifdef HAL_LED_7_ENABLE
-    #undef HAL_LED_7_ENABLE
-    #define HAL_LED_7_ENABLE    1
-  #else
-    #define HAL_LED_7_ENABLE    0      
+    #define HAL_LED0_ENABLE    0      
   #endif
 
-  #define HAL_NUM_LEDS  (HAL_LED_0_ENABLE + HAL_LED_1_ENABLE + HAL_LED_2_ENABLE + \
-      HAL_LED_3_ENABLE + HAL_LED_4_ENABLE + HAL_LED_5_ENABLE + HAL_LED_6_ENABLE + \
-      HAL_LED_7_ENABLE)
+  #ifdef HAL_LED1_ENABLE
+    #undef HAL_LED1_ENABLE
+    #define HAL_LED1_ENABLE    1
+    #ifndef HAL_FIRST_LED
+      #define HAL_FIRST_LED    1
+    #endif
+    #undef HAL_LAST_LED
+    #define HAL_LAST_LED       1
+  #else
+    #define HAL_LED1_ENABLE    0      
+  #endif
+  
+  #ifdef HAL_LED2_ENABLE
+    #undef HAL_LED2_ENABLE
+    #define HAL_LED2_ENABLE    1
+    #ifndef HAL_FIRST_LED
+      #define HAL_FIRST_LED    2
+    #endif
+    #undef HAL_LAST_LED
+    #define HAL_LAST_LED       2
+  #else
+    #define HAL_LED2_ENABLE    0      
+  #endif
+  
+  #ifdef HAL_LED3_ENABLE
+    #undef HAL_LED3_ENABLE
+    #define HAL_LED3_ENABLE    1
+    #ifndef HAL_FIRST_LED
+      #define HAL_FIRST_LED    3
+    #endif
+    #undef HAL_LAST_LED
+    #define HAL_LAST_LED       3
+  #else
+    #define HAL_LED3_ENABLE    0      
+  #endif
+  
+  #ifdef HAL_LED4_ENABLE
+    #undef HAL_LED4_ENABLE
+    #define HAL_LED4_ENABLE    1
+    #ifndef HAL_FIRST_LED
+      #define HAL_FIRST_LED    4
+    #endif
+    #undef HAL_LAST_LED
+    #define HAL_LAST_LED       4
+  #else
+    #define HAL_LED4_ENABLE    0      
+  #endif
+  
+  #ifdef HAL_LED5_ENABLE
+    #undef HAL_LED5_ENABLE
+    #define HAL_LED5_ENABLE    1
+      #ifndef HAL_FIRST_LED
+      #define HAL_FIRST_LED    5
+    #endif
+    #undef HAL_LAST_LED
+    #define HAL_LAST_LED       5
+#else
+    #define HAL_LED5_ENABLE    0      
+  #endif
+  
+  #ifdef HAL_LED6_ENABLE
+    #undef HAL_LED6_ENABLE
+    #define HAL_LED6_ENABLE    1
+    #ifndef HAL_FIRST_LED
+      #define HAL_FIRST_LED    6
+    #endif
+    #undef HAL_LAST_LED
+    #define HAL_LAST_LED       6
+  #else
+    #define HAL_LED6_ENABLE    0      
+  #endif
+  
+  #ifdef HAL_LED7_ENABLE
+    #undef HAL_LED7_ENABLE
+    #define HAL_LED7_ENABLE    1
+    #ifndef HAL_FIRST_LED
+      #define HAL_FIRST_LED    7
+    #endif
+    #undef HAL_LAST_LED
+    #define HAL_LAST_LED       7
+  #else
+    #define HAL_LED7_ENABLE    0      
+  #endif
+
+  #define HAL_NUM_LEDS  (HAL_LED0_ENABLE + HAL_LED1_ENABLE + HAL_LED2_ENABLE + \
+      HAL_LED3_ENABLE + HAL_LED4_ENABLE + HAL_LED5_ENABLE + HAL_LED6_ENABLE + \
+      HAL_LED7_ENABLE)
       
+#define MERGE_STRINGS(A, B)     A ## B
 #define STRING2(x) #x
 #define STRING(x) STRING2(x)
 #pragma message(STRING(HAL_NUM_LEDS))
+#pragma message(STRING(HAL_FIRST_LED))
+#pragma message(STRING(HAL_LAST_LED))
 
   #if (HAL_NUM_LEDS == 0)
     #warning All LEDs are DISABLED
@@ -367,22 +417,22 @@ extern void MAC_RfFrontendSetup(void);
   /* Turn on cache prefetch mode */                              \
   PREFETCH_ENABLE();                                             \
                                                                  \
-  if (HAL_LED_0_ENABLE == 1) HAL_TURN_OFF_LED0();                \
-  if (HAL_LED_0_ENABLE == 1) LED0_DIR |= LED1_BV;                \
-  if (HAL_LED_1_ENABLE == 1) HAL_TURN_OFF_LED1();                \
-  if (HAL_LED_1_ENABLE == 1) LED1_DIR |= LED1_BV;                \
-  if (HAL_LED_2_ENABLE == 1) HAL_TURN_OFF_LED2();                \
-  if (HAL_LED_2_ENABLE == 1) LED2_DIR |= LED2_BV;                \
-  if (HAL_LED_3_ENABLE == 1) HAL_TURN_OFF_LED3();                \
-  if (HAL_LED_3_ENABLE == 1) LED3_DIR |= LED3_BV;                \
-  if (HAL_LED_4_ENABLE == 1) HAL_TURN_OFF_LED4();                \
-  if (HAL_LED_4_ENABLE == 1) LED4_DIR |= LED4_BV;                \
-  if (HAL_LED_5_ENABLE == 1) HAL_TURN_OFF_LED5();                \
-  if (HAL_LED_5_ENABLE == 1) LED5_DIR |= LED5_BV;                \
-  if (HAL_LED_6_ENABLE == 1) HAL_TURN_OFF_LED6();                \
-  if (HAL_LED_6_ENABLE == 1) LED6_DIR |= LED6_BV;                \
-  if (HAL_LED_7_ENABLE == 1) HAL_TURN_OFF_LED7();                \
-  if (HAL_LED_7_ENABLE == 1) LED7_DIR |= LED7_BV;                \
+  if (HAL_LED0_ENABLE == 1) HAL_TURN_OFF_LED0();                \
+  if (HAL_LED0_ENABLE == 1) LED0_DIR |= LED1_BV;                \
+  if (HAL_LED1_ENABLE == 1) HAL_TURN_OFF_LED1();                \
+  if (HAL_LED1_ENABLE == 1) LED1_DIR |= LED1_BV;                \
+  if (HAL_LED2_ENABLE == 1) HAL_TURN_OFF_LED2();                \
+  if (HAL_LED2_ENABLE == 1) LED2_DIR |= LED2_BV;                \
+  if (HAL_LED3_ENABLE == 1) HAL_TURN_OFF_LED3();                \
+  if (HAL_LED3_ENABLE == 1) LED3_DIR |= LED3_BV;                \
+  if (HAL_LED4_ENABLE == 1) HAL_TURN_OFF_LED4();                \
+  if (HAL_LED4_ENABLE == 1) LED4_DIR |= LED4_BV;                \
+  if (HAL_LED5_ENABLE == 1) HAL_TURN_OFF_LED5();                \
+  if (HAL_LED5_ENABLE == 1) LED5_DIR |= LED5_BV;                \
+  if (HAL_LED6_ENABLE == 1) HAL_TURN_OFF_LED6();                \
+  if (HAL_LED6_ENABLE == 1) LED6_DIR |= LED6_BV;                \
+  if (HAL_LED7_ENABLE == 1) HAL_TURN_OFF_LED7();                \
+  if (HAL_LED7_ENABLE == 1) LED7_DIR |= LED7_BV;                \
                                                                  \
   /* configure tristates */                                      \
   P0INP |= PUSH2_BV;                                             \
@@ -413,6 +463,7 @@ extern void MAC_RfFrontendSetup(void);
   #define HAL_TURN_OFF_LED5()       st( LED5_SBIT = LED5_POLARITY (0); )
   #define HAL_TURN_OFF_LED6()       st( LED6_SBIT = LED6_POLARITY (0); )
   #define HAL_TURN_OFF_LED7()       st( LED7_SBIT = LED7_POLARITY (0); )
+  #define HAL_TURN_OFF_LED(x)       MERGE_STRINGS(HAL_TURN_OFF_LED, x)()
 
   #define HAL_TURN_ON_LED0()        st( LED0_SBIT = LED0_POLARITY (1); )
   #define HAL_TURN_ON_LED1()        st( LED1_SBIT = LED1_POLARITY (1); )
@@ -421,7 +472,8 @@ extern void MAC_RfFrontendSetup(void);
   #define HAL_TURN_ON_LED4()        st( LED4_SBIT = LED4_POLARITY (1); )
   #define HAL_TURN_ON_LED5()        st( LED5_SBIT = LED5_POLARITY (1); )
   #define HAL_TURN_ON_LED6()        st( LED6_SBIT = LED6_POLARITY (1); )
-  #define HAL_TURN_ON_LED7()        st( LED7_SBIT = LED7_POLARITY (1); )
+  #define HAL_TURN_ON_LED7()        st( LED7_SBIT = LED7_POLARITY (1); )     
+  #define HAL_TURN_ON_LED(x)        MERGE_STRINGS(HAL_TURN_ON_LED, x)()
 
   #define HAL_TOGGLE_LED0()         st( if (LED0_SBIT) { LED0_SBIT = 0; } else { LED0_SBIT = 1;} )
   #define HAL_TOGGLE_LED1()         st( if (LED1_SBIT) { LED1_SBIT = 0; } else { LED1_SBIT = 1;} )
@@ -431,6 +483,7 @@ extern void MAC_RfFrontendSetup(void);
   #define HAL_TOGGLE_LED5()         st( if (LED5_SBIT) { LED5_SBIT = 0; } else { LED5_SBIT = 1;} )
   #define HAL_TOGGLE_LED6()         st( if (LED6_SBIT) { LED6_SBIT = 0; } else { LED6_SBIT = 1;} )
   #define HAL_TOGGLE_LED7()         st( if (LED7_SBIT) { LED7_SBIT = 0; } else { LED7_SBIT = 1;} )
+  #define HAL_TOGGLE_LED(x)         MERGE_STRINGS(HAL_TOGGLE_LED, x)()
 
   #define HAL_STATE_LED0()          (LED0_POLARITY (LED0_SBIT))
   #define HAL_STATE_LED1()          (LED1_POLARITY (LED1_SBIT))
@@ -440,6 +493,7 @@ extern void MAC_RfFrontendSetup(void);
   #define HAL_STATE_LED5()          (LED5_POLARITY (LED5_SBIT))
   #define HAL_STATE_LED6()          (LED6_POLARITY (LED6_SBIT))
   #define HAL_STATE_LED7()          (LED7_POLARITY (LED7_SBIT))
+  #define HAL_STATE_LED(x)          MERGE_STRINGS(HAL_STATE_LED, x)()
       
 #endif
 

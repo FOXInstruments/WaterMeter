@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project>
     <fileVersion>4</fileVersion>
-    <fileChecksum>184249917</fileChecksum>
+    <fileChecksum>3209939161</fileChecksum>
     <configuration>
         <name>CoordinatorEB</name>
         <outputs>
@@ -2368,6 +2368,10 @@
                     <name>BICOMP</name>
                     <file> 253</file>
                 </tool>
+                <tool>
+                    <name>__cstat</name>
+                    <file> 541</file>
+                </tool>
             </outputs>
         </file>
         <file>
@@ -2380,6 +2384,10 @@
                 <tool>
                     <name>BICOMP</name>
                     <file> 479</file>
+                </tool>
+                <tool>
+                    <name>__cstat</name>
+                    <file> 224</file>
                 </tool>
             </outputs>
         </file>
@@ -2394,6 +2402,10 @@
                     <name>BICOMP</name>
                     <file> 78</file>
                 </tool>
+                <tool>
+                    <name>__cstat</name>
+                    <file> 466</file>
+                </tool>
             </outputs>
         </file>
         <file>
@@ -2407,6 +2419,10 @@
                     <name>BICOMP</name>
                     <file> 249</file>
                 </tool>
+                <tool>
+                    <name>__cstat</name>
+                    <file> 140</file>
+                </tool>
             </outputs>
         </file>
         <file>
@@ -2419,6 +2435,10 @@
                 <tool>
                     <name>BICOMP</name>
                     <file> 75</file>
+                </tool>
+                <tool>
+                    <name>__cstat</name>
+                    <file> 540</file>
                 </tool>
             </outputs>
         </file>
@@ -2450,11 +2470,15 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 202 373</file>
+                    <file> 202</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
                     <file> 220</file>
+                </tool>
+                <tool>
+                    <name>__cstat</name>
+                    <file> 459</file>
                 </tool>
             </outputs>
             <inputs>
@@ -2498,6 +2522,10 @@
                     <name>BICOMP</name>
                     <file> 331</file>
                 </tool>
+                <tool>
+                    <name>__cstat</name>
+                    <file> 498</file>
+                </tool>
             </outputs>
         </file>
         <file>
@@ -2510,6 +2538,10 @@
                 <tool>
                     <name>BICOMP</name>
                     <file> 107</file>
+                </tool>
+                <tool>
+                    <name>__cstat</name>
+                    <file> 453</file>
                 </tool>
             </outputs>
         </file>
@@ -2524,6 +2556,10 @@
                     <name>BICOMP</name>
                     <file> 259</file>
                 </tool>
+                <tool>
+                    <name>__cstat</name>
+                    <file> 527</file>
+                </tool>
             </outputs>
         </file>
         <file>
@@ -2536,6 +2572,10 @@
                 <tool>
                     <name>BICOMP</name>
                     <file> 214</file>
+                </tool>
+                <tool>
+                    <name>__cstat</name>
+                    <file> 505</file>
                 </tool>
             </outputs>
             <inputs>
@@ -2555,6 +2595,10 @@
                 <tool>
                     <name>BICOMP</name>
                     <file> 419</file>
+                </tool>
+                <tool>
+                    <name>__cstat</name>
+                    <file> 464</file>
                 </tool>
             </outputs>
         </file>
@@ -3274,6 +3318,10 @@
                     <name>BICOMP</name>
                     <file> 437</file>
                 </tool>
+                <tool>
+                    <name>__cstat</name>
+                    <file> 187</file>
+                </tool>
             </outputs>
         </file>
         <file>
@@ -3309,6 +3357,10 @@
                 <tool>
                     <name>BICOMP</name>
                     <file> 161</file>
+                </tool>
+                <tool>
+                    <name>__cstat</name>
+                    <file> 482</file>
                 </tool>
             </outputs>
         </file>
@@ -4693,9 +4745,6 @@
         <forcedrebuild>
             <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\zdo\ZDObject.c</name>
             <tool>ICC8051</tool>
-        </forcedrebuild>
-        <forcedrebuild>
-            <name>[REBUILD_ALL]</name>
         </forcedrebuild>
     </configuration>
     <configuration>

@@ -3843,8 +3843,8 @@
                     <state>xMT_ZDO_MGMT</state>
                     <state>xMT_APP_CNF_FUNC</state>
                     <state>xLCD_SUPPORTED=DEBUG</state>
-                    <state>HAL_LED_4_ENABLE</state>
-                    <state>HAL_PUSH_1_ENABLE</state>
+                    <state>HAL_LED4_ENABLE</state>
+                    <state>HAL_PUSH1_ENABLE</state>
                     <state>LED_POLARITY=ACTIVE_LOW</state>
                     <state>PUSH_POLARITY=ACTIVE_LOW</state>
                     <state>ZCL_READ</state>
