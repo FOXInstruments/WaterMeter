@@ -157,7 +157,7 @@ uint8 HalLedSet (uint8 leds, uint8 mode)
     case HAL_LED_MODE_OFF:
     case HAL_LED_MODE_TOGGLE:
 
-      led = HAL_LED_1;
+      led = HAL_LED_0;
       leds &= HAL_LED_ALL;
       sts = HalLedStatusControl.HalLedControlTable;
 
@@ -220,7 +220,7 @@ void HalLedBlink (uint8 leds, uint8 numBlinks, uint8 percent, uint16 period)
   {
     if (percent < 100)
     {
-      led = HAL_LED_1;
+      led = HAL_LED_0;
       leds &= HAL_LED_ALL;
       sts = HalLedStatusControl.HalLedControlTable;
 
@@ -290,7 +290,7 @@ void HalLedUpdate (void)
   uint16 wait;
 
   next = 0;
-  led  = HAL_LED_1;
+  led  = HAL_LED_0;
   leds = HAL_LED_ALL;
   sts = HalLedStatusControl.HalLedControlTable;
 
@@ -377,6 +377,18 @@ void HalLedUpdate (void)
  ***************************************************************************************************/
 void HalLedOnOff (uint8 leds, uint8 mode)
 {
+  if (leds & HAL_LED_0)
+  {
+    if (mode == HAL_LED_MODE_ON)
+    {
+      HAL_TURN_ON_LED0();
+    }
+    else
+    {
+      HAL_TURN_OFF_LED0();
+    }
+  }
+
   if (leds & HAL_LED_1)
   {
     if (mode == HAL_LED_MODE_ON)
@@ -422,6 +434,42 @@ void HalLedOnOff (uint8 leds, uint8 mode)
     else
     {
       HAL_TURN_OFF_LED4();
+    }
+  }
+
+  if (leds & HAL_LED_5)
+  {
+    if (mode == HAL_LED_MODE_ON)
+    {
+      HAL_TURN_ON_LED5();
+    }
+    else
+    {
+      HAL_TURN_OFF_LED5();
+    }
+  }
+
+  if (leds & HAL_LED_6)
+  {
+    if (mode == HAL_LED_MODE_ON)
+    {
+      HAL_TURN_ON_LED6();
+    }
+    else
+    {
+      HAL_TURN_OFF_LED6();
+    }
+  }
+
+  if (leds & HAL_LED_7)
+  {
+    if (mode == HAL_LED_MODE_ON)
+    {
+      HAL_TURN_ON_LED7();
+    }
+    else
+    {
+      HAL_TURN_OFF_LED7();
     }
   }
 
@@ -474,10 +522,30 @@ void HalLedEnterSleep( void )
 #if (HAL_LED == TRUE)
   /* Save the state of each led */
   HalSleepLedState = 0;
-  HalSleepLedState |= HAL_STATE_LED1();
-  HalSleepLedState |= HAL_STATE_LED2() << 1;
-  HalSleepLedState |= HAL_STATE_LED3() << 2;
+#if (HAL_LED0_ENABLE == 1)
+  HalSleepLedState |= HAL_STATE_LED0();
+#endif
+#if (HAL_LED1_ENABLE == 1)
+  HalSleepLedState |= HAL_STATE_LED1() << 1;
+#endif
+#if (HAL_LED2_ENABLE == 1)
+  HalSleepLedState |= HAL_STATE_LED2() << 2;
+#endif
+#if (HAL_LED3_ENABLE == 1)
   HalSleepLedState |= HAL_STATE_LED4() << 3;
+#endif
+#if (HAL_LED4_ENABLE == 1)
+  HalSleepLedState |= HAL_STATE_LED4() << 4;
+#endif
+#if (HAL_LED5_ENABLE == 1)
+  HalSleepLedState |= HAL_STATE_LED5() << 5;
+#endif
+#if (HAL_LED6_ENABLE == 1)
+  HalSleepLedState |= HAL_STATE_LED6() << 6;
+#endif
+#if (HAL_LED7_ENABLE == 1)
+  HalSleepLedState |= HAL_STATE_LED7() << 7;
+#endif
 
   /* TURN OFF all LEDs to save power */
   HalLedOnOff (HAL_LED_ALL, HAL_LED_MODE_OFF);

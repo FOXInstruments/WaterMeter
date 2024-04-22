@@ -293,6 +293,63 @@
 #ifndef PUSH_POLARITY
   #define PUSH_POLARITY   ACTIVE_HIGH
 #endif
+        
+#if (HAL_LED0_ENABLE == 0) && defined(HAL_PUSH0_ENABLE)
+  #undef  HAL_PUSH0_ENABLE
+  #define HAL_PUSH0_ENABLE        1
+  #define HAL_PUSH_BUTTON()       HAL_PUSH_BUTTON0()
+#elif (HAL_LED0_ENABLE == 1) && defined(HAL_PUSH0_ENABLE)
+  #error HAL LED and PUSH enabled on the same pin 0
+#else
+  #define HAL_PUSH0_ENABLE        0
+#endif
+
+#if (HAL_LED1_ENABLE == 0) && defined(HAL_PUSH1_ENABLE)
+  #undef  HAL_PUSH1_ENABLE
+  #define HAL_PUSH1_ENABLE        1
+  #ifndef HAL_PUSH_BUTTON
+    #define HAL_PUSH_BUTTON()       HAL_PUSH_BUTTON1()
+  #endif
+#elif (HAL_LED1_ENABLE == 1) && defined(HAL_PUSH1_ENABLE)
+//  #pragma message(STRING())
+  #error HAL LED and PUSH enabled on the same pin 1
+#else
+  #define HAL_PUSH1_ENABLE        0
+#endif
+
+#if (HAL_LED2_ENABLE == 0) && defined(HAL_PUSH2_ENABLE)
+  #undef  HAL_PUSH2_ENABLE
+  #define HAL_PUSH2_ENABLE        1
+  #ifndef HAL_PUSH_BUTTON
+    #define HAL_PUSH_BUTTON()       HAL_PUSH_BUTTON2()
+  #endif
+#elif (HAL_LED2_ENABLE == 1) && defined(HAL_PUSH2_ENABLE)
+  #error HAL LED and PUSH enabled on the same pin 2
+#else
+  #define HAL_PUSH2_ENABLE        0
+#endif
+
+#if (HAL_LED3_ENABLE == 0) && defined(HAL_PUSH3_ENABLE)
+  #undef  HAL_PUSH3_ENABLE
+  #define HAL_PUSH3_ENABLE        1
+  #ifndef HAL_PUSH_BUTTON
+    #define HAL_PUSH_BUTTON()       HAL_PUSH_BUTTON3()
+  #endif
+#elif (HAL_LED3_ENABLE == 1) && defined(HAL_PUSH3_ENABLE)
+  #error HAL LED and PUSH enabled on the same pin 3
+#else
+  #define HAL_PUSH3_ENABLE        0
+#endif
+
+#define HAL_NUM_PUSHES  (HAL_PUSH0_ENABLE + HAL_PUSH1_ENABLE + HAL_PUSH2_ENABLE + HAL_PUSH3_ENABLE)
+#pragma message(STRING(HAL_NUM_PUSHES))
+
+#if (HAL_NUM_PUSHES == 0)
+  #warning All PUSHes are DISABLED
+#endif
+#if (HAL_NUM_PUSHES > 0)
+  #warning Some PUSHes are ENABLED on Port 0
+#endif
 
 /* S0 */
 #define PUSH0_BV          BV(0)
@@ -443,9 +500,10 @@ extern void MAC_RfFrontendSetup(void);
 #define HAL_DEBOUNCE(expr)    { int i; for (i=0; i<500; i++) { if (!(expr)) i = 0; } }
 
 /* ----------- Push Buttons ---------- */
+#define HAL_PUSH_BUTTON0()        (PUSH0_POLARITY (PUSH0_SBIT))
 #define HAL_PUSH_BUTTON1()        (PUSH1_POLARITY (PUSH1_SBIT))
 #define HAL_PUSH_BUTTON2()        (PUSH2_POLARITY (PUSH2_SBIT))
-#define HAL_PUSH_BUTTON3()        (0)
+#define HAL_PUSH_BUTTON3()        (PUSH3_POLARITY (PUSH3_SBIT))
 #define HAL_PUSH_BUTTON4()        (0)
 #define HAL_PUSH_BUTTON5()        (0)
 #define HAL_PUSH_BUTTON6()        (0)

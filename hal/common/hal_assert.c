@@ -250,8 +250,12 @@ void halAssertHazardLights(void)
         }
       }
 
+#if (HAL_NUM_PUSHES == 0)
+  #error No any PUSHes are enabled in the Prerocessor settings (HAL_PUSHx_ENABLE)
+#endif
+      
       /* break out of loop if button is held long enough */
-      if (HAL_PUSH_BUTTON1())
+      if (HAL_PUSH_BUTTON())
       {
         buttonHeld++;
       }
@@ -270,7 +274,7 @@ void halAssertHazardLights(void)
     halAssertTurnOffAllLEDs();
     
     /* wait for button release */
-    HAL_DEBOUNCE(!HAL_PUSH_BUTTON1());
+    HAL_DEBOUNCE(!HAL_PUSH_BUTTON());
 
     /*-------------------------------------------------------------------------------
      *  Load debug data into memory.
@@ -316,7 +320,7 @@ void halAssertHazardLights(void)
       while (iByte < DEBUG_DATA_SIZE)
       {
         /* wait for key press */
-        while(!HAL_PUSH_BUTTON1());
+        while(!HAL_PUSH_BUTTON());
 
         /* turn on all LEDs for first bit of byte, turn on three LEDs if not first bit */
         halAssertTurnOnAllLEDs();
@@ -331,7 +335,7 @@ void halAssertHazardLights(void)
         }
 
         /* wait for debounced key release */
-        HAL_DEBOUNCE(!HAL_PUSH_BUTTON1());
+        HAL_DEBOUNCE(!HAL_PUSH_BUTTON());
 
         /* turn off all LEDs */
         halAssertTurnOffAllLEDs();

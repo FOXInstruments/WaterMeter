@@ -59,15 +59,18 @@ extern "C"
  */
 
 /* LEDS - The LED number is the same as the bit position */
-#define HAL_LED_1     0x01
-#define HAL_LED_2     0x02
-#define HAL_LED_3     0x04
-#define HAL_LED_4     0x08
-#define HAL_LED_5     (0x01 << 4)
-#define HAL_LED_6     (0x01 << 5)
-#define HAL_LED_7     (0x01 << 6)
-#define HAL_LED_8     (0x01 << 7)
-#define HAL_LED_ALL   (HAL_LED_1 | HAL_LED_2 | HAL_LED_3 | HAL_LED_4)
+#define HAL_LED_0     0x01
+#define HAL_LED_1     0x02
+#define HAL_LED_2     0x04
+#define HAL_LED_3     0x08
+#define HAL_LED_4     (0x01 << 4)
+#define HAL_LED_5     (0x01 << 5)
+#define HAL_LED_6     (0x01 << 6)
+#define HAL_LED_7     (0x01 << 7)
+#define HAL_LED_ALL   ((HAL_LED_0*HAL_LED0_ENABLE) | (HAL_LED_1*HAL_LED1_ENABLE) | /
+                       (HAL_LED_2*HAL_LED2_ENABLE) | (HAL_LED_3*HAL_LED3_ENABLE) | /
+                       (HAL_LED_4*HAL_LED4_ENABLE) | (HAL_LED_5*HAL_LED5_ENABLE) | /
+                       (HAL_LED_6*HAL_LED6_ENABLE) | (HAL_LED_7*HAL_LED7_ENABLE))
 
 /* Modes */
 #define HAL_LED_MODE_OFF     0x00
@@ -77,7 +80,7 @@ extern "C"
 #define HAL_LED_MODE_TOGGLE  0x08
 
 /* Defaults */
-#define HAL_LED_DEFAULT_MAX_LEDS      4
+#define HAL_LED_DEFAULT_MAX_LEDS      HAL_NUM_LEDS
 #define HAL_LED_DEFAULT_DUTY_CYCLE    5
 #define HAL_LED_DEFAULT_FLASH_COUNT   50
 #define HAL_LED_DEFAULT_FLASH_TIME    1000
