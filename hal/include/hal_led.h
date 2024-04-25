@@ -67,10 +67,11 @@ extern "C"
 #define HAL_LED_5     (0x01 << 5)
 #define HAL_LED_6     (0x01 << 6)
 #define HAL_LED_7     (0x01 << 7)
-#define HAL_LED_ALL   ((HAL_LED_0*HAL_LED0_ENABLE) | (HAL_LED_1*HAL_LED1_ENABLE) | /
-                       (HAL_LED_2*HAL_LED2_ENABLE) | (HAL_LED_3*HAL_LED3_ENABLE) | /
-                       (HAL_LED_4*HAL_LED4_ENABLE) | (HAL_LED_5*HAL_LED5_ENABLE) | /
+#define HAL_LED_ALL   ((HAL_LED_0*HAL_LED0_ENABLE) | (HAL_LED_1*HAL_LED1_ENABLE) | \
+                       (HAL_LED_2*HAL_LED2_ENABLE) | (HAL_LED_3*HAL_LED3_ENABLE) | \
+                       (HAL_LED_4*HAL_LED4_ENABLE) | (HAL_LED_5*HAL_LED5_ENABLE) | \
                        (HAL_LED_6*HAL_LED6_ENABLE) | (HAL_LED_7*HAL_LED7_ENABLE))
+//#pragma message(STRING(HAL_LED_ALL))
 
 /* Modes */
 #define HAL_LED_MODE_OFF     0x00

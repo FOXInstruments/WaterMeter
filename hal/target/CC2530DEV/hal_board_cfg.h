@@ -100,9 +100,6 @@
  *                                       LED Configuration
  * ------------------------------------------------------------------------------------------------
  */
-#define HAL_LED3_ENABLE
-#define HAL_LED7_ENABLE
-   
 #if defined (HAL_BOARD_CC2530DEV) && !defined (HAL_PA_LNA) && \
     !defined (HAL_PA_LNA_CC2590) && !defined (HAL_PA_LNA_SE2431L) && \
     !defined (HAL_PA_LNA_CC2592)
@@ -207,8 +204,8 @@
 #define STRING2(x) #x
 #define STRING(x) STRING2(x)
 #pragma message(STRING(HAL_NUM_LEDS))
-#pragma message(STRING(HAL_FIRST_LED))
-#pragma message(STRING(HAL_LAST_LED))
+//#pragma message(STRING(HAL_FIRST_LED))
+//#pragma message(STRING(HAL_LAST_LED))
 
   #if (HAL_NUM_LEDS == 0)
     #warning All LEDs are DISABLED
@@ -490,9 +487,6 @@ extern void MAC_RfFrontendSetup(void);
   if (HAL_LED6_ENABLE == 1) LED6_DIR |= LED6_BV;                \
   if (HAL_LED7_ENABLE == 1) HAL_TURN_OFF_LED7();                \
   if (HAL_LED7_ENABLE == 1) LED7_DIR |= LED7_BV;                \
-                                                                 \
-  /* configure tristates */                                      \
-  P0INP |= PUSH2_BV;                                             \
 }
 #endif
 
