@@ -3848,6 +3848,7 @@
                     <state>HAL_PUSH1_ENABLE</state>
                     <state>LED_POLARITY=ACTIVE_LOW</state>
                     <state>PUSH_POLARITY=ACTIVE_LOW</state>
+                    <state>ISR_KEYINTERRUPT</state>
                     <state>ZCL_READ</state>
                     <state>ZCL_DISCOVER</state>
                     <state>ZCL_WRITE</state>
