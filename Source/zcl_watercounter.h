@@ -55,20 +55,23 @@ extern "C"
 /*********************************************************************
  * CONSTANTS
  */
-#define WC_ENDPOINT               8
+#define WC_ENDPOINT     8
+#define WC_DEBOUNCE     50
 
 // Events for the sample app
 #define SAMPLEAPP_END_DEVICE_REJOIN_EVT   0x0001
 
-// UI Events
-#define SAMPLEAPP_LCD_AUTO_UPDATE_EVT       0x0010  
-#define SAMPLEAPP_KEY_AUTO_REPEAT_EVT       0x0020  
+// Events
+#define SAMPLEAPP_IMPULSE1_EVT            0x0010  
+#define SAMPLEAPP_IMPULSE2_EVT            0x0020  
 
 #define SAMPLEAPP_END_DEVICE_REJOIN_DELAY 10000
 
 /*********************************************************************
  * MACROS
  */
+#define POLARITY_IMPULSE        ACTIVE_LOW
+
 /*********************************************************************
  * TYPEDEFS
  */

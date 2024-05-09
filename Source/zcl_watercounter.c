@@ -281,20 +281,22 @@ void zclWC_Init(byte task_id)
 
   zdpExternalStateTaskID = zclWC_TaskID;
 
-  // Configure pins P0_2, P0_3 as inputs to count flows
-  P0SEL &= ~BV(2);         // Set Pin0_2 as GPIO
-  P0SEL &= ~BV(3);         // Set Pin0_3 as GPIO
-  P0DIR &= ~BV(2);         // Select direction (input) Pin0_2
-  P0DIR &= ~BV(3);         // Pin0_3
-  P0INP &= ~BV(2);         // Set Input mode to Pullup or pulldown
-  P0INP &= ~BV(3);         // Set Input mode to Pullup or pulldown
-  P2INP &= ~BV(5);         // Set Input mode to Pullup for Port 0 
+  // Configure pins P1_0, P1_0 as inputs to count flows
+  P1SEL &= ~BV(0);         // Set Pin as GPIO
+  P1SEL &= ~BV(1);
+  P1DIR &= ~BV(0);         // Select direction (input)
+  P1DIR &= ~BV(1);
+  P1INP &= ~BV(0);         // Set Input mode to Pullup or pulldown
+  P1INP &= ~BV(1);
+  P2INP &= ~BV(6);         // Set Input mode to Pullup for Port1 
+  
   // Configure pin interrupts
-  PICTL |= BV(0);          // Set Falling edge gives interrupt for Port0 pins 0-7
-  P0IEN |= BV(2);          // Eneble interrupt for pin P0_2  
-  P0IEN |= BV(3);          // Eneble interrupt for pin P0_3  
-  // P0_1 control key
-  // P0_4 LED indicator
+  PICTL |= BV(1);          // Set Falling edge gives interrupt for Port1 pins 0-3
+  P1IEN |= BV(0);          // Eneble interrupt for pin P1_0  
+  P1IEN |= BV(1);          // Eneble interrupt for pin P1_1   
+  P1IFG &= ~BV(0);         // Clear interrupt status flag
+  P1IFG &= ~BV(1);
+  IEN2 |= BV(4);           // Enable interrupt Port1
 }
 
 /*********************************************************************
@@ -364,14 +366,24 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
   }
 #endif
 
-  if (events & SAMPLEAPP_LCD_AUTO_UPDATE_EVT)
-  { // UI_UpdateLcd();
-    return (events ^ SAMPLEAPP_LCD_AUTO_UPDATE_EVT);
+  if (events & SAMPLEAPP_IMPULSE1_EVT)
+  {
+    if (POLARITY_IMPULSE(P1_0))
+    {
+      zclWC_Flow1Value++;
+      HalLedBlink(HAL_LED_4, 1, 100, 100);
+    }
+    return (events ^ SAMPLEAPP_IMPULSE1_EVT);
   }
 
-  if (events & SAMPLEAPP_KEY_AUTO_REPEAT_EVT)
-  { // UI_MainStateMachine(UI_KEY_AUTO_PRESSED);
-    return (events ^ SAMPLEAPP_KEY_AUTO_REPEAT_EVT);
+  if (events & SAMPLEAPP_IMPULSE2_EVT)
+  {
+    if (POLARITY_IMPULSE(P1_1))
+    {
+      zclWC_Flow2Value++;
+      HalLedBlink(HAL_LED_4, 1, 100, 100);
+    }    
+    return (events ^ SAMPLEAPP_IMPULSE2_EVT);
   }
   // Discard unknown events
   return 0;
@@ -384,16 +396,18 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
  *
  * @param   shift - true if in shift/alt.
  * @param   keys - bit field for key events. Valid entries:
- *                 HAL_KEY_SW_5
- *                 HAL_KEY_SW_4
+ *                 HAL_KEY_SW_3
  *                 HAL_KEY_SW_2
  *                 HAL_KEY_SW_1
+ *                 HAL_KEY_SW_0
  *
  * @return  none
  */
 static void zclWC_HandleKeys(byte shift, byte keys)
 {
   // UI_MainStateMachine(keys);
+  HalLedBlink(HAL_LED_4, 1, 100, 500);
+  bdb_resetLocalAction();
 }
 
 /*********************************************************************
@@ -779,6 +793,31 @@ static void zclWC_ProcessOTAMsgs(zclOTA_CallbackMsg_t* pMsg)
 }
 #endif // defined (OTA_CLIENT) && (OTA_CLIENT == TRUE)
 
+/*********************************************************************
+ * @fn      halPort1Isr
+ *
+ * @brief   Port1 Isr
+ *
+ * @param   none
+ *
+ * @return  none
+ */
+HAL_ISR_FUNCTION(halPort1Isr, P1INT_VECTOR)
+{
+  HAL_ENTER_ISR();
+  
+  if (P1IFG & BV(0))
+  {
+    osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_IMPULSE1_EVT, WC_DEBOUNCE);
+  }
+  if (P1IFG & BV(1))
+  {
+    osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_IMPULSE2_EVT, WC_DEBOUNCE);
+  }
+  P1IF = 0;
+  
+  HAL_EXIT_ISR();
+}
 /****************************************************************************
 ****************************************************************************/
 
