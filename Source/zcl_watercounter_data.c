@@ -134,6 +134,10 @@ uint16 zclWC_Flow2Multiplyer;
 uint16 zclWC_Flow2Unit;
 uint8 zclWC_Flow2Status;
 
+float zclWC_BatteryVoltage;
+float zclWC_BatteryThresMin;
+float zclWC_BatteryThres;
+uint8 zclWC_BatteryAlarm;
 uint32 zclWC_FlowReportInterval; // Time interval in minutes
 
 uint8 zclWC_LocationDescription[16];
@@ -235,8 +239,26 @@ CONST zclAttrRec_t zclWC_Attrs[] =
       ZCL_DATATYPE_UINT16, ACCESS_CONTROL_READ,
       (void *)&zclWC_clusterRevision_all
     }
-  },  
-
+  },
+  
+  // *** Battery status cluster
+  {
+    ZCL_CLUSTER_ID_GEN_POWER_CFG,
+    {  // Attribute record
+      ATTRID_POWER_CFG_BATTERY_VOLTAGE,
+      ZCL_DATATYPE_SINGLE_PREC, ACCESS_CONTROL_READ,
+      (void *)&zclWC_BatteryVoltage
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_GEN_POWER_CFG,
+    {  // Attribute record
+      ATTRID_CLUSTER_REVISION,
+      ZCL_DATATYPE_UINT16, ACCESS_CONTROL_READ,
+      (void *)&zclWC_clusterRevision_all
+    }
+  },
+  
   // *** Identify Cluster Attribute ***
   {
     ZCL_CLUSTER_ID_GEN_IDENTIFY,
@@ -251,6 +273,15 @@ CONST zclAttrRec_t zclWC_Attrs[] =
     {  // Attribute record
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_GLOBAL),
+      (void *)&zclWC_clusterRevision_all
+    }
+  },
+  // *** Groups Cluster *** //
+  {
+    ZCL_CLUSTER_ID_GEN_GROUPS,
+    {  
+      ATTRID_CLUSTER_REVISION,
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
       (void *)&zclWC_clusterRevision_all
     }
   },
@@ -287,7 +318,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
       (void *)&zclWC_Flow1Unit
     }
   },
-{
+  {
     ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
     { 
       ATTRID_IOV_BASIC_STATUS_FLAG,
@@ -345,15 +376,6 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
-    {  
-      ATTRID_CLUSTER_REVISION,
-      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
-      (void *)&zclWC_clusterRevision_all
-    }
-  },
-  // *** Groups Cluster *** //
-  {
-    ZCL_CLUSTER_ID_GEN_GROUPS,
     {  
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
@@ -429,7 +451,7 @@ void zclWC_NVInitItems(void)
   result |= osal_nv_item_init(WC_NV_ITEM_VALUE1, sizeof(zclWC_Flow1Value), NULL); 
   result |= osal_nv_item_init(WC_NV_ITEM_VALUE2, sizeof(zclWC_Flow2Value), NULL);
   
-  if (result == SUCCESS) {
+  if (result == SUCCESS) { // SUCCESS only if all init calls were SUCCESS
     zclWC_NVItemsInitStatus = SUCCESS;
   } else {
     zclWC_NVItemsInitStatus = FAILURE;

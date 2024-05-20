@@ -68,6 +68,7 @@
  */
 #include "ZComDef.h"
 #include "OSAL.h"
+#include "OSAL_Clock.h"
 #include "AF.h"
 #include "ZDApp.h"
 #include "ZDObject.h"
@@ -86,6 +87,7 @@
 //#include "hal_lcd.h"
 #include "hal_led.h"
 #include "hal_key.h"
+#include "hal_adc.h"
 
 #if defined (OTA_CLIENT) && (OTA_CLIENT == TRUE)
 #include "zcl_ota.h"
@@ -123,6 +125,7 @@ uint8 zclWaterCounterSeqNum;
  * LOCAL VARIABLES
  */
 afAddrType_t zclWC_DstAddr;
+uint8 zclWC_LongPushCounter;
 
 // Endpoint to allow SYS_APP_MSGs
 static endPointDesc_t waterCounter_TestEp =
@@ -142,7 +145,6 @@ devStates_t zclWC_NwkState = DEV_INIT;
 #define DEVICE_POLL_RATE                 8000   // Poll rate for end device
 #endif
 
-#define WATERCOUNTER_TOGGLE_TEST_EVT   0x1000
 /*********************************************************************
  * LOCAL FUNCTIONS
  */
@@ -297,6 +299,8 @@ void zclWC_Init(byte task_id)
   P1IFG &= ~BV(0);         // Clear interrupt status flag
   P1IFG &= ~BV(1);
   IEN2 |= BV(4);           // Enable interrupt Port1
+  
+  osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_EVERYHOUR_EVT, 5000);
 }
 
 /*********************************************************************
@@ -313,14 +317,13 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
   afIncomingMSGPacket_t *MSGpkt;
   (void)task_id;  // Intentionally unreferenced parameter
 
-  //Send toggle every 500ms
-  if(events & WATERCOUNTER_TOGGLE_TEST_EVT)
+  if(events & SAMPLEAPP_EVERYHOUR_EVT) // Every hour event. To check month change
   {
-    osal_start_timerEx(zclWC_TaskID, WATERCOUNTER_TOGGLE_TEST_EVT, 500);
-    // zclGeneral_SendOnOff_CmdToggle(WATERCOUNTER_ENDPOINT, &zclWC_DstAddr, FALSE, 0);
-    
-    // return unprocessed events
-    return (events ^ WATERCOUNTER_TOGGLE_TEST_EVT);
+    UTCTime time = osal_getClock();
+    uint8 battvolt = HalAdcCheckVddRaw();
+    zclWC_BatteryVoltage = battvolt / 127 * 1.15 * 3;
+    osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_EVERYHOUR_EVT, 1L*60L*1000L);
+    return (events ^ SAMPLEAPP_EVERYHOUR_EVT); // return unprocessed events
   }
   
   if (events & SYS_EVENT_MSG)
@@ -329,8 +332,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
     {
       switch (MSGpkt->hdr.event)
       {
-        case ZCL_INCOMING_MSG:
-          // Incoming ZCL Foundation command/response messages
+        case ZCL_INCOMING_MSG: // Incoming ZCL Foundation command/response messages
           zclWC_ProcessIncomingMsg((zclIncomingMsg_t *)MSGpkt);
           break;
 
@@ -351,11 +353,9 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
         default:
           break;
       }
-      // Release the memory
-      osal_msg_deallocate((uint8 *)MSGpkt);
+      osal_msg_deallocate((uint8 *)MSGpkt); // Release the memory
     }
-    // return unprocessed events
-    return (events ^ SYS_EVENT_MSG);
+    return (events ^ SYS_EVENT_MSG); // return unprocessed events
   }
 
 #if ZG_BUILD_ENDDEVICE_TYPE    
@@ -366,7 +366,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
   }
 #endif
 
-  if (events & SAMPLEAPP_IMPULSE1_EVT)
+  if (events & SAMPLEAPP_IMPULSE1_EVT) // Event from ISR function to recive impulse from counter
   {
     if (POLARITY_IMPULSE(P1_0))
     {
@@ -384,6 +384,25 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
       HalLedBlink(HAL_LED_4, 1, 100, 100);
     }    
     return (events ^ SAMPLEAPP_IMPULSE2_EVT);
+  }
+  
+  if (events & SAMPLEAPP_LONGPUSH_EVT)
+  {
+    if (HAL_PUSH_BUTTON()) // Button is still pressed between 100ms interval
+    {
+      zclWC_LongPushCounter++;
+      if (zclWC_LongPushCounter > 50) // Key is pressed more than 5 sec, preform LocalReset and recomission
+      {
+        HalLedBlink(HAL_LED_4, 255, 50, 200);
+        bdb_resetLocalAction();
+      }
+      else
+      {
+        HalLedBlink(HAL_LED_4, 1, 100, WC_LONGPUSH_INTERVAL);
+        osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_LONGPUSH_EVT, WC_LONGPUSH_INTERVAL);
+      }
+    }
+    return (events ^ SAMPLEAPP_LONGPUSH_EVT);
   }
   // Discard unknown events
   return 0;
@@ -405,9 +424,12 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
  */
 static void zclWC_HandleKeys(byte shift, byte keys)
 {
-  // UI_MainStateMachine(keys);
-  HalLedBlink(HAL_LED_4, 1, 100, 500);
-  bdb_resetLocalAction();
+  HalLedBlink(HAL_LED_4, 1, 100, WC_LONGPUSH_INTERVAL);
+  if (HAL_PUSH_BUTTON()) // Button is still pressed, try to determine long press 
+  {
+    osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_LONGPUSH_EVT, WC_LONGPUSH_INTERVAL);
+    zclWC_LongPushCounter = 0;
+  }
 }
 
 /*********************************************************************
@@ -515,6 +537,7 @@ void zclSampleApp_BatteryWarningCB(uint8 voltLevel)
   if (voltLevel == VOLT_LEVEL_CAUTIOUS)
   {
     // Send warning message to the gateway and blink LED
+    
   }
   else if (voltLevel == VOLT_LEVEL_BAD)
   {

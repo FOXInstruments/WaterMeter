@@ -55,17 +55,27 @@ extern "C"
 /*********************************************************************
  * CONSTANTS
  */
-#define WC_ENDPOINT     8
-#define WC_DEBOUNCE     50
+#define WC_ENDPOINT              8
+#define WC_DEBOUNCE              50
+#define WC_LONGPUSH_INTERVAL     100
 
 // Events for the sample app
-#define SAMPLEAPP_END_DEVICE_REJOIN_EVT   0x0001
+#define SAMPLEAPP_END_DEVICE_REJOIN_EVT   0x00E0
 
 // Events
-#define SAMPLEAPP_IMPULSE1_EVT            0x0010  
-#define SAMPLEAPP_IMPULSE2_EVT            0x0020  
+#define SAMPLEAPP_IMPULSE1_EVT            0x00E1  
+#define SAMPLEAPP_IMPULSE2_EVT            0x00E2  
+#define SAMPLEAPP_EVERYHOUR_EVT           0x00E3
+#define SAMPLEAPP_LONGPUSH_EVT            0x00E4
 
 #define SAMPLEAPP_END_DEVICE_REJOIN_DELAY 10000
+
+// Vdd/3 / Internal Reference X ENOB --> (Vdd / 3) / 1.15 X 127
+#define VDD3_2_0  74   // 2.0 V required to safely read/write internal flash.
+#define VDD3_2_7  100  // 2.7 V required for the Numonyx device.
+#define VDD3_MIN_RUN  (VDD_2_0+4)  // VDD_MIN_RUN = VDD_MIN_NV
+#define VDD3_MIN_NV   (VDD_2_0+4)  // 5% margin over minimum to survive a page erase and compaction.
+#define VDD3_MIN_GOOD (VDD_2_0+8)  // 10% margin over minimum to survive a page erase and compaction.
 
 /*********************************************************************
  * MACROS
