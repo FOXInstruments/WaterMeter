@@ -71,12 +71,13 @@ extern "C"
 #define SAMPLEAPP_END_DEVICE_REJOIN_DELAY 10000
 
 // Vdd/3 / Internal Reference X ENOB --> (Vdd / 3) / 1.15 X 127
-#define VDD3_2_0  74   // 2.0 V required to safely read/write internal flash.
-#define VDD3_2_7  100  // 2.7 V required for the Numonyx device.
-#define VDD3_MIN_RUN  (VDD_2_0+4)  // VDD_MIN_RUN = VDD_MIN_NV
-#define VDD3_MIN_NV   (VDD_2_0+4)  // 5% margin over minimum to survive a page erase and compaction.
-#define VDD3_MIN_GOOD (VDD_2_0+8)  // 10% margin over minimum to survive a page erase and compaction.
-
+#define VDD3_2_0                74   // 2.0 V required to safely read/write internal flash.
+#define VDD3_THRES_MIN          92   // 2.5 V minimum LeFePO4 voltage
+#define VDD3_MIN_RUN            (VDD_2_0+4)  // VDD_MIN_RUN = VDD_MIN_NV
+#define VDD3_MIN_NV             (VDD_2_0+4)  // 5% margin over minimum to survive a page erase and compaction.
+#define VDD3_MIN_GOOD           (VDD_2_0+8)  // 10% margin over minimum to survive a page erase and compaction.
+#define VDD_NORMAL_VOLTAGE      3.6
+#define VDD3VOLTAGE(v)          (v / 127.0 * 1.15 * 3)   // Convert ADC value to Voltage
 /*********************************************************************
  * MACROS
  */
@@ -104,6 +105,11 @@ extern uint32   zclWC_Flow2Value;
 extern uint16   zclWC_Flow2Multiplyer;
 extern uint16   zclWC_Flow2Unit;
 extern uint8    zclWC_Flow2Status;
+
+extern float zclWC_BatteryVoltage;
+extern float zclWC_BatteryVoltageThresMin;    // 2.5V LiFePO4 T>0 degC
+extern uint8 zclWC_BatteryAlarmMask;
+extern uint8 zclWC_BatteryAlarmState;
 
 extern uint32   zclWC_FlowReportInterval;
 

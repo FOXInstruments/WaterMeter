@@ -300,7 +300,7 @@ void zclWC_Init(byte task_id)
   P1IFG &= ~BV(1);
   IEN2 |= BV(4);           // Enable interrupt Port1
   
-  osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_EVERYHOUR_EVT, 5000);
+  osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_EVERYHOUR_EVT, 10000);
 }
 
 /*********************************************************************
@@ -320,8 +320,20 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
   if(events & SAMPLEAPP_EVERYHOUR_EVT) // Every hour event. To check month change
   {
     UTCTime time = osal_getClock();
+    // Battery voltage check
     uint8 battvolt = HalAdcCheckVddRaw();
-    zclWC_BatteryVoltage = battvolt / 127 * 1.15 * 3;
+    zclWC_BatteryVoltage = VDD3VOLTAGE(battvolt);
+    if (battvolt <= VDD3_THRES_MIN)
+    {
+      //zclWC_BatteryAlarmMask |= BAT_ALARM_MASK_VOLT_2_LOW;
+      zclWC_BatteryAlarmMask |= BAT_ALARM_MASK_BATTERY_ALARM_1;
+      zclWC_BatteryAlarmState = ALARM_CODE_BAT_VOLT_MIN_THRES_BAT_SRC_1;
+    }
+    else
+    {
+      zclWC_BatteryAlarmMask = 0;
+      zclWC_BatteryAlarmState = 0;
+    }
     osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_EVERYHOUR_EVT, 1L*60L*1000L);
     return (events ^ SAMPLEAPP_EVERYHOUR_EVT); // return unprocessed events
   }
@@ -537,7 +549,8 @@ void zclSampleApp_BatteryWarningCB(uint8 voltLevel)
   if (voltLevel == VOLT_LEVEL_CAUTIOUS)
   {
     // Send warning message to the gateway and blink LED
-    
+    zclWC_BatteryAlarmMask |= BAT_ALARM_MASK_VOLT_2_LOW | BAT_ALARM_MASK_BATTERY_ALARM_1;
+    zclWC_BatteryAlarmState = ALARM_CODE_BAT_VOLT_MIN_THRES_BAT_SRC_1;    
   }
   else if (voltLevel == VOLT_LEVEL_BAD)
   {
@@ -640,6 +653,7 @@ static uint8 zclWC_ProcessInReadRspCmd(zclIncomingMsg_t *pInMsg)
   uint8 i;
 
   readRspCmd = (zclReadRspCmd_t *)pInMsg->attrCmd;
+  
   for (i = 0; i < readRspCmd->numAttr; i++)
   {
     // Notify the originator of the results of the original read attributes

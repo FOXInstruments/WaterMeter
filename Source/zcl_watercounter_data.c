@@ -135,9 +135,10 @@ uint16 zclWC_Flow2Unit;
 uint8 zclWC_Flow2Status;
 
 float zclWC_BatteryVoltage;
-float zclWC_BatteryThresMin;
-float zclWC_BatteryThres;
-uint8 zclWC_BatteryAlarm;
+float zclWC_BatteryVoltageThresMin;    // 2.5V LiFePO4 T>0 degC
+uint8 zclWC_BatteryAlarmMask;
+uint8 zclWC_BatteryAlarmState;
+
 uint32 zclWC_FlowReportInterval; // Time interval in minutes
 
 uint8 zclWC_LocationDescription[16];
@@ -241,7 +242,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
     }
   },
   
-  // *** Battery status cluster
+  // ***** Battery status cluster *****
   {
     ZCL_CLUSTER_ID_GEN_POWER_CFG,
     {  // Attribute record
@@ -253,13 +254,37 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   {
     ZCL_CLUSTER_ID_GEN_POWER_CFG,
     {  // Attribute record
+      ATTRID_POWER_CFG_BAT_VOLT_MIN_THRES,
+      ZCL_DATATYPE_SINGLE_PREC, ACCESS_CONTROL_READ,
+      (void *)&zclWC_BatteryVoltageThresMin
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_GEN_POWER_CFG,
+    {  // Attribute record
+      ATTRID_POWER_CFG_BAT_ALARM_MASK,
+      ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ,
+      (void *)&zclWC_BatteryAlarmMask
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_GEN_POWER_CFG,
+    {  // Attribute record
+      ATTRID_POWER_CFG_BAT_ALARM_STATE,
+      ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ,
+      (void *)&zclWC_BatteryAlarmState
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_GEN_POWER_CFG,
+    {  // Attribute record
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, ACCESS_CONTROL_READ,
       (void *)&zclWC_clusterRevision_all
     }
   },
   
-  // *** Identify Cluster Attribute ***
+  // ********* Identify Cluster Attribute *********
   {
     ZCL_CLUSTER_ID_GEN_IDENTIFY,
     { // Attribute record
@@ -276,7 +301,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
       (void *)&zclWC_clusterRevision_all
     }
   },
-  // *** Groups Cluster *** //
+  // ********* Groups Cluster ********* //
   {
     ZCL_CLUSTER_ID_GEN_GROUPS,
     {  
@@ -326,7 +351,8 @@ CONST zclAttrRec_t zclWC_Attrs[] =
       (void *)&zclWC_Flow1Status
     }
   },
-  { // ********* Flow2 *********
+  // ********* Flow2 *********
+  {
     ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
     { 
       ATTRID_IOV_BASIC_DESCRIPTION,
@@ -402,6 +428,7 @@ const cId_t zclWC_InClusterList[] =
 
 const cId_t zclWC_OutClusterList[] =
 {
+  ZCL_CLUSTER_ID_GEN_POWER_CFG,
   ZCL_CLUSTER_ID_GEN_IDENTIFY,
   ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
   ZCL_CLUSTER_ID_GEN_GROUPS,
@@ -557,6 +584,11 @@ void zclWC_ResetAttributesToDefaultValues(void)
   
   zclWC_Flow1Status = 0;
   zclWC_Flow2Status = 0;
+  
+  zclWC_BatteryVoltage = VDD_NORMAL_VOLTAGE;
+  zclWC_BatteryVoltageThresMin = VDD3VOLTAGE(VDD3_THRES_MIN);
+  zclWC_BatteryAlarmMask = 0;
+  zclWC_BatteryAlarmState = 0;
 }
 
 /****************************************************************************

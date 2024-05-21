@@ -3855,9 +3855,10 @@
                     <state>ZCL_BASIC</state>
                     <state>ZCL_IDENTIFY</state>
                     <state>xZCL_ON_OFF</state>
+                    <state>ZCL_GROUPS</state>
+                    <state>ZCL_REPORT</state>
                     <state>OTA_CLIENT=TRUE</state>
                     <state>OTA_HA</state>
-                    <state>ZCL_GROUPS</state>
                 </option>
                 <option>
                     <name>CCPreprocFile</name>

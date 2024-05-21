@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project>
     <fileVersion>4</fileVersion>
-    <fileChecksum>2815599217</fileChecksum>
+    <fileChecksum>1850962511</fileChecksum>
     <configuration>
         <name>CoordinatorEB</name>
         <outputs>
@@ -1448,13 +1448,16 @@
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\hal_sleep.xcl</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\zcl_diagnostic.xcl</file>
             <file>C:\Zigbee\Z-Stack 3.0.2\Components\services\sdata\sdata.h</file>
+            <file>C:\Zigbee\Z-Stack 3.0.2\Components\stack\zcl\zcl_meter_identification.h</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\zcl_ha.xcl</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\OSAL_Memory.xcl</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\hal_timer.xcl</file>
+            <file>C:\Zigbee\Z-Stack 3.0.2\Components\stack\zcl\zcl_appliance_events_alerts.h</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\BindingTable.xcl</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\OnBoard.xcl</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\mac_rffrontend.xcl</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\ZDConfig.r51</file>
+            <file>C:\Zigbee\Z-Stack 3.0.2\Components\stack\zcl\zcl_electrical_measurement.h</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\ZMain.r51</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\zcl_green_power.xcl</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\MT_NWK.xcl</file>
@@ -1493,6 +1496,7 @@
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\chipcon_cstartup.r51</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\hal_startup.r51</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\mac_pib.r51</file>
+            <file>C:\Zigbee\Z-Stack 3.0.2\Components\stack\zcl\zcl_poll_control.h</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\hal_timer.r51</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\OSAL_Math.r51</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\MT_UTIL.r51</file>
@@ -1502,6 +1506,7 @@
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\hal_key.r51</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Exe\WaterCounter.d51</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\mac_autopend.r51</file>
+            <file>$PROJ_DIR$\EndDeviceEB - OTAClient\List\zcl_watercounter_data.s51</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\hal_flash.r51</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\gp_common.r51</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\nwk_globals.r51</file>
@@ -1521,11 +1526,13 @@
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\MT_DEBUG.xcl</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\ZDObject.xcl</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\zcl_watercounter.r51</file>
+            <file>$PROJ_DIR$\EndDeviceEB - OTAClient\List\zcl_watercounter_data.lst</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\zcl.xcl</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\bdb.r51</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\mac_rx.xcl</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\mac_autopend.xcl</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\OnBoard.r51</file>
+            <file>C:\Zigbee\Z-Stack 3.0.2\Components\stack\zcl\zcl_appliance_identification.h</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\hal_assert.xcl</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\mac_backoff_timer.r51</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\mac_csp_tx.xcl</file>
@@ -1538,6 +1545,7 @@
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\MT_AF.r51</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\OSAL_WaterCounter.r51</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\MT_SAPI.r51</file>
+            <file>C:\Zigbee\Z-Stack 3.0.2\Components\stack\zcl\zcl_hvac.h</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\hal_lcd.r51</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\hal_adc.r51</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\mac_mem.r51</file>
@@ -1558,6 +1566,7 @@
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\hal_dma.r51</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\mac_rx_onoff.r51</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\hal_ota.r51</file>
+            <file>C:\Zigbee\Z-Stack 3.0.2\Components\stack\zcl\zcl_power_profile.h</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\mac_tx.xcl</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\gp_proxyTbl.r51</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\mac_radio_defs.r51</file>
@@ -1588,6 +1597,8 @@
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\MT_VERSION.r51</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\hal_assert.r51</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\MT_DEBUG.r51</file>
+            <file>C:\Zigbee\Z-Stack 3.0.2\Components\stack\zcl\zcl_appliance_control.h</file>
+            <file>C:\Zigbee\Z-Stack 3.0.2\Components\stack\zcl\zcl_appliance_statistics.h</file>
             <file>$TOOLKIT_DIR$\inc\clib\sysmac.h</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\MT_ZDO.r51</file>
             <file>$PROJ_DIR$\EndDeviceEB - OTAClient\Obj\OSAL.xcl</file>
@@ -1780,7 +1791,7 @@
             <outputs>
                 <tool>
                     <name>XLINK</name>
-                    <file> 112</file>
+                    <file> 116</file>
                 </tool>
             </outputs>
         </file>
@@ -1789,11 +1800,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 148</file>
+                    <file> 155</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 123</file>
+                    <file> 128</file>
                 </tool>
             </outputs>
         </file>
@@ -1802,11 +1813,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 196</file>
+                    <file> 205</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 129</file>
+                    <file> 134</file>
                 </tool>
             </outputs>
         </file>
@@ -1815,17 +1826,17 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 195</file>
+                    <file> 171 204 137</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 166</file>
+                    <file> 174</file>
                 </tool>
             </outputs>
             <inputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 367 385 355 320 294 240 16 368 317 192 200 304 310 300 321 347 381 382 255 59 327 325 337 384 336 341 342 307 372 334 328 369 359 362 338 292 305 301 344 311 299 4 296 354 244 219 38 28 18 37 42 30 366 124 242 5 7</file>
+                    <file> 378 396 366 331 305 251 16 379 328 201 211 315 321 311 332 358 392 393 266 59 338 336 348 395 347 352 353 318 383 345 339 380 370 373 349 303 316 312 355 322 310 4 307 365 255 230 38 28 18 37 42 30 25 377 129 253 5 7</file>
                 </tool>
             </inputs>
         </file>
@@ -1834,24 +1845,30 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 160</file>
+                    <file> 118 138 168</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 79</file>
+                    <file> 82</file>
                 </tool>
             </outputs>
+            <inputs>
+                <tool>
+                    <name>ICC8051</name>
+                    <file> 378 396 366 331 305 251 16 379 328 201 211 315 321 332 358 392 393 266 59 338 336 348 395 347 352 353 318 370 303 316 312 355 322 310 108 69 307 60 144 64 178 209 210 157 4</file>
+                </tool>
+            </inputs>
         </file>
         <file>
             <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\bdb\bdb_FindingAndBinding.c</name>
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 142</file>
+                    <file> 149</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 190</file>
+                    <file> 199</file>
                 </tool>
             </outputs>
         </file>
@@ -1864,7 +1881,7 @@
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 122</file>
+                    <file> 127</file>
                 </tool>
             </outputs>
         </file>
@@ -1873,11 +1890,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 134</file>
+                    <file> 140</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 178</file>
+                    <file> 187</file>
                 </tool>
             </outputs>
         </file>
@@ -1886,11 +1903,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 75</file>
+                    <file> 78</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 118</file>
+                    <file> 123</file>
                 </tool>
             </outputs>
         </file>
@@ -1899,11 +1916,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 81</file>
+                    <file> 84</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 182</file>
+                    <file> 191</file>
                 </tool>
             </outputs>
         </file>
@@ -1912,11 +1929,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 167</file>
+                    <file> 175</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 174</file>
+                    <file> 183</file>
                 </tool>
             </outputs>
         </file>
@@ -1925,11 +1942,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 111</file>
+                    <file> 115</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 98</file>
+                    <file> 101</file>
                 </tool>
             </outputs>
         </file>
@@ -1938,11 +1955,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 91</file>
+                    <file> 94</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 86</file>
+                    <file> 89</file>
                 </tool>
             </outputs>
         </file>
@@ -1951,11 +1968,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 150</file>
+                    <file> 158</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 96</file>
+                    <file> 99</file>
                 </tool>
             </outputs>
         </file>
@@ -1964,11 +1981,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 115</file>
+                    <file> 120</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 94</file>
+                    <file> 97</file>
                 </tool>
             </outputs>
         </file>
@@ -1977,11 +1994,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 171</file>
+                    <file> 180</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 88</file>
+                    <file> 91</file>
                 </tool>
             </outputs>
         </file>
@@ -1990,11 +2007,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 109</file>
+                    <file> 113</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 71</file>
+                    <file> 74</file>
                 </tool>
             </outputs>
         </file>
@@ -2003,11 +2020,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 198</file>
+                    <file> 207</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 138</file>
+                    <file> 145</file>
                 </tool>
             </outputs>
         </file>
@@ -2016,7 +2033,7 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 151</file>
+                    <file> 159</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
@@ -2029,11 +2046,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 222</file>
+                    <file> 233</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 78</file>
+                    <file> 81</file>
                 </tool>
             </outputs>
         </file>
@@ -2042,11 +2059,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 114</file>
+                    <file> 119</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 127</file>
+                    <file> 132</file>
                 </tool>
             </outputs>
         </file>
@@ -2055,11 +2072,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 213</file>
+                    <file> 224</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 144</file>
+                    <file> 151</file>
                 </tool>
             </outputs>
         </file>
@@ -2068,11 +2085,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 168</file>
+                    <file> 176</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 146</file>
+                    <file> 153</file>
                 </tool>
             </outputs>
         </file>
@@ -2081,7 +2098,7 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 153</file>
+                    <file> 161</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
@@ -2094,11 +2111,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 139</file>
+                    <file> 146</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 82</file>
+                    <file> 85</file>
                 </tool>
             </outputs>
         </file>
@@ -2107,11 +2124,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 104</file>
+                    <file> 107</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 73</file>
+                    <file> 76</file>
                 </tool>
             </outputs>
         </file>
@@ -2120,11 +2137,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 161</file>
+                    <file> 169</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 74</file>
+                    <file> 77</file>
                 </tool>
             </outputs>
         </file>
@@ -2133,11 +2150,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 162</file>
+                    <file> 170</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 223</file>
+                    <file> 234</file>
                 </tool>
             </outputs>
         </file>
@@ -2146,7 +2163,7 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 164</file>
+                    <file> 172</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
@@ -2159,11 +2176,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 103</file>
+                    <file> 106</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 193</file>
+                    <file> 202</file>
                 </tool>
             </outputs>
         </file>
@@ -2172,11 +2189,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 113</file>
+                    <file> 117</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 136</file>
+                    <file> 142</file>
                 </tool>
             </outputs>
         </file>
@@ -2185,59 +2202,7 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 169</file>
-                </tool>
-                <tool>
-                    <name>BICOMP</name>
-                    <file> 180</file>
-                </tool>
-            </outputs>
-        </file>
-        <file>
-            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mac\low_level\srf04\mac_radio.c</name>
-            <outputs>
-                <tool>
-                    <name>ICC8051</name>
-                    <file> 110</file>
-                </tool>
-                <tool>
-                    <name>BICOMP</name>
-                    <file> 70</file>
-                </tool>
-            </outputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_timer.c</name>
-            <outputs>
-                <tool>
-                    <name>ICC8051</name>
-                    <file> 105</file>
-                </tool>
-                <tool>
-                    <name>BICOMP</name>
-                    <file> 62</file>
-                </tool>
-            </outputs>
-        </file>
-        <file>
-            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mac\low_level\srf04\mac_rx.c</name>
-            <outputs>
-                <tool>
-                    <name>ICC8051</name>
-                    <file> 101</file>
-                </tool>
-                <tool>
-                    <name>BICOMP</name>
-                    <file> 135</file>
-                </tool>
-            </outputs>
-        </file>
-        <file>
-            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mac\high_level\mac_cfg.c</name>
-            <outputs>
-                <tool>
-                    <name>ICC8051</name>
-                    <file> 80</file>
+                    <file> 177</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
@@ -2246,15 +2211,67 @@
             </outputs>
         </file>
         <file>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mac\low_level\srf04\mac_radio.c</name>
+            <outputs>
+                <tool>
+                    <name>ICC8051</name>
+                    <file> 114</file>
+                </tool>
+                <tool>
+                    <name>BICOMP</name>
+                    <file> 73</file>
+                </tool>
+            </outputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_timer.c</name>
+            <outputs>
+                <tool>
+                    <name>ICC8051</name>
+                    <file> 109</file>
+                </tool>
+                <tool>
+                    <name>BICOMP</name>
+                    <file> 63</file>
+                </tool>
+            </outputs>
+        </file>
+        <file>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mac\low_level\srf04\mac_rx.c</name>
+            <outputs>
+                <tool>
+                    <name>ICC8051</name>
+                    <file> 104</file>
+                </tool>
+                <tool>
+                    <name>BICOMP</name>
+                    <file> 141</file>
+                </tool>
+            </outputs>
+        </file>
+        <file>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mac\high_level\mac_cfg.c</name>
+            <outputs>
+                <tool>
+                    <name>ICC8051</name>
+                    <file> 83</file>
+                </tool>
+                <tool>
+                    <name>BICOMP</name>
+                    <file> 198</file>
+                </tool>
+            </outputs>
+        </file>
+        <file>
             <name>C:\Zigbee\Z-Stack 3.0.2\Components\mac\low_level\srf04\single_chip\mac_mcu.c</name>
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 176</file>
+                    <file> 185</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 207</file>
+                    <file> 218</file>
                 </tool>
             </outputs>
         </file>
@@ -2263,11 +2280,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 158</file>
+                    <file> 166</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 84</file>
+                    <file> 87</file>
                 </tool>
             </outputs>
         </file>
@@ -2276,11 +2293,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 149</file>
+                    <file> 156</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 173</file>
+                    <file> 182</file>
                 </tool>
             </outputs>
         </file>
@@ -2289,11 +2306,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 217</file>
+                    <file> 228</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 140</file>
+                    <file> 147</file>
                 </tool>
             </outputs>
         </file>
@@ -2302,11 +2319,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 156</file>
+                    <file> 164</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 170</file>
+                    <file> 179</file>
                 </tool>
             </outputs>
         </file>
@@ -2315,11 +2332,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 172</file>
+                    <file> 181</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 155</file>
+                    <file> 163</file>
                 </tool>
             </outputs>
         </file>
@@ -2328,11 +2345,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 157</file>
+                    <file> 165</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 65</file>
+                    <file> 67</file>
                 </tool>
             </outputs>
         </file>
@@ -2345,7 +2362,7 @@
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 214</file>
+                    <file> 225</file>
                 </tool>
             </outputs>
         </file>
@@ -2354,7 +2371,7 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 147</file>
+                    <file> 154</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
@@ -2367,11 +2384,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 225</file>
+                    <file> 236</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 97</file>
+                    <file> 100</file>
                 </tool>
             </outputs>
         </file>
@@ -2380,11 +2397,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 152</file>
+                    <file> 160</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 184</file>
+                    <file> 193</file>
                 </tool>
             </outputs>
         </file>
@@ -2393,7 +2410,7 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 85</file>
+                    <file> 88</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
@@ -2406,11 +2423,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 199</file>
+                    <file> 208</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 130</file>
+                    <file> 135</file>
                 </tool>
             </outputs>
         </file>
@@ -2419,7 +2436,7 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 218</file>
+                    <file> 229</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
@@ -2432,11 +2449,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 181</file>
+                    <file> 190</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 69</file>
+                    <file> 72</file>
                 </tool>
             </outputs>
         </file>
@@ -2445,11 +2462,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 179</file>
+                    <file> 188</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 133</file>
+                    <file> 139</file>
                 </tool>
             </outputs>
         </file>
@@ -2458,7 +2475,7 @@
             <outputs>
                 <tool>
                     <name>A8051</name>
-                    <file> 106</file>
+                    <file> 110</file>
                 </tool>
             </outputs>
         </file>
@@ -2467,7 +2484,7 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 108</file>
+                    <file> 112</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
@@ -2480,11 +2497,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 203</file>
+                    <file> 214</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 126</file>
+                    <file> 131</file>
                 </tool>
             </outputs>
         </file>
@@ -2493,11 +2510,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 87</file>
+                    <file> 90</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 205</file>
+                    <file> 216</file>
                 </tool>
             </outputs>
         </file>
@@ -2506,20 +2523,7 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 117</file>
-                </tool>
-                <tool>
-                    <name>BICOMP</name>
-                    <file> 60</file>
-                </tool>
-            </outputs>
-        </file>
-        <file>
-            <name>C:\Zigbee\Z-Stack 3.0.2\Components\osal\common\OSAL_Memory.c</name>
-            <outputs>
-                <tool>
-                    <name>ICC8051</name>
-                    <file> 93</file>
+                    <file> 122</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
@@ -2528,15 +2532,28 @@
             </outputs>
         </file>
         <file>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\osal\common\OSAL_Memory.c</name>
+            <outputs>
+                <tool>
+                    <name>ICC8051</name>
+                    <file> 96</file>
+                </tool>
+                <tool>
+                    <name>BICOMP</name>
+                    <file> 62</file>
+                </tool>
+            </outputs>
+        </file>
+        <file>
             <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\sys\ZGlobals.c</name>
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 220</file>
+                    <file> 231</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 226</file>
+                    <file> 237</file>
                 </tool>
             </outputs>
         </file>
@@ -2549,7 +2566,7 @@
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 221</file>
+                    <file> 232</file>
                 </tool>
             </outputs>
         </file>
@@ -2558,11 +2575,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 159</file>
+                    <file> 167</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 185</file>
+                    <file> 194</file>
                 </tool>
             </outputs>
         </file>
@@ -2571,11 +2588,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 194</file>
+                    <file> 203</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 191</file>
+                    <file> 200</file>
                 </tool>
             </outputs>
         </file>
@@ -2584,11 +2601,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 216</file>
+                    <file> 227</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 90</file>
+                    <file> 93</file>
                 </tool>
             </outputs>
         </file>
@@ -2597,11 +2614,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 100</file>
+                    <file> 103</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 68</file>
+                    <file> 71</file>
                 </tool>
             </outputs>
         </file>
@@ -2610,11 +2627,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 188</file>
+                    <file> 197</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 202</file>
+                    <file> 213</file>
                 </tool>
             </outputs>
         </file>
@@ -2623,11 +2640,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 215</file>
+                    <file> 226</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 183</file>
+                    <file> 192</file>
                 </tool>
             </outputs>
         </file>
@@ -2636,11 +2653,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 224</file>
+                    <file> 235</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 76</file>
+                    <file> 79</file>
                 </tool>
             </outputs>
         </file>
@@ -2649,11 +2666,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 197</file>
+                    <file> 206</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 206</file>
+                    <file> 217</file>
                 </tool>
             </outputs>
         </file>
@@ -2662,11 +2679,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 186</file>
+                    <file> 195</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 63</file>
+                    <file> 65</file>
                 </tool>
             </outputs>
         </file>
@@ -2675,11 +2692,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 107</file>
+                    <file> 111</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 145</file>
+                    <file> 152</file>
                 </tool>
             </outputs>
         </file>
@@ -2688,11 +2705,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 201</file>
+                    <file> 212</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 143</file>
+                    <file> 150</file>
                 </tool>
             </outputs>
         </file>
@@ -2701,11 +2718,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 211</file>
+                    <file> 222</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 154</file>
+                    <file> 162</file>
                 </tool>
             </outputs>
         </file>
@@ -2714,11 +2731,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 116</file>
+                    <file> 121</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 121</file>
+                    <file> 126</file>
                 </tool>
             </outputs>
         </file>
@@ -2727,11 +2744,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 95</file>
+                    <file> 98</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 210</file>
+                    <file> 221</file>
                 </tool>
             </outputs>
         </file>
@@ -2740,11 +2757,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 175</file>
+                    <file> 184</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 92</file>
+                    <file> 95</file>
                 </tool>
             </outputs>
         </file>
@@ -2753,11 +2770,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 67</file>
+                    <file> 70</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 141</file>
+                    <file> 148</file>
                 </tool>
             </outputs>
         </file>
@@ -2766,7 +2783,7 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 66</file>
+                    <file> 68</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
@@ -2779,11 +2796,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 99</file>
+                    <file> 102</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 131</file>
+                    <file> 136</file>
                 </tool>
             </outputs>
         </file>
@@ -2792,11 +2809,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 120</file>
+                    <file> 125</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 204</file>
+                    <file> 215</file>
                 </tool>
             </outputs>
         </file>
@@ -2805,11 +2822,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 187</file>
+                    <file> 196</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 128</file>
+                    <file> 133</file>
                 </tool>
             </outputs>
         </file>
@@ -2818,7 +2835,7 @@
             <outputs>
                 <tool>
                     <name>A8051</name>
-                    <file> 102</file>
+                    <file> 105</file>
                 </tool>
             </outputs>
         </file>
@@ -2827,11 +2844,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 137</file>
+                    <file> 143</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 64</file>
+                    <file> 66</file>
                 </tool>
             </outputs>
         </file>
@@ -2844,7 +2861,7 @@
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 83</file>
+                    <file> 86</file>
                 </tool>
             </outputs>
         </file>
@@ -2853,11 +2870,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 209</file>
+                    <file> 220</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 177</file>
+                    <file> 186</file>
                 </tool>
             </outputs>
         </file>
@@ -2866,11 +2883,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 89</file>
+                    <file> 92</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 208</file>
+                    <file> 219</file>
                 </tool>
             </outputs>
         </file>
@@ -2879,11 +2896,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 212</file>
+                    <file> 223</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 125</file>
+                    <file> 130</file>
                 </tool>
             </outputs>
         </file>
@@ -2892,11 +2909,11 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 119</file>
+                    <file> 124</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 72</file>
+                    <file> 75</file>
                 </tool>
             </outputs>
         </file>
@@ -2905,7 +2922,7 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 165</file>
+                    <file> 173</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
@@ -2913,6 +2930,346 @@
                 </tool>
             </outputs>
         </file>
+        <forcedrebuild>
+            <name>$PROJ_DIR$\..\Source\OSAL_WaterCounter.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Projects\zstack\HomeAutomation\Source\zcl_sampleapps_ui.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>$PROJ_DIR$\..\Source\zcl_watercounter.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>$PROJ_DIR$\..\Source\zcl_watercounter_data.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\bdb\bdb_FindingAndBinding.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\bdb\bdb_Reporting.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\bdb\bdb.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\bdb\bdb_touchlink.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\bdb\bdb_tlCommissioning.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_dma.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_key.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>$PROJ_DIR$\..\hal\common\hal_drivers.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_lcd.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\GP\gp_common.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\GP\gp_proxyTbl.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\bdb\bdb_touchlink_target.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>$PROJ_DIR$\..\hal\common\hal_assert.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_adc.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\bdb\bdb_touchlink_initiator.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_flash.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_led.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mac\low_level\srf04\mac_rx_onoff.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mac\low_level\srf04\mac_sleep.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mac\low_level\srf04\mac_backoff_timer.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mac\high_level\mac_pib.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mac\low_level\srf04\mac_low_level.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_uart.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_sleep.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_startup.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mac\low_level\srf04\mac_autopend.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_ota.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mac\low_level\srf04\mac_radio.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>$PROJ_DIR$\..\hal\target\CC2530DEV\hal_timer.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mac\low_level\srf04\mac_rx.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mac\high_level\mac_cfg.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mac\low_level\srf04\single_chip\mac_mcu.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mt\MT_GP.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mt\MT_SAPI.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mac\low_level\srf04\single_chip\mac_csp_tx.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mac\low_level\srf04\mac_tx.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mac\low_level\srf04\single_chip\mac_radio_defs.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mac\low_level\srf04\single_chip\mac_rffrontend.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mt\MT.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mt\MT_AF.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mt\MT_APP.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mac\low_level\srf04\single_chip\mac_mem.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mt\MT_APP_CONFIG.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mt\MT_DEBUG.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mt\DebugTrace.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mt\MT_NWK.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\zcl\zcl.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\zcl\zcl_diagnostic.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\osal\common\OSAL_Clock.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\zcl\zcl_general.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Projects\zstack\HomeAutomation\Source\zcl_ha.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\osal\common\OSAL_Memory.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\sys\ZGlobals.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\sys\ZDiags.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\osal\common\OSAL_Timers.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\af\AF.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\osal\common\OSAL_PwrMgr.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\zcl\zcl_green_power.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\osal\common\OSAL.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\osal\mcu\cc2530\OSAL_Nv.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mt\MT_UART.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mt\MT_VERSION.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\nwk\BindingTable.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mt\MT_UTIL.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mt\MT_ZDO.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\nwk\stub_aps.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\nwk\nwk_globals.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mt\MT_TASK.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\mt\MT_SYS.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Projects\zstack\ZMain\TI2530DB\ZMain.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\zdo\ZDConfig.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\zdo\ZDObject.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\services\saddr\saddr.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\zmac\f8w\zmac.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Projects\zstack\ZMain\TI2530DB\OnBoard.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\zdo\ZDSecMgr.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\zdo\ZDProfile.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\zcl\zcl_ota.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\zdo\ZDApp.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\stack\zdo\ZDNwkMgr.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>C:\Zigbee\Z-Stack 3.0.2\Components\zmac\f8w\zmac_cb.c</name>
+            <tool>ICC8051</tool>
+        </forcedrebuild>
     </configuration>
     <configuration>
         <name>RouterEB</name>
