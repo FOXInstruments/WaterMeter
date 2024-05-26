@@ -111,7 +111,7 @@ extern float zclWC_BatteryVoltageThresMin;    // 2.5V LiFePO4 T>0 degC
 extern uint8 zclWC_BatteryAlarmMask;
 extern uint8 zclWC_BatteryAlarmState;
 
-extern uint32   zclWC_FlowReportInterval;
+extern uint16   zclWC_FlowReportInterval;     // Time interval in seconds
 
 extern uint16   zclWC_IdentifyTime;
 

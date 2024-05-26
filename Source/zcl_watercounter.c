@@ -265,6 +265,15 @@ void zclWC_Init(byte task_id)
   // Register for a test endpoint
   afRegister(&waterCounter_TestEp);
   
+#ifdef BDB_REPORTING
+  for (uint8 i = 0; i < zclWC_NumAttributes; i++)
+  {
+    if (zclWC_Attrs[i].attr.accessControl & ACCESS_REPORTABLE)
+      bdb_RepAddAttrCfgRecordDefaultToList(WC_ENDPOINT, zclWC_Attrs[i].clusterID, zclWC_Attrs[i].attr.attrId, \
+        zclWC_FlowReportInterval, zclWC_FlowReportInterval, NULL);
+  }
+#endif
+  
 #ifdef ZCL_DIAGNOSTIC
   // Register the application's callback function to read/write attribute data.
   // This is only required when the attribute data format is unknown to ZCL.
@@ -405,8 +414,9 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
       zclWC_LongPushCounter++;
       if (zclWC_LongPushCounter > 50) // Key is pressed more than 5 sec, preform LocalReset and recomission
       {
-        HalLedBlink(HAL_LED_4, 255, 50, 200);
+        HalLedBlink(HAL_LED_4, 255, 50, 250);
         bdb_resetLocalAction();
+        //SystemReset();
       }
       else
       {

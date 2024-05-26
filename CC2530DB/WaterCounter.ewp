@@ -3857,8 +3857,12 @@
                     <state>xZCL_ON_OFF</state>
                     <state>ZCL_GROUPS</state>
                     <state>ZCL_REPORT</state>
+                    <state>ZCL_TIME</state>
+                    <state>ZCL_POWER_CONFIG</state>
+                    <state>ZCL_ALARMS</state>
                     <state>OTA_CLIENT=TRUE</state>
                     <state>OTA_HA</state>
+                    <state>BDB_REPORTING</state>
                 </option>
                 <option>
                     <name>CCPreprocFile</name>

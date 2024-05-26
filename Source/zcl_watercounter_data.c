@@ -134,12 +134,18 @@ uint16 zclWC_Flow2Multiplyer;
 uint16 zclWC_Flow2Unit;
 uint8 zclWC_Flow2Status;
 
+// Power cluster variable
 float zclWC_BatteryVoltage;
 float zclWC_BatteryVoltageThresMin;    // 2.5V LiFePO4 T>0 degC
 uint8 zclWC_BatteryAlarmMask;
 uint8 zclWC_BatteryAlarmState;
 
-uint32 zclWC_FlowReportInterval; // Time interval in minutes
+// Time cluster variables
+uint32 zclWC_Time;
+uint8 zclWC_TimeStatus;
+uint32 zclWC_TimeLocal;
+
+uint16 zclWC_FlowReportInterval; // Time interval in seconds
 
 uint8 zclWC_LocationDescription[16];
 uint8 zclWC_PhysicalEnvironment;
@@ -242,7 +248,8 @@ CONST zclAttrRec_t zclWC_Attrs[] =
     }
   },
   
-  // ***** Battery status cluster *****
+  // ***** Battery status cluster ***** //
+  // ********************************** //
   {
     ZCL_CLUSTER_ID_GEN_POWER_CFG,
     {  // Attribute record
@@ -283,8 +290,8 @@ CONST zclAttrRec_t zclWC_Attrs[] =
       (void *)&zclWC_clusterRevision_all
     }
   },
-  
-  // ********* Identify Cluster Attribute *********
+  // ********* Identify Cluster Attribute ********* //
+  // ********************************************** //
   {
     ZCL_CLUSTER_ID_GEN_IDENTIFY,
     { // Attribute record
@@ -302,6 +309,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
     }
   },
   // ********* Groups Cluster ********* //
+  // ********************************** //
   {
     ZCL_CLUSTER_ID_GEN_GROUPS,
     {  
@@ -310,7 +318,42 @@ CONST zclAttrRec_t zclWC_Attrs[] =
       (void *)&zclWC_clusterRevision_all
     }
   },
+  // ********* Time Cluster ********* //
+  // ********************************** //
+  {
+    ZCL_CLUSTER_ID_GEN_TIME,
+    {  
+      ATTRID_TIME_TIME,
+      ZCL_DATATYPE_UTC, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
+      (void *)&zclWC_Time
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_GEN_TIME,
+    {  
+      ATTRID_TIME_TIME_STATUS,
+      ZCL_DATATYPE_UINT8, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
+      (void *)&zclWC_TimeStatus
+    }
+  },
+   {
+    ZCL_CLUSTER_ID_GEN_TIME,
+    {  
+      ATTRID_TIME_LOCAL_TIME,
+      ZCL_DATATYPE_UINT32, (ACCESS_CONTROL_READ),
+      (void *)&zclWC_TimeLocal
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_GEN_TIME,
+    {  
+      ATTRID_CLUSTER_REVISION,
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
+      (void *)&zclWC_clusterRevision_all
+    }
+  },
   // ********* Flow measure Cluster ********* //
+  // **************************************** //
   {
     ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
     { 
@@ -351,7 +394,8 @@ CONST zclAttrRec_t zclWC_Attrs[] =
       (void *)&zclWC_Flow1Status
     }
   },
-  // ********* Flow2 *********
+  // ********* Flow2 ********* //
+  // ************************* //
   {
     ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
     { 
@@ -430,8 +474,8 @@ const cId_t zclWC_OutClusterList[] =
 {
   ZCL_CLUSTER_ID_GEN_POWER_CFG,
   ZCL_CLUSTER_ID_GEN_IDENTIFY,
-  ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC,
   ZCL_CLUSTER_ID_GEN_GROUPS,
+  ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC
 };
 
 #define ZCLWC_MAX_OUTCLUSTERS   ( sizeof( zclWC_OutClusterList ) / sizeof( zclWC_OutClusterList[0] ))
