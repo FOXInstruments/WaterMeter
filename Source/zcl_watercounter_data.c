@@ -254,7 +254,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
     ZCL_CLUSTER_ID_GEN_POWER_CFG,
     {  // Attribute record
       ATTRID_POWER_CFG_BATTERY_VOLTAGE,
-      ZCL_DATATYPE_SINGLE_PREC, ACCESS_CONTROL_READ,
+      ZCL_DATATYPE_SINGLE_PREC, ACCESS_CONTROL_READ | ACCESS_REPORTABLE,
       (void *)&zclWC_BatteryVoltage
     }
   },
@@ -629,8 +629,10 @@ void zclWC_ResetAttributesToDefaultValues(void)
   zclWC_Flow1Status = 0;
   zclWC_Flow2Status = 0;
   
+  zclWC_FlowReportInterval = 60*60; // Report interal in seconds
+  
   zclWC_BatteryVoltage = VDD_NORMAL_VOLTAGE;
-  zclWC_BatteryVoltageThresMin = VDD3VOLTAGE(VDD3_THRES_MIN);
+  zclWC_BatteryVoltageThresMin = VDD3VOLTAGE(VDD3_THRES_MIN); // Convert Int ADC to Float 
   zclWC_BatteryAlarmMask = 0;
   zclWC_BatteryAlarmState = 0;
 }

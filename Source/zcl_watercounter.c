@@ -266,12 +266,22 @@ void zclWC_Init(byte task_id)
   afRegister(&waterCounter_TestEp);
   
 #ifdef BDB_REPORTING
-  for (uint8 i = 0; i < zclWC_NumAttributes; i++)
-  {
-    if (zclWC_Attrs[i].attr.accessControl & ACCESS_REPORTABLE)
-      bdb_RepAddAttrCfgRecordDefaultToList(WC_ENDPOINT, zclWC_Attrs[i].clusterID, zclWC_Attrs[i].attr.attrId, \
-        zclWC_FlowReportInterval, zclWC_FlowReportInterval, NULL);
-  }
+#if (BDBREPORTING_MAX_ANALOG_ATTR_SIZE < 4)
+#error BDBREPORTING_MAX_ANALOG_ATTR_SIZE less then sizeof float or uin32 datatype
+#endif
+  float Volt = 0.1;
+  uint32 Flow = 100;
+  uint8 reportChange[BDBREPORTING_MAX_ANALOG_ATTR_SIZE];
+  
+  osal_memset(reportChange, 0, BDBREPORTING_MAX_ANALOG_ATTR_SIZE);
+  osal_memcpy(reportChange, (void*)&Volt, sizeof(float));
+  bdb_RepAddAttrCfgRecordDefaultToList(WC_ENDPOINT, ZCL_CLUSTER_ID_GEN_POWER_CFG, ATTRID_POWER_CFG_BATTERY_VOLTAGE, \
+                                       zclWC_FlowReportInterval, zclWC_FlowReportInterval*24, reportChange);
+  
+  osal_memset(reportChange, 0, BDBREPORTING_MAX_ANALOG_ATTR_SIZE);
+  osal_memcpy(reportChange, (void*)&Flow, sizeof(uint32));
+  bdb_RepAddAttrCfgRecordDefaultToList(WC_ENDPOINT, ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC, ATTRID_IOV_BASIC_PRESENT_VALUE, \
+                                       zclWC_FlowReportInterval, zclWC_FlowReportInterval*24, reportChange);
 #endif
   
 #ifdef ZCL_DIAGNOSTIC
