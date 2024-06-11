@@ -77,7 +77,10 @@ extern "C"
 #define VDD3_MIN_NV             (VDD_2_0+4)  // 5% margin over minimum to survive a page erase and compaction.
 #define VDD3_MIN_GOOD           (VDD_2_0+8)  // 10% margin over minimum to survive a page erase and compaction.
 #define VDD_NORMAL_VOLTAGE      3.6
-#define VDD3VOLTAGE(v)          (v / 127.0 * 1.15 * 3)   // Convert ADC value to Voltage
+#define VDD3TOVOLTAGE(v)        (v / 127.0 * 1.15 * 3)   // Convert ADC value to Voltage
+  
+#define REPORT_CHANGE_VOLTAGE   0.1     // Change values for BDB_REPORTING
+#define REPORT_CHANGE_FLOW      100
 /*********************************************************************
  * MACROS
  */
@@ -111,7 +114,7 @@ extern float zclWC_BatteryVoltageThresMin;    // 2.5V LiFePO4 T>0 degC
 extern uint8 zclWC_BatteryAlarmMask;
 extern uint8 zclWC_BatteryAlarmState;
 
-extern uint16   zclWC_FlowReportInterval;     // Time interval in seconds
+extern uint16   zclWC_FlowReportInterval;     // Time interval in seconds for Reporting compatability
 
 extern uint16   zclWC_IdentifyTime;
 

@@ -115,7 +115,11 @@
  */
 byte zclWC_TaskID;
 
-uint8 zclWaterCounterSeqNum;
+uint8 zclWC_SeqNum;
+
+uint8 zclWC_HourCounter;        // Hour counter for Time synchronization every 24 hours 
+
+zclReadCmd_t readCmdTimeCluster = {4, {ATTRID_TIME_TIME, ATTRID_TIME_TIME_STATUS, ATTRID_TIME_TIME_ZONE, ATTRID_TIME_LOCAL_TIME}};
 
 /*********************************************************************
  * GLOBAL FUNCTIONS
@@ -233,6 +237,7 @@ static zclGeneral_AppCallbacks_t zclWC_CmdCallbacks =
 void zclWC_Init(byte task_id)
 {
   zclWC_TaskID = task_id;
+  zclWC_SeqNum = 0;
 
   // Set destination address to indirect
   zclWC_DstAddr.addrMode = (afAddrMode_t)AddrNotPresent;
@@ -269,19 +274,19 @@ void zclWC_Init(byte task_id)
 #if (BDBREPORTING_MAX_ANALOG_ATTR_SIZE < 4)
 #error BDBREPORTING_MAX_ANALOG_ATTR_SIZE less then sizeof float or uin32 datatype
 #endif
-  float Volt = 0.1;
-  uint32 Flow = 100;
+  float Volt = REPORT_CHANGE_VOLTAGE;
+  uint32 Flow = REPORT_CHANGE_FLOW;
   uint8 reportChange[BDBREPORTING_MAX_ANALOG_ATTR_SIZE];
   
   osal_memset(reportChange, 0, BDBREPORTING_MAX_ANALOG_ATTR_SIZE);
   osal_memcpy(reportChange, (void*)&Volt, sizeof(float));
   bdb_RepAddAttrCfgRecordDefaultToList(WC_ENDPOINT, ZCL_CLUSTER_ID_GEN_POWER_CFG, ATTRID_POWER_CFG_BATTERY_VOLTAGE, \
-                                       zclWC_FlowReportInterval, zclWC_FlowReportInterval*24, reportChange);
+                                       zclWC_FlowReportInterval, zclWC_FlowReportInterval*6, reportChange);
   
   osal_memset(reportChange, 0, BDBREPORTING_MAX_ANALOG_ATTR_SIZE);
   osal_memcpy(reportChange, (void*)&Flow, sizeof(uint32));
   bdb_RepAddAttrCfgRecordDefaultToList(WC_ENDPOINT, ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC, ATTRID_IOV_BASIC_PRESENT_VALUE, \
-                                       zclWC_FlowReportInterval, zclWC_FlowReportInterval*24, reportChange);
+                                       zclWC_FlowReportInterval, zclWC_FlowReportInterval*6, reportChange);
 #endif
   
 #ifdef ZCL_DIAGNOSTIC
@@ -319,6 +324,7 @@ void zclWC_Init(byte task_id)
   P1IFG &= ~BV(1);
   IEN2 |= BV(4);           // Enable interrupt Port1
   
+  zclWC_HourCounter = 0;   // Initialize Hour counter for time synchronization every 24 hours
   osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_EVERYHOUR_EVT, 10000);
 }
 
@@ -341,7 +347,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
     UTCTime time = osal_getClock();
     // Battery voltage check
     uint8 battvolt = HalAdcCheckVddRaw();
-    zclWC_BatteryVoltage = VDD3VOLTAGE(battvolt);
+    zclWC_BatteryVoltage = VDD3TOVOLTAGE(battvolt);
     if (battvolt <= VDD3_THRES_MIN)
     {
       //zclWC_BatteryAlarmMask |= BAT_ALARM_MASK_VOLT_2_LOW;
@@ -353,7 +359,20 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
       zclWC_BatteryAlarmMask = 0;
       zclWC_BatteryAlarmState = 0;
     }
-    osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_EVERYHOUR_EVT, 1L*60L*1000L);
+    
+    if (zclWC_HourCounter == 0)
+    {
+      afAddrType_t dstAddr;
+      zclDiscoverAttrsCmd_t discoverAttr;
+      dstAddr.addrMode = AddrBroadcast;
+      discoverAttr.startAttr = ATTRID_TIME_TIME;
+      discoverAttr.maxAttrIDs = 9;
+      zcl_SendRead(WC_ENDPOINT, &dstAddr, ZCL_CLUSTER_ID_GEN_TIME, &readCmdTimeCluster, ZCL_FRAME_CLIENT_SERVER_DIR, true, zclWC_SeqNum);
+      zcl_SendDiscoverAttrsCmd(WC_ENDPOINT, &dstAddr, ZCL_CLUSTER_ID_GEN_TIME, &discoverAttr, ZCL_FRAME_CLIENT_SERVER_DIR, true, zclWC_SeqNum);
+      zclWC_SeqNum++;
+    }
+    zclWC_HourCounter = (zclWC_HourCounter + 1) % 24;
+    osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_EVERYHOUR_EVT, 1L*60L*60L*1000L);
     return (events ^ SAMPLEAPP_EVERYHOUR_EVT); // return unprocessed events
   }
   
@@ -401,7 +420,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
   {
     if (POLARITY_IMPULSE(P1_0))
     {
-      zclWC_Flow1Value++;
+      zclWC_Flow1Value += zclWC_Flow1Multiplyer;
       HalLedBlink(HAL_LED_4, 1, 100, 100);
     }
     return (events ^ SAMPLEAPP_IMPULSE1_EVT);
@@ -411,8 +430,8 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
   {
     if (POLARITY_IMPULSE(P1_1))
     {
-      zclWC_Flow2Value++;
-      HalLedBlink(HAL_LED_4, 1, 100, 100);
+      zclWC_Flow2Value += zclWC_Flow2Multiplyer;
+      HalLedBlink(HAL_LED_5, 1, 100, 100);
     }    
     return (events ^ SAMPLEAPP_IMPULSE2_EVT);
   }
@@ -424,13 +443,13 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
       zclWC_LongPushCounter++;
       if (zclWC_LongPushCounter > 50) // Key is pressed more than 5 sec, preform LocalReset and recomission
       {
-        HalLedBlink(HAL_LED_4, 255, 50, 250);
+        HalLedBlink(HAL_LED_3, 255, 50, 250);
         bdb_resetLocalAction();
         //SystemReset();
       }
       else
       {
-        HalLedBlink(HAL_LED_4, 1, 100, WC_LONGPUSH_INTERVAL);
+        //HalLedBlink(HAL_LED_3, 1, 100, WC_LONGPUSH_INTERVAL);
         osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_LONGPUSH_EVT, WC_LONGPUSH_INTERVAL);
       }
     }
@@ -456,7 +475,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
  */
 static void zclWC_HandleKeys(byte shift, byte keys)
 {
-  HalLedBlink(HAL_LED_4, 1, 100, WC_LONGPUSH_INTERVAL);
+  HalLedBlink(HAL_LED_3, 1, 100, WC_LONGPUSH_INTERVAL);
   if (HAL_PUSH_BUTTON()) // Button is still pressed, try to determine long press 
   {
     osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_LONGPUSH_EVT, WC_LONGPUSH_INTERVAL);
@@ -643,6 +662,7 @@ static void zclWC_ProcessIncomingMsg(zclIncomingMsg_t *pInMsg)
 
     case ZCL_CMD_DISCOVER_ATTRS_RSP:
       zclWC_ProcessInDiscAttrsRspCmd(pInMsg);
+      
       break;
 
     case ZCL_CMD_DISCOVER_ATTRS_EXT_RSP:

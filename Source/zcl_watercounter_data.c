@@ -73,8 +73,8 @@
 #define WC_ZCLVERSION         0
 
 #define WC_DESCSIZE           8
-#define WC_MULTIPLYER         10 // Weight of one count
-#define WC_REPORT_INTERVAL    60 // minutes
+#define WC_MULTIPLYER         10    // Weight of one count
+#define WC_REPORT_INTERVAL    60*60 // Reporting interval in seconds
 
 #define DEFAULT_PHYSICAL_ENVIRONMENT 0
 #define DEFAULT_DEVICE_ENABLE_STATE DEVICE_ENABLED
@@ -141,9 +141,9 @@ uint8 zclWC_BatteryAlarmMask;
 uint8 zclWC_BatteryAlarmState;
 
 // Time cluster variables
-uint32 zclWC_Time;
+/* uint32 zclWC_Time;
 uint8 zclWC_TimeStatus;
-uint32 zclWC_TimeLocal;
+uint32 zclWC_TimeLocal; */
 
 uint16 zclWC_FlowReportInterval; // Time interval in seconds
 
@@ -320,11 +320,11 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   // ********* Time Cluster ********* //
   // ********************************** //
-  {
+/*  {
     ZCL_CLUSTER_ID_GEN_TIME,
     {  
       ATTRID_TIME_TIME,
-      ZCL_DATATYPE_UTC, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
+      ZCL_DATATYPE_UTC, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
       (void *)&zclWC_Time
     }
   },
@@ -343,7 +343,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
       ZCL_DATATYPE_UINT32, (ACCESS_CONTROL_READ),
       (void *)&zclWC_TimeLocal
     }
-  },
+  },*/
   {
     ZCL_CLUSTER_ID_GEN_TIME,
     {  
@@ -464,6 +464,7 @@ uint8 CONST zclWC_NumAttributes = ( sizeof(zclWC_Attrs) / sizeof(zclWC_Attrs[0])
 const cId_t zclWC_InClusterList[] =
 {
   ZCL_CLUSTER_ID_GEN_BASIC,
+  ZCL_CLUSTER_ID_GEN_POWER_CFG,
   ZCL_CLUSTER_ID_GEN_IDENTIFY,
   ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC
 };
@@ -472,10 +473,8 @@ const cId_t zclWC_InClusterList[] =
 
 const cId_t zclWC_OutClusterList[] =
 {
-  ZCL_CLUSTER_ID_GEN_POWER_CFG,
   ZCL_CLUSTER_ID_GEN_IDENTIFY,
-  ZCL_CLUSTER_ID_GEN_GROUPS,
-  ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC
+  ZCL_CLUSTER_ID_GEN_GROUPS
 };
 
 #define ZCLWC_MAX_OUTCLUSTERS   ( sizeof( zclWC_OutClusterList ) / sizeof( zclWC_OutClusterList[0] ))
@@ -629,10 +628,10 @@ void zclWC_ResetAttributesToDefaultValues(void)
   zclWC_Flow1Status = 0;
   zclWC_Flow2Status = 0;
   
-  zclWC_FlowReportInterval = 60*60; // Report interal in seconds
+  zclWC_FlowReportInterval = WC_REPORT_INTERVAL; // Report interal in seconds
   
   zclWC_BatteryVoltage = VDD_NORMAL_VOLTAGE;
-  zclWC_BatteryVoltageThresMin = VDD3VOLTAGE(VDD3_THRES_MIN); // Convert Int ADC to Float 
+  zclWC_BatteryVoltageThresMin = VDD3TOVOLTAGE(VDD3_THRES_MIN); // Convert Int ADC to Float 
   zclWC_BatteryAlarmMask = 0;
   zclWC_BatteryAlarmState = 0;
 }
