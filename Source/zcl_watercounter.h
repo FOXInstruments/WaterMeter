@@ -81,6 +81,8 @@ extern "C"
   
 #define REPORT_CHANGE_VOLTAGE   0.1     // Change values for BDB_REPORTING
 #define REPORT_CHANGE_FLOW      100
+  
+#define TIME_SYNC_DIFF          5L       // Difference between device time and gate time
 /*********************************************************************
  * MACROS
  */

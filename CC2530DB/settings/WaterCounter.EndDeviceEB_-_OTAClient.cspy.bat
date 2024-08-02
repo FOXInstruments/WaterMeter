@@ -25,7 +25,7 @@ if not "%~1" == "" goto debugFile
 
 @echo on 
 
-"C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.3\common\bin\cspybat" -f "K:\!ZigbeeProjects\WaterCounter\CC2530DB\settings\WaterCounter.EndDeviceEB_-_OTAClient.general.xcl" --backend -f "K:\!ZigbeeProjects\WaterCounter\CC2530DB\settings\WaterCounter.EndDeviceEB_-_OTAClient.driver.xcl" 
+"C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.3\common\bin\cspybat" -f "K:\!Projects\WaterCounter\CC2530DB\settings\WaterCounter.EndDeviceEB_-_OTAClient.general.xcl" --backend -f "K:\!Projects\WaterCounter\CC2530DB\settings\WaterCounter.EndDeviceEB_-_OTAClient.driver.xcl" 
 
 @echo off 
 goto end 
@@ -34,7 +34,7 @@ goto end
 
 @echo on 
 
-"C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.3\common\bin\cspybat" -f "K:\!ZigbeeProjects\WaterCounter\CC2530DB\settings\WaterCounter.EndDeviceEB_-_OTAClient.general.xcl" "--debug_file=%~1" --backend -f "K:\!ZigbeeProjects\WaterCounter\CC2530DB\settings\WaterCounter.EndDeviceEB_-_OTAClient.driver.xcl" 
+"C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.3\common\bin\cspybat" -f "K:\!Projects\WaterCounter\CC2530DB\settings\WaterCounter.EndDeviceEB_-_OTAClient.general.xcl" "--debug_file=%~1" --backend -f "K:\!Projects\WaterCounter\CC2530DB\settings\WaterCounter.EndDeviceEB_-_OTAClient.driver.xcl" 
 
 @echo off 
 :end

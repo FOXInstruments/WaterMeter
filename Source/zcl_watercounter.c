@@ -366,10 +366,9 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
       zclDiscoverAttrsCmd_t discoverAttr;
       dstAddr.addrMode = AddrBroadcast;
       discoverAttr.startAttr = ATTRID_TIME_TIME;
-      discoverAttr.maxAttrIDs = 9;
-      zcl_SendRead(WC_ENDPOINT, &dstAddr, ZCL_CLUSTER_ID_GEN_TIME, &readCmdTimeCluster, ZCL_FRAME_CLIENT_SERVER_DIR, true, zclWC_SeqNum);
-      zcl_SendDiscoverAttrsCmd(WC_ENDPOINT, &dstAddr, ZCL_CLUSTER_ID_GEN_TIME, &discoverAttr, ZCL_FRAME_CLIENT_SERVER_DIR, true, zclWC_SeqNum);
-      zclWC_SeqNum++;
+      discoverAttr.maxAttrIDs = ATTRID_TIME_VALID_UNTIL_TIME;
+      zcl_SendRead(WC_ENDPOINT, &dstAddr, ZCL_CLUSTER_ID_GEN_TIME, &readCmdTimeCluster, ZCL_FRAME_CLIENT_SERVER_DIR, true, zclWC_SeqNum++);
+      zcl_SendDiscoverAttrsCmd(WC_ENDPOINT, &dstAddr, ZCL_CLUSTER_ID_GEN_TIME, &discoverAttr, ZCL_FRAME_CLIENT_SERVER_DIR, true, zclWC_SeqNum++);
     }
     zclWC_HourCounter = (zclWC_HourCounter + 1) % 24;
     osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_EVERYHOUR_EVT, 1L*60L*60L*1000L);
@@ -691,14 +690,31 @@ static uint8 zclWC_ProcessInReadRspCmd(zclIncomingMsg_t *pInMsg)
 {
   zclReadRspCmd_t *readRspCmd;
   uint8 i;
+  uint8 status = 0;
+  uint32 time = 0;
 
   readRspCmd = (zclReadRspCmd_t *)pInMsg->attrCmd;
   
-  for (i = 0; i < readRspCmd->numAttr; i++)
+  // Processing TIME read response command for time sync
+  if (pInMsg->clusterId == ZCL_CLUSTER_ID_GEN_TIME)
   {
-    // Notify the originator of the results of the original read attributes
-    // attempt and, for each successfull request, the value of the requested
-    // attribute
+    for (i = 0; i < readRspCmd->numAttr; i++)
+    {
+      if (readRspCmd->attrList[i].status == ZCL_STATUS_SUCCESS)
+      {
+        if (readRspCmd->attrList[i].attrID == ATTRID_TIME_TIME_STATUS) status = *readRspCmd->attrList[i].data;
+        if (readRspCmd->attrList[i].attrID == ATTRID_TIME_LOCAL_TIME)
+        {
+          time = osal_getClock();
+          if (status & TIME_STATUS_MASTER && status & TIME_STATUS_SYNCH &&
+              *((uint32*)readRspCmd->attrList[i].data) > 0L &&
+              ABS((int32)(*((uint32*)readRspCmd->attrList[i].data) - time)) > TIME_SYNC_DIFF)
+          {
+            osal_setClock(*((uint32*)readRspCmd->attrList[i].data));
+          }
+        }
+      }
+    }
   }
 
   return TRUE;
