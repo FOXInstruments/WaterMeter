@@ -33,6 +33,9 @@
         <LogFile>_ ""</LogFile>
         <Category>_ 0</Category>
     </LogFile>
+    <BreakpointUsageDialog>
+        <Placement>_ 738 368 1183 651</Placement>
+    </BreakpointUsageDialog>
     <Breakpoints>
         <Bp0>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.251.3" 1 0 0 0 "" 0 ""</Bp0>
         <Bp1>_ "STD_CODE" "{$PROJ_DIR$\..\Source\OSAL_WaterCounter.c}.152.3" 1 0 0 0 "" 0 ""</Bp1>

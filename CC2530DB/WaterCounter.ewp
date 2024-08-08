@@ -5878,12 +5878,6 @@
             <name>$PROJ_DIR$\..\Source\OSAL_WaterCounter.c</name>
         </file>
         <file>
-            <name>$ZSTACKDIR$\Projects\zstack\HomeAutomation\Source\zcl_sampleapps_ui.c</name>
-        </file>
-        <file>
-            <name>$ZSTACKDIR$\Projects\zstack\HomeAutomation\Source\zcl_sampleapps_ui.h</name>
-        </file>
-        <file>
             <name>$PROJ_DIR$\..\Source\zcl_watercounter.c</name>
         </file>
         <file>
