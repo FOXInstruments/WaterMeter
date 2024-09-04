@@ -262,8 +262,8 @@
 #define LED4_POLARITY       LED_POLARITY
 
 /* 5 - LED */
-#define LED5_BV             BV(4)
-#define LED5_SBIT           P0_4
+#define LED5_BV             BV(5)
+#define LED5_SBIT           P0_5
 #define LED5_DIR            P0DIR
 #define LED5_POLARITY       LED_POLARITY
 

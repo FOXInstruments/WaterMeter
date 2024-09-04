@@ -706,9 +706,9 @@ static uint8 zclWC_ProcessInReadRspCmd(zclIncomingMsg_t *pInMsg)
         if (readRspCmd->attrList[i].attrID == ATTRID_TIME_LOCAL_TIME)
         {
           time = osal_getClock();
-          if (status & TIME_STATUS_MASTER && status & TIME_STATUS_SYNCH &&
-              *((uint32*)readRspCmd->attrList[i].data) > 0L &&
-              ABS((int32)(*((uint32*)readRspCmd->attrList[i].data) - time)) > TIME_SYNC_DIFF)
+          if ((status & TIME_STATUS_MASTER) && (status & TIME_STATUS_SYNCH) &&
+              (*((uint32*)readRspCmd->attrList[i].data) > 0L) &&
+              (ABS((int32)(*((uint32*)readRspCmd->attrList[i].data) - time)) > TIME_SYNC_DIFF))
           {
             osal_setClock(*((uint32*)readRspCmd->attrList[i].data));
           }
@@ -889,7 +889,8 @@ static void zclWC_ProcessOTAMsgs(zclOTA_CallbackMsg_t* pMsg)
 /*********************************************************************
  * @fn      halPort1Isr
  *
- * @brief   Port1 Isr
+ * @brief   Port1 Isr. Get impulses from Counters connected to the Port1
+ *          Isr for keys connected to the Port0 is placed in hal_key.c
  *
  * @param   none
  *

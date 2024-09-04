@@ -12,18 +12,81 @@
         <ByteLimit>50</ByteLimit>
     </Stack>
     <DebugChecksum>
-        <Checksum>2598075601</Checksum>
+        <Checksum>4058998081</Checksum>
     </DebugChecksum>
-    <SfrWindow>
-        <Show>1 1</Show>
-        <Sort>4 0</Sort>
-    </SfrWindow>
     <CallStack>
         <ShowArgs>0</ShowArgs>
     </CallStack>
     <Disassembly>
+        <InstrCount>0</InstrCount>
         <MixedMode>1</MixedMode>
     </Disassembly>
+    <BreakpointUsageDialog>
+        <Placement>_ 738 368 1183 651</Placement>
+    </BreakpointUsageDialog>
+    <CodeCoverage>
+        <Enabled>0</Enabled>
+        <ShowSource>0</ShowSource>
+        <HideCovered>0</HideCovered>
+    </CodeCoverage>
+    <DriverProfiling>
+        <Enabled>0</Enabled>
+        <Mode>1</Mode>
+        <Graph>0</Graph>
+        <Symbiont>0</Symbiont>
+    </DriverProfiling>
+    <CallStackLog>
+        <Enabled>0</Enabled>
+    </CallStackLog>
+    <CallStackStripe>
+        <ShowTiming>1</ShowTiming>
+    </CallStackStripe>
+    <InterruptLog>
+        <LogEnabled>0</LogEnabled>
+        <GraphEnabled>0</GraphEnabled>
+        <ShowTimeLog>1</ShowTimeLog>
+        <SumEnabled>0</SumEnabled>
+        <ShowTimeSum>1</ShowTimeSum>
+        <SumSortOrder>0</SumSortOrder>
+    </InterruptLog>
+    <DataLog>
+        <LogEnabled>0</LogEnabled>
+        <GraphEnabled>0</GraphEnabled>
+        <ShowTimeLog>1</ShowTimeLog>
+        <SumEnabled>0</SumEnabled>
+        <ShowTimeSum>1</ShowTimeSum>
+    </DataLog>
+    <Breakpoints2>
+        <Bp0>_ 1 "STD_CODE2" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.239.3" 0 0 1 "" 0 ""</Bp0>
+        <Count>1</Count>
+    </Breakpoints2>
+    <Interrupts>
+        <Enabled>1</Enabled>
+    </Interrupts>
+    <MemoryMap>
+        <Enabled>0</Enabled>
+        <Base>0</Base>
+        <UseAuto>0</UseAuto>
+        <TypeViolation>1</TypeViolation>
+        <UnspecRange>1</UnspecRange>
+        <ActionState>1</ActionState>
+    </MemoryMap>
+    <Trace1>
+        <Enabled>0</Enabled>
+        <ShowSource>1</ShowSource>
+    </Trace1>
+    <Simulator>
+        <Freq>50000000</Freq>
+        <FreqHi>0</FreqHi>
+    </Simulator>
+    <Registers>
+        <regBase0>R1 10</regBase0>
+        <regBase1>A 10</regBase1>
+    </Registers>
+    <SfrWindow>
+        <Show>1 1</Show>
+        <Sort>4 0</Sort>
+    </SfrWindow>
     <TermIOLog>
         <LoggingEnabled>_ 0</LoggingEnabled>
         <LogFile>_ ""</LogFile>
@@ -33,16 +96,17 @@
         <LogFile>_ ""</LogFile>
         <Category>_ 0</Category>
     </LogFile>
-    <BreakpointUsageDialog>
-        <Placement>_ 738 368 1183 651</Placement>
-    </BreakpointUsageDialog>
     <Breakpoints>
-        <Bp0>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.251.3" 1 0 0 0 "" 0 ""</Bp0>
-        <Bp1>_ "STD_CODE" "{$PROJ_DIR$\..\Source\OSAL_WaterCounter.c}.152.3" 1 0 0 0 "" 0 ""</Bp1>
-        <Count>2</Count>
+        <Bp0>_ "STD_CODE" "{$PROJ_DIR$\..\hal\target\CC2530DEV\hal_sleep.c}.239.3" 0 0 0 0 "" 0 ""</Bp0>
+        <Bp1>_ "STD_CODE" "{$PROJ_DIR$\..\hal\target\CC2530DEV\hal_key.c}.570.3" 0 0 0 0 "" 0 ""</Bp1>
+        <Bp2>_ "STD_CODE" "LogicalCode:0x007B" 1 0 0 0 "" 0 ""</Bp2>
+        <Bp3>_ "STD_CODE" "LogicalCode:0x006B" 1 0 0 0 "" 0 ""</Bp3>
+        <Bp4>_ "STD_CODE" "LogicalCode:0x086B" 1 0 0 0 "" 0 ""</Bp4>
+        <Bp5>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.345.3" 1 0 0 0 "" 0 ""</Bp5>
+        <Count>6</Count>
     </Breakpoints>
     <ChipconEmu>
-        <StopTimersOnHalt>0</StopTimersOnHalt>
+        <StopTimersOnHalt>1</StopTimersOnHalt>
         <LeaveTargetRunning>1</LeaveTargetRunning>
     </ChipconEmu>
     <Aliases>
