@@ -203,7 +203,9 @@
 #define MERGE_STRINGS(A, B)     A ## B
 #define STRING2(x) #x
 #define STRING(x) STRING2(x)
-#pragma message(STRING(HAL_NUM_LEDS))
+#ifdef HAL_WARNING
+  #pragma message(STRING(HAL_NUM_LEDS))
+#endif
 //#pragma message(STRING(HAL_FIRST_LED))
 //#pragma message(STRING(HAL_LAST_LED))
 
@@ -211,7 +213,9 @@
     #warning All LEDs are DISABLED
   #endif
   #if (HAL_NUM_LEDS > 0)
-    #warning Some LEDs are ENABLED on Port 0
+    #ifdef HAL_WARNING
+      #warning Some LEDs are ENABLED on Port 0
+    #endif
   #endif
       
 #elif defined (HAL_BOARD_CC2530EB_REV13) || defined (HAL_PA_LNA) ||  \
@@ -339,13 +343,17 @@
 #endif
 
 #define HAL_NUM_PUSHES  (HAL_PUSH0_ENABLE + HAL_PUSH1_ENABLE + HAL_PUSH2_ENABLE + HAL_PUSH3_ENABLE)
-#pragma message(STRING(HAL_NUM_PUSHES))
+#ifdef HAL_WARNING
+  #pragma message(STRING(HAL_NUM_PUSHES))
+#endif
 
 #if (HAL_NUM_PUSHES == 0)
   #warning All PUSHes are DISABLED
 #endif
 #if (HAL_NUM_PUSHES > 0)
-  #warning Some PUSHes are ENABLED on Port 0
+  #ifdef HAL_WARNING
+    #warning Some PUSHes are ENABLED on Port 0
+  #endif
 #endif
 
 /* S0 */

@@ -2619,7 +2619,7 @@
                 </option>
                 <option>
                     <name>OGChipConfigPath</name>
-                    <state>$TOOLKIT_DIR$\config\devices\Texas Instruments\CC2530F256.i51</state>
+                    <state>D:\Program Files (x86)\IAR Systems\Embedded Workbench 8.3\8051\bin\..\config\devices\Texas Instruments\CC25xx\3x\CC2530F256.i51</state>
                 </option>
                 <option>
                     <name>PCReadOnly</name>
@@ -2670,15 +2670,28 @@
                     <state>xMT_ZDO_FUNC</state>
                     <state>xMT_ZDO_MGMT</state>
                     <state>xMT_APP_CNF_FUNC</state>
-                    <state>LCD_SUPPORTED=DEBUG</state>
+                    <state>xLCD_SUPPORTED=DEBUG</state>
                     <state>MULTICAST_ENABLED=FALSE</state>
+                    <state>HAL_LCD=FALSE</state>
+                    <state>HAL_LED3_ENABLE</state>
+                    <state>HAL_LED4_ENABLE</state>
+                    <state>HAL_LED5_ENABLE</state>
+                    <state>HAL_PUSH1_ENABLE</state>
+                    <state>LED_POLARITY=ACTIVE_LOW</state>
+                    <state>PUSH_POLARITY=ACTIVE_LOW</state>
+                    <state>ISR_KEYINTERRUPT</state>
                     <state>ZCL_READ</state>
                     <state>ZCL_DISCOVER</state>
                     <state>ZCL_WRITE</state>
                     <state>ZCL_BASIC</state>
                     <state>ZCL_IDENTIFY</state>
-                    <state>ZCL_ON_OFF</state>
+                    <state>xZCL_ON_OFF</state>
                     <state>ZCL_GROUPS</state>
+                    <state>ZCL_REPORT</state>
+                    <state>ZCL_TIME</state>
+                    <state>ZCL_POWER_CONFIG</state>
+                    <state>ZCL_ALARMS</state>
+                    <state>BDB_REPORTING</state>
                 </option>
                 <option>
                     <name>CCPreprocFile</name>
@@ -3791,7 +3804,7 @@
                 </option>
                 <option>
                     <name>OGChipConfigPath</name>
-                    <state>C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.3\8051\bin\..\config\devices\Texas Instruments\CC25xx\3x\CC2530F256.i51</state>
+                    <state>D:\Program Files (x86)\IAR Systems\Embedded Workbench 8.3\8051\bin\..\config\devices\Texas Instruments\CC25xx\3x\CC2530F256.i51</state>
                 </option>
                 <option>
                     <name>PCReadOnly</name>
@@ -5917,7 +5930,7 @@
             <name>$ZSTACKDIR$\Components\stack\bdb\bdb_touchlink.c</name>
         </file>
         <file>
-            <name>$ZSTACKDIR$\Components\stack\bdb\bdb_touchLink.h</name>
+            <name>$ZSTACKDIR$\Components\stack\bdb\bdb_touchlink.h</name>
         </file>
         <file>
             <name>$ZSTACKDIR$\Components\stack\bdb\bdb_touchlink_initiator.c</name>

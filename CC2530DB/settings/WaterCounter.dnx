@@ -12,7 +12,7 @@
         <ByteLimit>50</ByteLimit>
     </Stack>
     <DebugChecksum>
-        <Checksum>4058998081</Checksum>
+        <Checksum>1047021853</Checksum>
     </DebugChecksum>
     <CallStack>
         <ShowArgs>0</ShowArgs>
@@ -87,6 +87,17 @@
         <Show>1 1</Show>
         <Sort>4 0</Sort>
     </SfrWindow>
+    <Breakpoints>
+        <Bp0>_ "STD_CODE" "{$PROJ_DIR$\..\hal\target\CC2530DEV\hal_key.c}.570.3" 1 0 0 0 "" 0 ""</Bp0>
+        <Bp1>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.244.3" 1 0 0 0 "" 0 ""</Bp1>
+        <Bp2>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.347.3" 1 0 0 0 "" 0 ""</Bp2>
+        <Bp3>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.498.3" 1 0 0 0 "" 0 ""</Bp3>
+        <Count>4</Count>
+    </Breakpoints>
+    <ChipconEmu>
+        <StopTimersOnHalt>0</StopTimersOnHalt>
+        <LeaveTargetRunning>1</LeaveTargetRunning>
+    </ChipconEmu>
     <TermIOLog>
         <LoggingEnabled>_ 0</LoggingEnabled>
         <LogFile>_ ""</LogFile>
@@ -96,19 +107,6 @@
         <LogFile>_ ""</LogFile>
         <Category>_ 0</Category>
     </LogFile>
-    <Breakpoints>
-        <Bp0>_ "STD_CODE" "{$PROJ_DIR$\..\hal\target\CC2530DEV\hal_sleep.c}.239.3" 0 0 0 0 "" 0 ""</Bp0>
-        <Bp1>_ "STD_CODE" "{$PROJ_DIR$\..\hal\target\CC2530DEV\hal_key.c}.570.3" 0 0 0 0 "" 0 ""</Bp1>
-        <Bp2>_ "STD_CODE" "LogicalCode:0x007B" 1 0 0 0 "" 0 ""</Bp2>
-        <Bp3>_ "STD_CODE" "LogicalCode:0x006B" 1 0 0 0 "" 0 ""</Bp3>
-        <Bp4>_ "STD_CODE" "LogicalCode:0x086B" 1 0 0 0 "" 0 ""</Bp4>
-        <Bp5>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.345.3" 1 0 0 0 "" 0 ""</Bp5>
-        <Count>6</Count>
-    </Breakpoints>
-    <ChipconEmu>
-        <StopTimersOnHalt>1</StopTimersOnHalt>
-        <LeaveTargetRunning>1</LeaveTargetRunning>
-    </ChipconEmu>
     <Aliases>
         <Count>0</Count>
         <SuppressDialog>0</SuppressDialog>

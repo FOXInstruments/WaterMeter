@@ -60,13 +60,13 @@ extern "C"
 #define WC_LONGPUSH_INTERVAL     100
 
 // Events for the sample app
-#define SAMPLEAPP_END_DEVICE_REJOIN_EVT   0x00E0
+#define SAMPLEAPP_END_DEVICE_REJOIN_EVT   0x0001        // event_flag is a 2-byte bitmap with each bit specifying an event
 
 // Events
-#define SAMPLEAPP_IMPULSE1_EVT            0x00E1  
-#define SAMPLEAPP_IMPULSE2_EVT            0x00E2  
-#define SAMPLEAPP_EVERYHOUR_EVT           0x00E3
-#define SAMPLEAPP_LONGPUSH_EVT            0x00E4
+#define SAMPLEAPP_IMPULSE1_EVT            0x0002
+#define SAMPLEAPP_IMPULSE2_EVT            0x0004  
+#define SAMPLEAPP_EVERYHOUR_EVT           0x0008
+#define SAMPLEAPP_LONGPUSH_EVT            0x0010
 
 #define SAMPLEAPP_END_DEVICE_REJOIN_DELAY 10000
 

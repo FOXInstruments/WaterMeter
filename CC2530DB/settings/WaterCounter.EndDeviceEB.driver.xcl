@@ -48,11 +48,11 @@
 
 "chipcon" 
 
-"--retain_memory" 
+"--erase_flash" 
 
 "--verify_download" 
 
-"read_back_memory" 
+"use_crc16" 
 
 "--stack_overflow" 
 

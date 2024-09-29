@@ -238,6 +238,7 @@ void zclWC_Init(byte task_id)
 {
   zclWC_TaskID = task_id;
   zclWC_SeqNum = 0;
+  uint8 status;
 
   // Set destination address to indirect
   zclWC_DstAddr.addrMode = (afAddrMode_t)AddrNotPresent;
@@ -280,12 +281,12 @@ void zclWC_Init(byte task_id)
   
   osal_memset(reportChange, 0, BDBREPORTING_MAX_ANALOG_ATTR_SIZE);
   osal_memcpy(reportChange, (void*)&Volt, sizeof(float));
-  bdb_RepAddAttrCfgRecordDefaultToList(WC_ENDPOINT, ZCL_CLUSTER_ID_GEN_POWER_CFG, ATTRID_POWER_CFG_BATTERY_VOLTAGE, \
+  status = bdb_RepAddAttrCfgRecordDefaultToList(WC_ENDPOINT, ZCL_CLUSTER_ID_GEN_POWER_CFG, ATTRID_POWER_CFG_BATTERY_VOLTAGE, \
                                        zclWC_FlowReportInterval, zclWC_FlowReportInterval*6, reportChange);
   
   osal_memset(reportChange, 0, BDBREPORTING_MAX_ANALOG_ATTR_SIZE);
   osal_memcpy(reportChange, (void*)&Flow, sizeof(uint32));
-  bdb_RepAddAttrCfgRecordDefaultToList(WC_ENDPOINT, ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC, ATTRID_IOV_BASIC_PRESENT_VALUE, \
+  status = bdb_RepAddAttrCfgRecordDefaultToList(WC_ENDPOINT, ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC, ATTRID_IOV_BASIC_PRESENT_VALUE, \
                                        zclWC_FlowReportInterval, zclWC_FlowReportInterval*6, reportChange);
 #endif
   
@@ -325,7 +326,7 @@ void zclWC_Init(byte task_id)
   IEN2 |= BV(4);           // Enable interrupt Port1
   
   zclWC_HourCounter = 0;   // Initialize Hour counter for time synchronization every 24 hours
-  osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_EVERYHOUR_EVT, 10000);
+  status = osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_EVERYHOUR_EVT, 10000);
 }
 
 /*********************************************************************
@@ -341,6 +342,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
 {
   afIncomingMSGPacket_t *MSGpkt;
   (void)task_id;  // Intentionally unreferenced parameter
+  uint8 status;
 
   if(events & SAMPLEAPP_EVERYHOUR_EVT) // Every hour event. To check month change
   {
@@ -367,11 +369,11 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
       dstAddr.addrMode = AddrBroadcast;
       discoverAttr.startAttr = ATTRID_TIME_TIME;
       discoverAttr.maxAttrIDs = ATTRID_TIME_VALID_UNTIL_TIME;
-      zcl_SendRead(WC_ENDPOINT, &dstAddr, ZCL_CLUSTER_ID_GEN_TIME, &readCmdTimeCluster, ZCL_FRAME_CLIENT_SERVER_DIR, true, zclWC_SeqNum++);
-      zcl_SendDiscoverAttrsCmd(WC_ENDPOINT, &dstAddr, ZCL_CLUSTER_ID_GEN_TIME, &discoverAttr, ZCL_FRAME_CLIENT_SERVER_DIR, true, zclWC_SeqNum++);
+      status = zcl_SendRead(WC_ENDPOINT, &dstAddr, ZCL_CLUSTER_ID_GEN_TIME, &readCmdTimeCluster, ZCL_FRAME_CLIENT_SERVER_DIR, true, zclWC_SeqNum++);
+      status = zcl_SendDiscoverAttrsCmd(WC_ENDPOINT, &dstAddr, ZCL_CLUSTER_ID_GEN_TIME, &discoverAttr, ZCL_FRAME_CLIENT_SERVER_DIR, true, zclWC_SeqNum++);
     }
     zclWC_HourCounter = (zclWC_HourCounter + 1) % 24;
-    osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_EVERYHOUR_EVT, 1L*60L*60L*1000L);
+    status = osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_EVERYHOUR_EVT, 1L*60L*60L*1000L);
     return (events ^ SAMPLEAPP_EVERYHOUR_EVT); // return unprocessed events
   }
   
@@ -449,7 +451,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
       else
       {
         //HalLedBlink(HAL_LED_3, 1, 100, WC_LONGPUSH_INTERVAL);
-        osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_LONGPUSH_EVT, WC_LONGPUSH_INTERVAL);
+        status = osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_LONGPUSH_EVT, WC_LONGPUSH_INTERVAL);
       }
     }
     return (events ^ SAMPLEAPP_LONGPUSH_EVT);

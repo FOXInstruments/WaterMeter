@@ -23,9 +23,9 @@
 
 if ($debugfile -eq "")
 {
-& "D:\Program Files (x86)\IAR Systems\Embedded Workbench 8.3\common\bin\cspybat" -f "K:\!Projects\WaterCounter\CC2530DB\settings\WaterCounter.EndDeviceEB_-_OTAClient.general.xcl" --backend -f "K:\!Projects\WaterCounter\CC2530DB\settings\WaterCounter.EndDeviceEB_-_OTAClient.driver.xcl" 
+& "D:\Program Files (x86)\IAR Systems\Embedded Workbench 8.3\common\bin\cspybat" -f "K:\!Projects\WaterCounter\CC2530DB\settings\WaterCounter.EndDeviceEB.general.xcl" --backend -f "K:\!Projects\WaterCounter\CC2530DB\settings\WaterCounter.EndDeviceEB.driver.xcl" 
 }
 else
 {
-& "D:\Program Files (x86)\IAR Systems\Embedded Workbench 8.3\common\bin\cspybat" -f "K:\!Projects\WaterCounter\CC2530DB\settings\WaterCounter.EndDeviceEB_-_OTAClient.general.xcl" --debug_file=$debugfile --backend -f "K:\!Projects\WaterCounter\CC2530DB\settings\WaterCounter.EndDeviceEB_-_OTAClient.driver.xcl" 
+& "D:\Program Files (x86)\IAR Systems\Embedded Workbench 8.3\common\bin\cspybat" -f "K:\!Projects\WaterCounter\CC2530DB\settings\WaterCounter.EndDeviceEB.general.xcl" --debug_file=$debugfile --backend -f "K:\!Projects\WaterCounter\CC2530DB\settings\WaterCounter.EndDeviceEB.driver.xcl" 
 }
