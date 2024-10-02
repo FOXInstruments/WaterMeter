@@ -344,39 +344,6 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
   (void)task_id;  // Intentionally unreferenced parameter
   uint8 status;
 
-  if(events & SAMPLEAPP_EVERYHOUR_EVT) // Every hour event. To check month change
-  {
-    UTCTime time = osal_getClock();
-    // Battery voltage check
-    uint8 battvolt = HalAdcCheckVddRaw();
-    zclWC_BatteryVoltage = VDD3TOVOLTAGE(battvolt);
-    if (battvolt <= VDD3_THRES_MIN)
-    {
-      //zclWC_BatteryAlarmMask |= BAT_ALARM_MASK_VOLT_2_LOW;
-      zclWC_BatteryAlarmMask |= BAT_ALARM_MASK_BATTERY_ALARM_1;
-      zclWC_BatteryAlarmState = ALARM_CODE_BAT_VOLT_MIN_THRES_BAT_SRC_1;
-    }
-    else
-    {
-      zclWC_BatteryAlarmMask = 0;
-      zclWC_BatteryAlarmState = 0;
-    }
-    
-    if (zclWC_HourCounter == 0)
-    {
-      afAddrType_t dstAddr;
-      zclDiscoverAttrsCmd_t discoverAttr;
-      dstAddr.addrMode = AddrBroadcast;
-      discoverAttr.startAttr = ATTRID_TIME_TIME;
-      discoverAttr.maxAttrIDs = ATTRID_TIME_VALID_UNTIL_TIME;
-      status = zcl_SendRead(WC_ENDPOINT, &dstAddr, ZCL_CLUSTER_ID_GEN_TIME, &readCmdTimeCluster, ZCL_FRAME_CLIENT_SERVER_DIR, true, zclWC_SeqNum++);
-      status = zcl_SendDiscoverAttrsCmd(WC_ENDPOINT, &dstAddr, ZCL_CLUSTER_ID_GEN_TIME, &discoverAttr, ZCL_FRAME_CLIENT_SERVER_DIR, true, zclWC_SeqNum++);
-    }
-    zclWC_HourCounter = (zclWC_HourCounter + 1) % 24;
-    status = osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_EVERYHOUR_EVT, 1L*60L*60L*1000L);
-    return (events ^ SAMPLEAPP_EVERYHOUR_EVT); // return unprocessed events
-  }
-  
   if (events & SYS_EVENT_MSG)
   {
     while ((MSGpkt = (afIncomingMSGPacket_t *)osal_msg_receive(zclWC_TaskID)))
@@ -417,12 +384,45 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
   }
 #endif
 
+  if(events & SAMPLEAPP_EVERYHOUR_EVT) // Every hour event. To check month change
+  {
+    UTCTime time = osal_getClock();
+    // Battery voltage check
+    uint8 battvolt = HalAdcCheckVddRaw();
+    zclWC_BatteryVoltage = VDD3TOVOLTAGE(battvolt);
+    if (battvolt <= VDD3_THRES_MIN)
+    {
+      //zclWC_BatteryAlarmMask |= BAT_ALARM_MASK_VOLT_2_LOW;
+      zclWC_BatteryAlarmMask |= BAT_ALARM_MASK_BATTERY_ALARM_1;
+      zclWC_BatteryAlarmState = ALARM_CODE_BAT_VOLT_MIN_THRES_BAT_SRC_1;
+    }
+    else
+    {
+      zclWC_BatteryAlarmMask = 0;
+      zclWC_BatteryAlarmState = 0;
+    }
+    
+    if (zclWC_HourCounter == 0)
+    {
+      afAddrType_t dstAddr;
+      zclDiscoverAttrsCmd_t discoverAttr;
+      dstAddr.addrMode = AddrBroadcast;
+      discoverAttr.startAttr = ATTRID_TIME_TIME;
+      discoverAttr.maxAttrIDs = ATTRID_TIME_VALID_UNTIL_TIME;
+      status = zcl_SendRead(WC_ENDPOINT, &dstAddr, ZCL_CLUSTER_ID_GEN_TIME, &readCmdTimeCluster, ZCL_FRAME_CLIENT_SERVER_DIR, true, zclWC_SeqNum++);
+      status = zcl_SendDiscoverAttrsCmd(WC_ENDPOINT, &dstAddr, ZCL_CLUSTER_ID_GEN_TIME, &discoverAttr, ZCL_FRAME_CLIENT_SERVER_DIR, true, zclWC_SeqNum++);
+    }
+    zclWC_HourCounter = (zclWC_HourCounter + 1) % 24;
+    status = osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_EVERYHOUR_EVT, 1L*60L*60L*1000L);
+    return (events ^ SAMPLEAPP_EVERYHOUR_EVT); // return unprocessed events
+  }
+  
   if (events & SAMPLEAPP_IMPULSE1_EVT) // Event from ISR function to recive impulse from counter
   {
     if (POLARITY_IMPULSE(P1_0))
     {
       zclWC_Flow1Value += zclWC_Flow1Multiplyer;
-      HalLedBlink(HAL_LED_4, 1, 100, 100);
+      HalLedBlink(HAL_LED_4, 1, 99, 150);
     }
     return (events ^ SAMPLEAPP_IMPULSE1_EVT);
   }
@@ -432,7 +432,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
     if (POLARITY_IMPULSE(P1_1))
     {
       zclWC_Flow2Value += zclWC_Flow2Multiplyer;
-      HalLedBlink(HAL_LED_5, 1, 100, 100);
+      HalLedBlink(HAL_LED_5, 1, 99, 150);
     }    
     return (events ^ SAMPLEAPP_IMPULSE2_EVT);
   }
@@ -442,10 +442,11 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
     if (HAL_PUSH_BUTTON()) // Button is still pressed between 100ms interval
     {
       zclWC_LongPushCounter++;
-      if (zclWC_LongPushCounter > 50) // Key is pressed more than 5 sec, preform LocalReset and recomission
+      if (zclWC_LongPushCounter > 50) // Key is pressed more than 5 sec, preform LocalReset and recommission
       {
-        HalLedBlink(HAL_LED_3, 255, 50, 250);
+        HalLedBlink(HAL_LED_3, 255, 50, 500);
         bdb_resetLocalAction();
+        bdb_StartCommissioning(BDB_COMMISSIONING_MODE_NWK_STEERING);
         //SystemReset();
       }
       else
@@ -476,7 +477,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
  */
 static void zclWC_HandleKeys(byte shift, byte keys)
 {
-  HalLedBlink(HAL_LED_3, 1, 100, WC_LONGPUSH_INTERVAL);
+  HalLedBlink(HAL_LED_3, 1, 99, WC_LONGPUSH_INTERVAL);
   if (HAL_PUSH_BUTTON()) // Button is still pressed, try to determine long press 
   {
     osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_LONGPUSH_EVT, WC_LONGPUSH_INTERVAL);
@@ -514,6 +515,7 @@ static void zclWC_ProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
       {
         //YOUR JOB:
         //We are on the nwk, what now?
+        HalLedBlink(HAL_LED_3, 3, 50, 150);  // Stop LED blinking if steering SUCCESS
       }
       else
       {
@@ -910,7 +912,7 @@ HAL_ISR_FUNCTION(halPort1Isr, P1INT_VECTOR)
   {
     osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_IMPULSE2_EVT, WC_DEBOUNCE);
   }
-  P1IF = 0;
+  P1IFG = 0;
   
   HAL_EXIT_ISR();
 }

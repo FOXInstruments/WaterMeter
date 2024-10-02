@@ -57,7 +57,7 @@ extern "C"
  */
 #define WC_ENDPOINT              8
 #define WC_DEBOUNCE              50
-#define WC_LONGPUSH_INTERVAL     100
+#define WC_LONGPUSH_INTERVAL     200
 
 // Events for the sample app
 #define SAMPLEAPP_END_DEVICE_REJOIN_EVT   0x0001        // event_flag is a 2-byte bitmap with each bit specifying an event

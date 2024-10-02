@@ -2657,6 +2657,7 @@
                 </option>
                 <option>
                     <name>CCDefines</name>
+                    <state>DEFAULT_CHANLIST=0x02000000</state>
                     <state>SECURE=1</state>
                     <state>TC_LINKKEY_JOIN</state>
                     <state>NV_INIT</state>
