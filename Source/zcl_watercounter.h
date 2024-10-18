@@ -57,7 +57,7 @@ extern "C"
  */
 #define WC_ENDPOINT              8
 #define WC_DEBOUNCE              50
-#define WC_LONGPUSH_INTERVAL     200
+#define WC_LONGPUSH_INTERVAL     100
 
 // Events for the sample app
 #define SAMPLEAPP_END_DEVICE_REJOIN_EVT   0x0001        // event_flag is a 2-byte bitmap with each bit specifying an event
@@ -83,6 +83,62 @@ extern "C"
 #define REPORT_CHANGE_FLOW      100
   
 #define TIME_SYNC_DIFF          5L       // Difference between device time and gate time
+  
+#define ATTRID_METER_0READINGSET_CURRSUMDELIVERED        0x0000  // uint48, CurrentSummationDelivered
+#define ATTRID_METER_0READINGSET_CURRSUMRECIVED          0x0001  // uint48, CurrentSummationRecived
+#define ATTRID_METER_0READINGSET_DFT_SUM                 0x0004  // uint48, Snapshot of attribute CurrentSummationDelivered captured at the time indicated by attribute DailyFreezeTime.
+#define ATTRID_METER_0READINGSET_DAILYFREEZETIME         0x0005  // uint16, Time of day when DFTSummation is captured. Bits 0 to 7: minute, Bits 8 to 15: hour
+#define ATTRID_METER_0READINGSET_POWERFACTOR             0x0006  // int8, Average Power Factor ratio in 1/100ths. Valid values are 0 to 99
+#define ATTRID_METER_0READINGSET_READINGSNAPSHOTTIME     0x0007  // UTC, Last time all of the CurrentSummationDelivered, CurrentSummationReceived, CurrentMaxDemandDelivered, and CurrentMaxDemandReceived attributes that are supported by the device were updated
+#define ATTRID_METER_0READINGSET_DEFAULTUPDATEPERIOD     0x000A  // uint8, Interval (seconds) at which the InstantaneousDemand attribute is updated when not in fast poll mode
+#define ATTRID_METER_0READINGSET_FASTPOLLUPDATEPERIOD    0x000B  // uint8, Interval (seconds) at which the InstantaneousDemand attribute is updated when in fast poll mode
+#define ATTRID_METER_0READINGSET_DAILYCONSUMPTIONTARGET  0x000D  // uint24, Daily target consumption amount that can be displayed to the consumer on a HAN device
+#define ATTRID_METER_0READINGSET_CURRBLOCK               0x000E  // enum8, When Block Tariffs are enabled, CurrentBlock is an 8-bit Enumeration which indicates the currently active block
+                                                                 // 0-No Blocks in use
+#define ATTRID_METER_0READINGSET_PROFILEINTERVALPERIOD   0x000F  // enum8
+#define ATTRID_METER_0READINGSET_INTERVALREPORTING       0x0010  // uint16, How often (in minutes) the water or gas meter is to wake up and provide interval data
+#define ATTRID_METER_0READINGSET_PRESETREADINGTIME       0x0011  // uint16, Time of day (in quarter hour increments) at which the meter will wake up and report a register reading even
+                                                                 // if there has been no consumption for the previous 24 hours
+                                                                 // Bits 0 to 7: minute, Bits 8 to 15: hour
+#define ATTRID_METER_0READINGSET_VOLUMEPERREPORT         0x0012  // uint16, Volume per report increment from the water or gas meter. For a water meter it might report the register value every 10 liters of water usage
+#define ATTRID_METER_0READINGSET_FLOWRESTRICTION         0x0013  // uint8, Represents the volume per minute limit set in the flow restrictor, 0xFF indicates this feature is disabled
+#define ATTRID_METER_0READINGSET_SUPPLYSTATUS            0x0014  // enum8, 0-Supply OFF, 1-Supply OFF/ARMED, 2-Supply ON 
+  
+#define ATTRID_METER_2STATUS_STATUS                      0x0200  // map8, 7-Reverse flow 6-Service disconnected 5-Leak detect 4-Low press 3-Pipe empty 2-Tamper detect 1-Low batt 0-Check meter
+#define ATTRID_METER_2STATUS_REMAININGBATT               0x0201  // uint8, 0 - 100, 0xFF - feature disabled
+#define ATTRID_METER_2STATUS_HOURSINOPERATION            0x0202  // uint24
+#define ATTRID_METER_2STATUS_HOURSINFAULT                0x0203  // uint24
+  
+#define ATTRID_METER_3FORMATTING_UNIT                    0x0300  // enum8, 0x81 m3, 0x80 kWh, 0x87 liter
+#define ATTRID_METER_3FORMATTING_MULTIPLIER              0x0301  // uint24, Summation = Summation received * Multiplier / Divisor
+#define ATTRID_METER_3FORMATTING_DIVISOR                 0x0302  // uint24, Summation = Summation received * Multiplier / Divisor
+#define ATTRID_METER_3FORMATTING_SUMFORMATTING           0x0303  // map8, Bits 0 to 2: Number of Digits to the right of the Decimal Point
+                                                                 // Bits 3 to 6: Number of Digits to the left of the Decimal Point 
+                                                                 // Bit 7: If set, suppress leading zeros
+#define ATTRID_METER_3FORMATTING_DEMANDFORMATTING        0x0304  // See above
+#define ATTRID_METER_3FORMATTING_HISTORYFORMATTING       0x0305  // See above
+#define ATTRID_METER_3FORMATTING_METERDEVICETYPE         0x0306  // map8, 0 Electric Metering, 1 Gas Metering, 2 Water Metering ,3 Thermal Metering (deprecated)
+                                                                 // 4 Pressure Metering, 5 Heat Metering, 6 Cooling Metering, 128.. Mirrored Gas Metering
+#define ATTRID_METER_3FORMATTING_SITEID                  0x0307  // octstr, ZCL Octet String field capable of storing a 32 character string (the first octet indicates length) encoded in UTF-8 format
+#define ATTRID_METER_3FORMATTING_METERSERIALNUM          0x0308  // octstr, ZCL Octet String field capable of storing a 24 character string (the first octet indicates length) encoded in UTF-8 format
+  
+#define ATTRID_METER_4HISTORY_INSTANTDEMAND              0x0400  // int24
+#define ATTRID_METER_4HISTORY_CURRDAYCONSUMPTIONDELIVER  0x0401  // uint24
+#define ATTRID_METER_4HISTORY_CURRDAYCONSUMPTIONRECIVE   0x0402  // uint24
+#define ATTRID_METER_4HISTORY_PREVDAYCONSUMPTIONDELIVER  0x0403  // uint24
+#define ATTRID_METER_4HISTORY_PREVDAYCONSUMPTIONRECIVE   0x0404  // uint24
+#define ATTRID_METER_4HISTORY_CURRPROFSTARTTIMEDELIVER   0x0405  // UTC
+#define ATTRID_METER_4HISTORY_CURRPROFSTARTTIMERECIVE    0x0406  // UTC
+  
+#define ATTRID_METER_5PROFILE_MAXNUMPERIODSDELIVER       0x0500  // uint8, represents the maximum number of intervals the device is capable of returning in one Get Profile Response command.
+  
+#define ATTRID_METER_8ALARMS_GENERICALARMMASK            0x0800  // map16
+#define ATTRID_METER_8ALARMS_ELECTRICITYALARMMASK        0x0801  // map32
+#define ATTRID_METER_8ALARMS_FLOWPRESSALARMMASK          0x0802  // map16
+#define ATTRID_METER_8ALARMS_WATERALARMMASK              0x0803  // map16
+#define ATTRID_METER_8ALARMS_HEATCOOLALARMMASK           0x0804  // map16
+#define ATTRID_METER_8ALARMS_GASALARMMASK                0x0805  // map16
+  
 /*********************************************************************
  * MACROS
  */

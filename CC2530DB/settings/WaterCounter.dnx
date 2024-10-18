@@ -12,7 +12,7 @@
         <ByteLimit>50</ByteLimit>
     </Stack>
     <DebugChecksum>
-        <Checksum>363792798</Checksum>
+        <Checksum>2161574884</Checksum>
     </DebugChecksum>
     <CallStack>
         <ShowArgs>0</ShowArgs>
@@ -87,6 +87,12 @@
         <Show>1 1</Show>
         <Sort>4 0</Sort>
     </SfrWindow>
+    <struct_types>
+        <Fmt0>bdbAttributes_t-bdbCommissioningGroupID	3	0</Fmt0>
+        <Fmt1>bdbAttributes_t-bdbCommissioningStatus	3	0</Fmt1>
+        <Fmt2>bdbAttributes_t-bdbPrimaryChannelSet	4	0</Fmt2>
+        <Fmt3>bdbAttributes_t-bdbSecondaryChannelSet	4	0</Fmt3>
+    </struct_types>
     <TermIOLog>
         <LoggingEnabled>_ 0</LoggingEnabled>
         <LogFile>_ ""</LogFile>
@@ -99,13 +105,13 @@
     <Breakpoints>
         <Bp0>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.244.3" 0 0 0 0 "" 0 ""</Bp0>
         <Bp1>_ "STD_CODE" "{$PROJ_DIR$\..\hal\target\CC2530DEV\hal_key.c}.500.5" 0 0 0 0 "" 0 ""</Bp1>
-        <Bp2>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.907.3" 0 0 0 0 "" 0 ""</Bp2>
-        <Bp3>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.499.3" 1 0 0 0 "" 0 ""</Bp3>
-        <Bp4>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.447.9" 0 0 0 0 "" 0 ""</Bp4>
+        <Bp2>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.499.3" 0 0 0 0 "" 0 ""</Bp2>
+        <Bp3>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.620.3" 1 0 0 0 "" 0 ""</Bp3>
+        <Bp4>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.907.3" 0 0 0 0 "" 0 ""</Bp4>
         <Count>5</Count>
     </Breakpoints>
     <ChipconEmu>
-        <StopTimersOnHalt>1</StopTimersOnHalt>
+        <StopTimersOnHalt>0</StopTimersOnHalt>
         <LeaveTargetRunning>0</LeaveTargetRunning>
     </ChipconEmu>
     <Aliases>

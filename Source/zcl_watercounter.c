@@ -422,7 +422,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
     if (POLARITY_IMPULSE(P1_0))
     {
       zclWC_Flow1Value += zclWC_Flow1Multiplyer;
-      HalLedBlink(HAL_LED_4, 1, 99, 150);
+      HalLedBlink(HAL_LED_4, 1, 50, 100);
     }
     return (events ^ SAMPLEAPP_IMPULSE1_EVT);
   }
@@ -432,7 +432,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
     if (POLARITY_IMPULSE(P1_1))
     {
       zclWC_Flow2Value += zclWC_Flow2Multiplyer;
-      HalLedBlink(HAL_LED_5, 1, 99, 150);
+      HalLedBlink(HAL_LED_5, 1, 50, 100);
     }    
     return (events ^ SAMPLEAPP_IMPULSE2_EVT);
   }
@@ -444,9 +444,9 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
       zclWC_LongPushCounter++;
       if (zclWC_LongPushCounter > 50) // Key is pressed more than 5 sec, preform LocalReset and recommission
       {
-        HalLedBlink(HAL_LED_3, 255, 50, 500);
-        bdb_resetLocalAction();
-        bdb_StartCommissioning(BDB_COMMISSIONING_MODE_NWK_STEERING);
+        HalLedBlink(HAL_LED_3, 255, 50, 200);
+        //bdb_resetLocalAction();
+        bdb_StartCommissioning(BDB_COMMISSIONING_MODE_NWK_STEERING | BDB_COMMISSIONING_MODE_FINDING_BINDING);
         //SystemReset();
       }
       else
@@ -477,7 +477,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
  */
 static void zclWC_HandleKeys(byte shift, byte keys)
 {
-  HalLedBlink(HAL_LED_3, 1, 99, WC_LONGPUSH_INTERVAL);
+  HalLedBlink(HAL_LED_3, 1, 50, WC_LONGPUSH_INTERVAL);
   if (HAL_PUSH_BUTTON()) // Button is still pressed, try to determine long press 
   {
     osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_LONGPUSH_EVT, WC_LONGPUSH_INTERVAL);
