@@ -247,6 +247,7 @@ void zclWC_Init(byte task_id)
 
   // Register the Simple Descriptor for this application
   bdb_RegisterSimpleDescriptor(&zclWC_SimpleDesc);
+  bdb_RegisterSimpleDescriptor(&zclWC_SimpleDesc2);
 
   // Register the ZCL General Cluster Library callback functions
   zclGeneral_RegisterCmdCallbacks(WC_ENDPOINT, &zclWC_CmdCallbacks);
@@ -256,6 +257,7 @@ void zclWC_Init(byte task_id)
   
   // Register the application's attribute list
   zcl_registerAttrList(WC_ENDPOINT, zclWC_NumAttributes, zclWC_Attrs);
+  zcl_registerAttrList(WC_ENDPOINT2, zclWC_NumAttributes2, zclWC_Attrs2);
 
   // Register the Application to receive the unprocessed Foundation command/response messages
   zcl_registerForMsg(zclWC_TaskID);
@@ -389,7 +391,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
     UTCTime time = osal_getClock();
     // Battery voltage check
     uint8 battvolt = HalAdcCheckVddRaw();
-    zclWC_BatteryVoltage = VDD3TOVOLTAGE(battvolt);
+    zclWC_BatteryVoltage = (uint8)VDD3TOVOLTAGE(battvolt);
     if (battvolt <= VDD3_THRES_MIN)
     {
       //zclWC_BatteryAlarmMask |= BAT_ALARM_MASK_VOLT_2_LOW;
@@ -421,7 +423,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
   {
     if (POLARITY_IMPULSE(P1_0))
     {
-      zclWC_Flow1Value += zclWC_Flow1Multiplyer;
+      zclWC_Flow1Value ++;
       HalLedBlink(HAL_LED_4, 1, 50, 100);
     }
     return (events ^ SAMPLEAPP_IMPULSE1_EVT);
@@ -431,7 +433,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
   {
     if (POLARITY_IMPULSE(P1_1))
     {
-      zclWC_Flow2Value += zclWC_Flow2Multiplyer;
+      zclWC_Flow2Value ++;
       HalLedBlink(HAL_LED_5, 1, 50, 100);
     }    
     return (events ^ SAMPLEAPP_IMPULSE2_EVT);

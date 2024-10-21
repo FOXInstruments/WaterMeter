@@ -56,6 +56,7 @@ extern "C"
  * CONSTANTS
  */
 #define WC_ENDPOINT              8
+#define WC_ENDPOINT2             (WC_ENDPOINT + 1)
 #define WC_DEBOUNCE              50
 #define WC_LONGPUSH_INTERVAL     100
 
@@ -76,10 +77,10 @@ extern "C"
 #define VDD3_MIN_RUN            (VDD_2_0+4)  // VDD_MIN_RUN = VDD_MIN_NV
 #define VDD3_MIN_NV             (VDD_2_0+4)  // 5% margin over minimum to survive a page erase and compaction.
 #define VDD3_MIN_GOOD           (VDD_2_0+8)  // 10% margin over minimum to survive a page erase and compaction.
-#define VDD_NORMAL_VOLTAGE      3.6
-#define VDD3TOVOLTAGE(v)        (v / 127.0 * 1.15 * 3)   // Convert ADC value to Voltage
+#define VDD_NORMAL_VOLTAGE      36           // 0.1V unit
+#define VDD3TOVOLTAGE(v)        (v * 11.5 * 3 / 127.0)   // Convert ADC value to Voltage
   
-#define REPORT_CHANGE_VOLTAGE   0.1     // Change values for BDB_REPORTING
+#define REPORT_CHANGE_VOLTAGE   1     // Change values for BDB_REPORTING (0.1V unit)
 #define REPORT_CHANGE_FLOW      100
   
 #define TIME_SYNC_DIFF          5L       // Difference between device time and gate time
@@ -152,31 +153,42 @@ extern "C"
  * VARIABLES
  */
 extern SimpleDescriptionFormat_t zclWC_SimpleDesc;
+extern SimpleDescriptionFormat_t zclWC_SimpleDesc2;
 
 extern CONST zclAttrRec_t zclWC_Attrs[];
+extern CONST zclAttrRec_t zclWC_Attrs2[];
 
-extern uint8    zclWC_Flow1Desc[];
-extern uint32   zclWC_Flow1Value;
-extern uint16   zclWC_Flow1Multiplyer;
-extern uint16   zclWC_Flow1Unit;
-extern uint8    zclWC_Flow1Status;
+extern uint8 zclWC_Flow1Desc[];
+extern uint32 zclWC_Flow1Value;
+extern uint16 zclWC_Flow1Multiplier;
+extern uint16 zclWC_Flow1Divisor;
+extern uint8 zclWC_Flow1Unit;
+extern uint16 zclWC_Flow1VolumePerReport;
+extern uint16 zclWC_Flow1PrevDay;
+extern uint8 zclWC_Flow1Status;
 
-extern uint8    zclWC_Flow2Desc[];
-extern uint32   zclWC_Flow2Value;
-extern uint16   zclWC_Flow2Multiplyer;
-extern uint16   zclWC_Flow2Unit;
-extern uint8    zclWC_Flow2Status;
+extern uint8 zclWC_Flow2Desc[];
+extern uint32 zclWC_Flow2Value;
+extern uint16 zclWC_Flow2Multiplier;
+extern uint16 zclWC_Flow2Divisor;
+extern uint16 zclWC_Flow2Unit;
+extern uint16 zclWC_Flow2VolumePerReport;
+extern uint16 zclWC_Flow2PrevDay;
+extern uint8 zclWC_Flow2Status;
 
-extern float zclWC_BatteryVoltage;
-extern float zclWC_BatteryVoltageThresMin;    // 2.5V LiFePO4 T>0 degC
+extern uint8 zclWC_BatteryVoltage;            // 0.1V unit
+extern uint8 zclWC_BatteryVoltageThresMin;    // 0.1V unit, 2.5V LiFePO4 T>0 degC
+extern uint8 zclWC_BatteryLevel;              // 0 - 100%
 extern uint8 zclWC_BatteryAlarmMask;
-extern uint8 zclWC_BatteryAlarmState;
+extern uint32 zclWC_BatteryAlarmState;
 
-extern uint16   zclWC_FlowReportInterval;     // Time interval in seconds for Reporting compatability
+extern uint16 zclWC_FlowReportInterval;     // Time interval in seconds for Reporting compatability
+extern uint24 zclWC_Flow1HoursInOperation;
 
-extern uint16   zclWC_IdentifyTime;
+extern uint16 zclWC_IdentifyTime;
 
 extern CONST uint8 zclWC_NumAttributes;
+extern CONST uint8 zclWC_NumAttributes2;
 
 /*********************************************************************
  * FUNCTIONS
