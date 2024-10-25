@@ -2088,7 +2088,7 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 335</file>
+                    <file> 391 335 453</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>

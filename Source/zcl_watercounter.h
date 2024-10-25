@@ -61,15 +61,15 @@ extern "C"
 #define WC_LONGPUSH_INTERVAL     100
 
 // Events for the sample app
-#define SAMPLEAPP_END_DEVICE_REJOIN_EVT   0x0001        // event_flag is a 2-byte bitmap with each bit specifying an event
+#define WC_END_DEVICE_REJOIN_EVT   0x0001        // event_flag is a 2-byte bitmap with each bit specifying an event
 
 // Events
-#define SAMPLEAPP_IMPULSE1_EVT            0x0002
-#define SAMPLEAPP_IMPULSE2_EVT            0x0004  
-#define SAMPLEAPP_EVERYHOUR_EVT           0x0008
-#define SAMPLEAPP_LONGPUSH_EVT            0x0010
+#define WC_IMPULSE1_EVT            0x0002
+#define WC_IMPULSE2_EVT            0x0004  
+#define WC_EVERYHOUR_EVT           0x0008
+#define WC_LONGPUSH_EVT            0x0010
 
-#define SAMPLEAPP_END_DEVICE_REJOIN_DELAY 10000
+#define WC_END_DEVICE_REJOIN_DELAY 10000
 
 // Vdd/3 / Internal Reference X ENOB --> (Vdd / 3) / 1.15 X 127
 #define VDD3_2_0                74   // 2.0 V required to safely read/write internal flash.
@@ -77,11 +77,16 @@ extern "C"
 #define VDD3_MIN_RUN            (VDD_2_0+4)  // VDD_MIN_RUN = VDD_MIN_NV
 #define VDD3_MIN_NV             (VDD_2_0+4)  // 5% margin over minimum to survive a page erase and compaction.
 #define VDD3_MIN_GOOD           (VDD_2_0+8)  // 10% margin over minimum to survive a page erase and compaction.
-#define VDD_NORMAL_VOLTAGE      36           // 0.1V unit
-#define VDD3TOVOLTAGE(v)        (v * 11.5 * 3 / 127.0)   // Convert ADC value to Voltage
+#define VDD_VOLTAGE_RATED       36           // 0.1V unit
+#define VDD_VOLTAGE_MIN         25           // 0.1V unit
+#define VDD_VOLTAGE_THRES1      27           // 0.1V unit
+#define VDD3TOVOLTAGE(v)        (v * 11.5 * 3 / 127.0)   // Convert ADC value to Voltage 0.1V unit
   
-#define REPORT_CHANGE_VOLTAGE   1     // Change values for BDB_REPORTING (0.1V unit)
-#define REPORT_CHANGE_FLOW      100
+#define WC_DESCSIZE                8
+#define WC_MULTIPLYER              10    // Weight of one count
+#define WC_REPORT_INTERVAL         60 // Reporting interval in minutes
+#define WC_REPORT_CHANGE_VOLTAGE   1     // Change values for BDB_REPORTING (0.1V unit)
+#define WC_REPORT_CHANGE_FLOW      100
   
 #define TIME_SYNC_DIFF          5L       // Difference between device time and gate time
   
@@ -139,6 +144,10 @@ extern "C"
 #define ATTRID_METER_8ALARMS_WATERALARMMASK              0x0803  // map16
 #define ATTRID_METER_8ALARMS_HEATCOOLALARMMASK           0x0804  // map16
 #define ATTRID_METER_8ALARMS_GASALARMMASK                0x0805  // map16
+
+#define METER_2STATUS_CHECKMETER        0x01
+#define METER_2STATUS_LOWBATT           0x02
+#define METER_2STATUS_TAMPERDETECT      0x04
   
 /*********************************************************************
  * MACROS
@@ -177,13 +186,16 @@ extern uint16 zclWC_Flow2PrevDay;
 extern uint8 zclWC_Flow2Status;
 
 extern uint8 zclWC_BatteryVoltage;            // 0.1V unit
+extern uint8 zclWC_BatteryVoltageRated;        // 0.1V unit, 3.6V LiFePO4
 extern uint8 zclWC_BatteryVoltageThresMin;    // 0.1V unit, 2.5V LiFePO4 T>0 degC
+extern uint8 zclWC_BatteryVoltageThres1;
 extern uint8 zclWC_BatteryLevel;              // 0 - 100%
 extern uint8 zclWC_BatteryAlarmMask;
 extern uint32 zclWC_BatteryAlarmState;
 
 extern uint16 zclWC_FlowReportInterval;     // Time interval in seconds for Reporting compatability
 extern uint24 zclWC_Flow1HoursInOperation;
+extern uint24 zclWC_Flow2HoursInOperation;
 
 extern uint16 zclWC_IdentifyTime;
 

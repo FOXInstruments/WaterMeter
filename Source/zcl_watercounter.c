@@ -157,7 +157,6 @@ static void zclWC_BasicResetCB(void);
 
 static void zclWC_ProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommissioningModeMsg);
 
-
 // Functions to process ZCL Foundation incoming Command/Response messages
 static void zclWC_ProcessIncomingMsg(zclIncomingMsg_t *msg);
 #ifdef ZCL_READ
@@ -177,8 +176,8 @@ static uint8 zclWC_ProcessInDiscAttrsExtRspCmd(zclIncomingMsg_t *pInMsg);
 static void zclWC_ProcessOTAMsgs(zclOTA_CallbackMsg_t* pMsg);
 #endif
 
-static void zclSampleApp_BatteryWarningCB(uint8 voltLevel);
-
+static void zclWC_BatteryWarningCB(uint8 voltLevel);
+static void zclWC_UpdateBatteryAttributes(void);
 
 /*********************************************************************
  * CONSTANTS
@@ -254,6 +253,7 @@ void zclWC_Init(byte task_id)
 
   zclWC_NVInitItems();
   zclWC_ResetAttributesToDefaultValues();
+  zclWC_UpdateBatteryAttributes();
   
   // Register the application's attribute list
   zcl_registerAttrList(WC_ENDPOINT, zclWC_NumAttributes, zclWC_Attrs);
@@ -263,7 +263,7 @@ void zclWC_Init(byte task_id)
   zcl_registerForMsg(zclWC_TaskID);
   
   // Register low voltage NV memory protection application callback
-  RegisterVoltageWarningCB(zclSampleApp_BatteryWarningCB);
+  RegisterVoltageWarningCB(zclWC_BatteryWarningCB);
 
   // Register for all key events - This app will handle all key events
   RegisterForKeys(zclWC_TaskID);
@@ -277,19 +277,19 @@ void zclWC_Init(byte task_id)
 #if (BDBREPORTING_MAX_ANALOG_ATTR_SIZE < 4)
 #error BDBREPORTING_MAX_ANALOG_ATTR_SIZE less then sizeof float or uin32 datatype
 #endif
-  float Volt = REPORT_CHANGE_VOLTAGE;
-  uint32 Flow = REPORT_CHANGE_FLOW;
+  float Volt = WC_REPORT_CHANGE_VOLTAGE;
+  uint32 Flow = WC_REPORT_CHANGE_FLOW;
   uint8 reportChange[BDBREPORTING_MAX_ANALOG_ATTR_SIZE];
   
   osal_memset(reportChange, 0, BDBREPORTING_MAX_ANALOG_ATTR_SIZE);
   osal_memcpy(reportChange, (void*)&Volt, sizeof(float));
   status = bdb_RepAddAttrCfgRecordDefaultToList(WC_ENDPOINT, ZCL_CLUSTER_ID_GEN_POWER_CFG, ATTRID_POWER_CFG_BATTERY_VOLTAGE, \
-                                       zclWC_FlowReportInterval, zclWC_FlowReportInterval*6, reportChange);
+                                       zclWC_FlowReportInterval*60, zclWC_FlowReportInterval*60*6, reportChange);
   
   osal_memset(reportChange, 0, BDBREPORTING_MAX_ANALOG_ATTR_SIZE);
   osal_memcpy(reportChange, (void*)&Flow, sizeof(uint32));
   status = bdb_RepAddAttrCfgRecordDefaultToList(WC_ENDPOINT, ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC, ATTRID_IOV_BASIC_PRESENT_VALUE, \
-                                       zclWC_FlowReportInterval, zclWC_FlowReportInterval*6, reportChange);
+                                       zclWC_FlowReportInterval*60, zclWC_FlowReportInterval*60*6, reportChange);
 #endif
   
 #ifdef ZCL_DIAGNOSTIC
@@ -328,7 +328,7 @@ void zclWC_Init(byte task_id)
   IEN2 |= BV(4);           // Enable interrupt Port1
   
   zclWC_HourCounter = 0;   // Initialize Hour counter for time synchronization every 24 hours
-  status = osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_EVERYHOUR_EVT, 10000);
+  status = osal_start_timerEx(zclWC_TaskID, WC_EVERYHOUR_EVT, 10000);
 }
 
 /*********************************************************************
@@ -379,30 +379,18 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
   }
 
 #if ZG_BUILD_ENDDEVICE_TYPE    
-  if (events & SAMPLEAPP_END_DEVICE_REJOIN_EVT)
+  if (events & WC_END_DEVICE_REJOIN_EVT)
   {
     bdb_ZedAttemptRecoverNwk();
-    return (events ^ SAMPLEAPP_END_DEVICE_REJOIN_EVT);
+    return (events ^ WC_END_DEVICE_REJOIN_EVT);
   }
 #endif
 
-  if(events & SAMPLEAPP_EVERYHOUR_EVT) // Every hour event. To check month change
+  if(events & WC_EVERYHOUR_EVT) // Every hour event. To check month change
   {
-    UTCTime time = osal_getClock();
+    UTCTime time = osal_getClock();    
     // Battery voltage check
-    uint8 battvolt = HalAdcCheckVddRaw();
-    zclWC_BatteryVoltage = (uint8)VDD3TOVOLTAGE(battvolt);
-    if (battvolt <= VDD3_THRES_MIN)
-    {
-      //zclWC_BatteryAlarmMask |= BAT_ALARM_MASK_VOLT_2_LOW;
-      zclWC_BatteryAlarmMask |= BAT_ALARM_MASK_BATTERY_ALARM_1;
-      zclWC_BatteryAlarmState = ALARM_CODE_BAT_VOLT_MIN_THRES_BAT_SRC_1;
-    }
-    else
-    {
-      zclWC_BatteryAlarmMask = 0;
-      zclWC_BatteryAlarmState = 0;
-    }
+    zclWC_UpdateBatteryAttributes();
     
     if (zclWC_HourCounter == 0)
     {
@@ -415,38 +403,38 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
       status = zcl_SendDiscoverAttrsCmd(WC_ENDPOINT, &dstAddr, ZCL_CLUSTER_ID_GEN_TIME, &discoverAttr, ZCL_FRAME_CLIENT_SERVER_DIR, true, zclWC_SeqNum++);
     }
     zclWC_HourCounter = (zclWC_HourCounter + 1) % 24;
-    status = osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_EVERYHOUR_EVT, 1L*60L*60L*1000L);
-    return (events ^ SAMPLEAPP_EVERYHOUR_EVT); // return unprocessed events
+    status = osal_start_timerEx(zclWC_TaskID, WC_EVERYHOUR_EVT, 1L*60L*60L*1000L);
+    return (events ^ WC_EVERYHOUR_EVT); // return unprocessed events
   }
   
-  if (events & SAMPLEAPP_IMPULSE1_EVT) // Event from ISR function to recive impulse from counter
+  if (events & WC_IMPULSE1_EVT) // Event from ISR function to recive impulse from counter
   {
     if (POLARITY_IMPULSE(P1_0))
     {
       zclWC_Flow1Value ++;
       HalLedBlink(HAL_LED_4, 1, 50, 100);
     }
-    return (events ^ SAMPLEAPP_IMPULSE1_EVT);
+    return (events ^ WC_IMPULSE1_EVT);
   }
 
-  if (events & SAMPLEAPP_IMPULSE2_EVT)
+  if (events & WC_IMPULSE2_EVT)
   {
     if (POLARITY_IMPULSE(P1_1))
     {
       zclWC_Flow2Value ++;
       HalLedBlink(HAL_LED_5, 1, 50, 100);
     }    
-    return (events ^ SAMPLEAPP_IMPULSE2_EVT);
+    return (events ^ WC_IMPULSE2_EVT);
   }
   
-  if (events & SAMPLEAPP_LONGPUSH_EVT)
+  if (events & WC_LONGPUSH_EVT)
   {
     if (HAL_PUSH_BUTTON()) // Button is still pressed between 100ms interval
     {
       zclWC_LongPushCounter++;
       if (zclWC_LongPushCounter > 50) // Key is pressed more than 5 sec, preform LocalReset and recommission
       {
-        HalLedBlink(HAL_LED_3, 255, 50, 200);
+        HalLedBlink(HAL_LED_3, 255, 50, 1000);
         //bdb_resetLocalAction();
         bdb_StartCommissioning(BDB_COMMISSIONING_MODE_NWK_STEERING | BDB_COMMISSIONING_MODE_FINDING_BINDING);
         //SystemReset();
@@ -454,10 +442,11 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
       else
       {
         //HalLedBlink(HAL_LED_3, 1, 100, WC_LONGPUSH_INTERVAL);
-        status = osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_LONGPUSH_EVT, WC_LONGPUSH_INTERVAL);
+        HalLedSet(HAL_LED_3, HAL_LED_MODE_TOGGLE);
+        status = osal_start_timerEx(zclWC_TaskID, WC_LONGPUSH_EVT, WC_LONGPUSH_INTERVAL);
       }
     }
-    return (events ^ SAMPLEAPP_LONGPUSH_EVT);
+    return (events ^ WC_LONGPUSH_EVT);
   }
   // Discard unknown events
   return 0;
@@ -482,7 +471,7 @@ static void zclWC_HandleKeys(byte shift, byte keys)
   HalLedBlink(HAL_LED_3, 1, 50, WC_LONGPUSH_INTERVAL);
   if (HAL_PUSH_BUTTON()) // Button is still pressed, try to determine long press 
   {
-    osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_LONGPUSH_EVT, WC_LONGPUSH_INTERVAL);
+    osal_start_timerEx(zclWC_TaskID, WC_LONGPUSH_EVT, WC_LONGPUSH_INTERVAL);
     zclWC_LongPushCounter = 0;
   }
 }
@@ -555,7 +544,7 @@ static void zclWC_ProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
       else
       {
         //Parent not found, attempt to rejoin again after a fixed delay
-        osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_END_DEVICE_REJOIN_EVT, SAMPLEAPP_END_DEVICE_REJOIN_DELAY);
+        osal_start_timerEx(zclWC_TaskID, WC_END_DEVICE_REJOIN_EVT, WC_END_DEVICE_REJOIN_DELAY);
       }
     break;
 #endif 
@@ -580,7 +569,7 @@ static void zclWC_BasicResetCB(void)
 }
 
 /*********************************************************************
- * @fn      zclSampleApp_BatteryWarningCB
+ * @fn      zclWC_BatteryWarningCB
  *
  * @brief   Called to handle battery-low situation.
  *
@@ -588,18 +577,67 @@ static void zclWC_BasicResetCB(void)
  *
  * @return  none
  */
-void zclSampleApp_BatteryWarningCB(uint8 voltLevel)
+void zclWC_BatteryWarningCB(uint8 voltLevel)
 {
+  if (voltLevel != VOLT_LEVEL_GOOD)
+  {
+    zclWC_BatteryAlarmState |= (zclWC_BatteryAlarmMask & BAT_ALARM_MASK_VOLT_2_LOW) & BAT_ALARM_STATE_BAT_VOLT_MIN_THRES_BAT_SRC_1 |
+                               (zclWC_BatteryAlarmMask & BAT_ALARM_MASK_BATTERY_ALARM_1) & BAT_ALARM_STATE_BAT_VOLT_THRES_1_BAT_SRC_1;
+    zclWC_Flow1Status |= METER_2STATUS_LOWBATT;
+    zclWC_Flow2Status |= METER_2STATUS_LOWBATT;
+  }
   if (voltLevel == VOLT_LEVEL_CAUTIOUS)
   {
     // Send warning message to the gateway and blink LED
-    zclWC_BatteryAlarmMask |= BAT_ALARM_MASK_VOLT_2_LOW | BAT_ALARM_MASK_BATTERY_ALARM_1;
-    zclWC_BatteryAlarmState = ALARM_CODE_BAT_VOLT_MIN_THRES_BAT_SRC_1;    
   }
   else if (voltLevel == VOLT_LEVEL_BAD)
   {
     // Shut down the system
   }
+}
+
+/*********************************************************************
+ * @fn      zclWC_UpdateBatteryAttributes
+ *
+ * @brief   Called to update Battery voltage and level attributes of power cluster
+ *
+ * @param   volt, level - voltage and level attributes
+ *
+ * @return  return ADC value
+ */
+static void zclWC_UpdateBatteryAttributes(void)
+{
+  zclWC_BatteryVoltage = (uint8)VDD3TOVOLTAGE(HalAdcCheckVddRaw());
+  zclWC_BatteryLevel = (zclWC_BatteryVoltage - zclWC_BatteryVoltageThresMin)*100/(zclWC_BatteryVoltageRated - zclWC_BatteryVoltageThresMin);
+  
+  if (zclWC_BatteryVoltage <= zclWC_BatteryVoltageThres1)
+  {
+    zclWC_Flow1Status |= METER_2STATUS_LOWBATT;
+    zclWC_Flow2Status |= METER_2STATUS_LOWBATT;
+    
+    if (zclWC_BatteryAlarmMask & BAT_ALARM_MASK_BATTERY_ALARM_1)
+      zclWC_BatteryAlarmState |= BAT_ALARM_STATE_BAT_VOLT_THRES_1_BAT_SRC_1;
+    else
+      zclWC_BatteryAlarmState &= ~BAT_ALARM_STATE_BAT_VOLT_THRES_1_BAT_SRC_1;
+  }
+  else
+  {
+    zclWC_Flow1Status &= ~METER_2STATUS_LOWBATT;
+    zclWC_Flow2Status &= ~METER_2STATUS_LOWBATT;
+    zclWC_BatteryAlarmState &= ~BAT_ALARM_STATE_BAT_VOLT_THRES_1_BAT_SRC_1;
+  }
+  
+  if (zclWC_BatteryVoltage <= zclWC_BatteryVoltageThresMin)
+  {   
+    if (zclWC_BatteryAlarmMask & BAT_ALARM_MASK_VOLT_2_LOW)
+      zclWC_BatteryAlarmState |= BAT_ALARM_STATE_BAT_VOLT_MIN_THRES_BAT_SRC_1;
+    else
+      zclWC_BatteryAlarmState &= ~BAT_ALARM_STATE_BAT_VOLT_MIN_THRES_BAT_SRC_1;
+  }
+  else
+  {
+    zclWC_BatteryAlarmState &= ~BAT_ALARM_STATE_BAT_VOLT_MIN_THRES_BAT_SRC_1;
+  } 
 }
 
 /******************************************************************************
@@ -908,11 +946,11 @@ HAL_ISR_FUNCTION(halPort1Isr, P1INT_VECTOR)
   
   if (P1IFG & BV(0))
   {
-    osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_IMPULSE1_EVT, WC_DEBOUNCE);
+    osal_start_timerEx(zclWC_TaskID, WC_IMPULSE1_EVT, WC_DEBOUNCE);
   }
   if (P1IFG & BV(1))
   {
-    osal_start_timerEx(zclWC_TaskID, SAMPLEAPP_IMPULSE2_EVT, WC_DEBOUNCE);
+    osal_start_timerEx(zclWC_TaskID, WC_IMPULSE2_EVT, WC_DEBOUNCE);
   }
   P1IFG = 0;
   

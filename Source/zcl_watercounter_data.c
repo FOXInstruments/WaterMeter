@@ -72,10 +72,6 @@
 #define WC_HWVERSION          0
 #define WC_ZCLVERSION         0
 
-#define WC_DESCSIZE           8
-#define WC_MULTIPLYER         10    // Weight of one count
-#define WC_REPORT_INTERVAL    60*60 // Reporting interval in seconds
-
 #define DEFAULT_PHYSICAL_ENVIRONMENT 0
 #define DEFAULT_DEVICE_ENABLE_STATE DEVICE_ENABLED
 #define DEFAULT_IDENTIFY_TIME 0
@@ -144,7 +140,9 @@ uint8 zclWC_Flow2Status;
 
 // Power cluster variable
 uint8 zclWC_BatteryVoltage;            // 0.1V unit
+uint8 zclWC_BatteryVoltageRated;        // 0.1V unit, 3.6V LiFePO4
 uint8 zclWC_BatteryVoltageThresMin;    // 0.1V unit, 2.5V LiFePO4 T>0 degC
+uint8 zclWC_BatteryVoltageThres1;
 uint8 zclWC_BatteryLevel;              // 0 - 100%
 uint8 zclWC_BatteryAlarmMask;
 uint32 zclWC_BatteryAlarmState;
@@ -156,6 +154,7 @@ uint32 zclWC_TimeLocal; */
 
 uint16 zclWC_FlowReportInterval; // Time interval in minutes
 uint24 zclWC_Flow1HoursInOperation;
+uint24 zclWC_Flow2HoursInOperation;
 
 uint8 zclWC_LocationDescription[16];
 uint8 zclWC_PhysicalEnvironment;
@@ -279,9 +278,9 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   {
     ZCL_CLUSTER_ID_GEN_POWER_CFG,
     {  // Attribute record
-      ATTRID_POWER_CFG_BAT_VOLT_MIN_THRES,
-      ZCL_DATATYPE_SINGLE_PREC, ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE,
-      (void *)&zclWC_BatteryVoltageThresMin
+      ATTRID_POWER_CFG_BAT_RATED_VOLTAGE,
+      ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE,
+      (void *)&zclWC_BatteryVoltageRated
     }
   },
   {
@@ -290,6 +289,22 @@ CONST zclAttrRec_t zclWC_Attrs[] =
       ATTRID_POWER_CFG_BAT_ALARM_MASK,
       ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE,
       (void *)&zclWC_BatteryAlarmMask
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_GEN_POWER_CFG,
+    {  // Attribute record
+      ATTRID_POWER_CFG_BAT_VOLT_MIN_THRES,
+      ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE,
+      (void *)&zclWC_BatteryVoltageThresMin
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_GEN_POWER_CFG,
+    {  // Attribute record
+      ATTRID_POWER_CFG_BAT_VOLT_THRES_1,
+      ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE,
+      (void *)&zclWC_BatteryVoltageThres1
     }
   },
   {
@@ -529,7 +544,7 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
     { 
       ATTRID_METER_2STATUS_HOURSINOPERATION,
       ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ),
-      (void *)&zclWC_Flow1HoursInOperation
+      (void *)&zclWC_Flow2HoursInOperation
     }
   },
   {
@@ -761,7 +776,10 @@ void zclWC_ResetAttributesToDefaultValues(void)
   
   zclWC_IdentifyTime = DEFAULT_IDENTIFY_TIME;
   
-  zclWC_InitAttribute(WC_NV_ITEM_DESC1, WC_DESCSIZE, zclWC_Desc1, zclWC_Flow1Desc);
+  osal_memcpy(zclWC_Flow1Desc, zclWC_Desc1, WC_DESCSIZE);
+  osal_memcpy(zclWC_Flow2Desc, zclWC_Desc2, WC_DESCSIZE);
+  
+  /*zclWC_InitAttribute(WC_NV_ITEM_DESC1, WC_DESCSIZE, zclWC_Desc1, zclWC_Flow1Desc);
   zclWC_InitAttribute(WC_NV_ITEM_DESC2, WC_DESCSIZE, zclWC_Desc2, zclWC_Flow2Desc);
   
   src = WC_MULTIPLYER;
@@ -779,16 +797,31 @@ void zclWC_ResetAttributesToDefaultValues(void)
 
   src = 0;
   zclWC_InitAttribute(WC_NV_ITEM_VALUE1, 4, &src, &zclWC_Flow1Value);
-  zclWC_InitAttribute(WC_NV_ITEM_VALUE2, 4, &src, &zclWC_Flow2Value);
+  zclWC_InitAttribute(WC_NV_ITEM_VALUE2, 4, &src, &zclWC_Flow2Value);*/
   
+  zclWC_Flow1Multiplier = 10;
+  zclWC_Flow2Multiplier = 10;
+  zclWC_Flow1Divisor = 1000;
+  zclWC_Flow2Divisor = 1000;
+  zclWC_Flow1HoursInOperation = 0;
+  zclWC_Flow2HoursInOperation = 0;
+  zclWC_Flow1Unit = ENGINEERING_UNIT_VOLUME_M3;
+  zclWC_Flow2Unit = ENGINEERING_UNIT_VOLUME_M3;
+  zclWC_Flow1Value = 0;
+  zclWC_Flow2Value = 0;
+  zclWC_Flow1PrevDay = 0;
+  zclWC_Flow2PrevDay = 0;
+  zclWC_Flow1VolumePerReport = WC_REPORT_CHANGE_FLOW;
+  zclWC_Flow2VolumePerReport = WC_REPORT_CHANGE_FLOW;
   zclWC_Flow1Status = 0;
   zclWC_Flow2Status = 0;
   
   zclWC_FlowReportInterval = WC_REPORT_INTERVAL; // Report interal in seconds
   
-  zclWC_BatteryVoltage = VDD_NORMAL_VOLTAGE;
-  zclWC_BatteryVoltageThresMin = (uint8)VDD3TOVOLTAGE(VDD3_THRES_MIN); // Convert Int ADC to Float 
-  zclWC_BatteryAlarmMask = 0;
+  zclWC_BatteryVoltageRated = VDD_VOLTAGE_RATED;
+  zclWC_BatteryVoltageThresMin = VDD_VOLTAGE_MIN;
+  zclWC_BatteryVoltageThres1 = VDD_VOLTAGE_THRES1;
+  zclWC_BatteryAlarmMask = BAT_ALARM_MASK_VOLT_2_LOW | BAT_ALARM_MASK_BATTERY_ALARM_1;
   zclWC_BatteryAlarmState = 0;
 }
 
