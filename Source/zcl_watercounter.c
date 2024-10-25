@@ -141,6 +141,15 @@ static endPointDesc_t waterCounter_TestEp =
   (afNetworkLatencyReq_t)0            // No Network Latency req
 };
 
+static endPointDesc_t waterCounter_TestEp2 =
+{
+  WC_ENDPOINT2,                  // endpoint
+  0,
+  &zclWC_TaskID,
+  (SimpleDescriptionFormat_t *)NULL,  // No Simple description for this test endpoint
+  (afNetworkLatencyReq_t)0            // No Network Latency req
+};
+
 //static uint8 aProcessCmd[] = { 1, 0, 0, 0 }; // used for reset command, { length + cmd0 + cmd1 + data }
 
 devStates_t zclWC_NwkState = DEV_INIT;
@@ -272,23 +281,23 @@ void zclWC_Init(byte task_id)
 
   // Register for a test endpoint
   afRegister(&waterCounter_TestEp);
+  afRegister(&waterCounter_TestEp2);
   
 #ifdef BDB_REPORTING
 #if (BDBREPORTING_MAX_ANALOG_ATTR_SIZE < 4)
-#error BDBREPORTING_MAX_ANALOG_ATTR_SIZE less then sizeof float or uin32 datatype
+#error BDBREPORTING_MAX_ANALOG_ATTR_SIZE less then sizeof uint32 datatype
 #endif
-  float Volt = WC_REPORT_CHANGE_VOLTAGE;
   uint32 Flow = WC_REPORT_CHANGE_FLOW;
   uint8 reportChange[BDBREPORTING_MAX_ANALOG_ATTR_SIZE];
   
   osal_memset(reportChange, 0, BDBREPORTING_MAX_ANALOG_ATTR_SIZE);
-  osal_memcpy(reportChange, (void*)&Volt, sizeof(float));
+  reportChange[0] = WC_REPORT_CHANGE_VOLTAGE;
   status = bdb_RepAddAttrCfgRecordDefaultToList(WC_ENDPOINT, ZCL_CLUSTER_ID_GEN_POWER_CFG, ATTRID_POWER_CFG_BATTERY_VOLTAGE, \
                                        zclWC_FlowReportInterval*60, zclWC_FlowReportInterval*60*6, reportChange);
   
   osal_memset(reportChange, 0, BDBREPORTING_MAX_ANALOG_ATTR_SIZE);
   osal_memcpy(reportChange, (void*)&Flow, sizeof(uint32));
-  status = bdb_RepAddAttrCfgRecordDefaultToList(WC_ENDPOINT, ZCL_CLUSTER_ID_GEN_ANALOG_INPUT_BASIC, ATTRID_IOV_BASIC_PRESENT_VALUE, \
+  status = bdb_RepAddAttrCfgRecordDefaultToList(WC_ENDPOINT, ZCL_CLUSTER_ID_SE_METERING, ATTRID_METER_0READINGSET_CURRSUMDELIVERED, \
                                        zclWC_FlowReportInterval*60, zclWC_FlowReportInterval*60*6, reportChange);
 #endif
   

@@ -12,7 +12,7 @@
         <ByteLimit>50</ByteLimit>
     </Stack>
     <DebugChecksum>
-        <Checksum>2161574884</Checksum>
+        <Checksum>726306371</Checksum>
     </DebugChecksum>
     <CallStack>
         <ShowArgs>0</ShowArgs>
@@ -89,10 +89,19 @@
     </SfrWindow>
     <struct_types>
         <Fmt0>bdbAttributes_t-bdbCommissioningGroupID	3	0</Fmt0>
-        <Fmt1>bdbAttributes_t-bdbCommissioningStatus	3	0</Fmt1>
-        <Fmt2>bdbAttributes_t-bdbPrimaryChannelSet	4	0</Fmt2>
-        <Fmt3>bdbAttributes_t-bdbSecondaryChannelSet	4	0</Fmt3>
+        <Fmt1>bdbAttributes_t-bdbCommissioningMode	4	0</Fmt1>
+        <Fmt2>bdbAttributes_t-bdbCommissioningStatus	3	0</Fmt2>
+        <Fmt3>bdbAttributes_t-bdbNodeIsOnANetwork	4	0</Fmt3>
+        <Fmt4>bdbAttributes_t-bdbPrimaryChannelSet	4	0</Fmt4>
+        <Fmt5>bdbAttributes_t-bdbSecondaryChannelSet	4	0</Fmt5>
     </struct_types>
+    <watch_formats>
+        <Fmt0>{W}1:zclWC_BatteryLevel	3	0</Fmt0>
+        <Fmt1>{W}1:zclWC_BatteryVoltage	3	0</Fmt1>
+        <Fmt2>{W}1:zclWC_BatteryVoltageRated	3	0</Fmt2>
+        <Fmt3>{W}1:zclWC_BatteryVoltageThresMin	3	0</Fmt3>
+        <Fmt4>{W}1:zclWC_TaskID	3	0</Fmt4>
+    </watch_formats>
     <TermIOLog>
         <LoggingEnabled>_ 0</LoggingEnabled>
         <LogFile>_ ""</LogFile>
@@ -103,11 +112,11 @@
         <Category>_ 0</Category>
     </LogFile>
     <Breakpoints>
-        <Bp0>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.243.3" 0 0 0 0 "" 0 ""</Bp0>
-        <Bp1>_ "STD_CODE" "{$PROJ_DIR$\..\hal\target\CC2530DEV\hal_key.c}.500.5" 0 0 0 0 "" 0 ""</Bp1>
-        <Bp2>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.490.3" 0 0 0 0 "" 0 ""</Bp2>
-        <Bp3>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.660.3" 1 0 0 0 "" 0 ""</Bp3>
-        <Bp4>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.947.3" 0 0 0 0 "" 0 ""</Bp4>
+        <Bp0>_ "STD_CODE" "{$PROJ_DIR$\..\hal\target\CC2530DEV\hal_key.c}.500.5" 0 0 0 0 "" 0 ""</Bp0>
+        <Bp1>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.502.7" 0 0 0 0 "" 0 ""</Bp1>
+        <Bp2>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.673.7" 1 0 0 0 "" 0 ""</Bp2>
+        <Bp3>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.958.5" 0 0 0 0 "" 0 ""</Bp3>
+        <Bp4>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.252.3" 1 0 0 0 "" 0 ""</Bp4>
         <Count>5</Count>
     </Breakpoints>
     <ChipconEmu>
