@@ -12,7 +12,7 @@
         <ByteLimit>50</ByteLimit>
     </Stack>
     <DebugChecksum>
-        <Checksum>726306371</Checksum>
+        <Checksum>1399688282</Checksum>
     </DebugChecksum>
     <CallStack>
         <ShowArgs>0</ShowArgs>
@@ -81,7 +81,7 @@
     </Simulator>
     <Registers>
         <regBase0>R1 10</regBase0>
-        <regBase1>A 10</regBase1>
+        <regBase1>ADCCON1 10</regBase1>
     </Registers>
     <SfrWindow>
         <Show>1 1</Show>
@@ -113,10 +113,10 @@
     </LogFile>
     <Breakpoints>
         <Bp0>_ "STD_CODE" "{$PROJ_DIR$\..\hal\target\CC2530DEV\hal_key.c}.500.5" 0 0 0 0 "" 0 ""</Bp0>
-        <Bp1>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.502.7" 0 0 0 0 "" 0 ""</Bp1>
-        <Bp2>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.673.7" 1 0 0 0 "" 0 ""</Bp2>
-        <Bp3>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.958.5" 0 0 0 0 "" 0 ""</Bp3>
-        <Bp4>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.252.3" 1 0 0 0 "" 0 ""</Bp4>
+        <Bp1>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.505.7" 0 0 0 0 "" 0 ""</Bp1>
+        <Bp2>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.688.7" 0 0 0 0 "" 0 ""</Bp2>
+        <Bp3>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.973.5" 0 0 0 0 "" 0 ""</Bp3>
+        <Bp4>_ "STD_CODE" "{D:\TI\Z-Stack 3.0.2\Components\stack\sys\ZGlobals.c}.734.5" 0 0 0 0 "" 0 ""</Bp4>
         <Count>5</Count>
     </Breakpoints>
     <ChipconEmu>

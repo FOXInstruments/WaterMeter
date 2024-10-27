@@ -401,7 +401,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
     // Battery voltage check
     zclWC_UpdateBatteryAttributes();
     
-    if (zclWC_HourCounter == 0)
+    if ((zclWC_HourCounter == 0) && (bdbAttributes.bdbNodeIsOnANetwork))
     {
       afAddrType_t dstAddr;
       zclDiscoverAttrsCmd_t discoverAttr;
@@ -443,7 +443,8 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
       zclWC_LongPushCounter++;
       if (zclWC_LongPushCounter > 50) // Key is pressed more than 5 sec, preform LocalReset and recommission
       {
-        HalLedBlink(HAL_LED_3, 255, 50, 1000);
+        //HalLedBlink(HAL_LED_3, 255, 50, 1000);
+        HalLedSet(HAL_LED_3, HAL_LED_MODE_ON);
         //bdb_resetLocalAction();
         bdb_StartCommissioning(BDB_COMMISSIONING_MODE_NWK_STEERING | BDB_COMMISSIONING_MODE_FINDING_BINDING);
         //SystemReset();
@@ -451,7 +452,9 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
       else
       {
         //HalLedBlink(HAL_LED_3, 1, 100, WC_LONGPUSH_INTERVAL);
-        HalLedSet(HAL_LED_3, HAL_LED_MODE_TOGGLE);
+        if (zclWC_LongPushCounter > 5)
+          HalLedSet(HAL_LED_3, HAL_LED_MODE_TOGGLE);
+        
         status = osal_start_timerEx(zclWC_TaskID, WC_LONGPUSH_EVT, WC_LONGPUSH_INTERVAL);
       }
     }
@@ -515,7 +518,7 @@ static void zclWC_ProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
       {
         //YOUR JOB:
         //We are on the nwk, what now?
-        HalLedBlink(HAL_LED_3, 3, 50, 150);  // Stop LED blinking if steering SUCCESS
+        HalLedSet(HAL_LED_4, HAL_LED_MODE_ON);
       }
       else
       {
@@ -529,6 +532,9 @@ static void zclWC_ProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
       if(bdbCommissioningModeMsg->bdbCommissioningStatus == BDB_COMMISSIONING_SUCCESS)
       {
         //YOUR JOB:
+        HalLedSet(HAL_LED_3, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_4, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_5, HAL_LED_MODE_OFF);
       }
       else
       {
@@ -538,22 +544,27 @@ static void zclWC_ProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
     break;
     case BDB_COMMISSIONING_INITIALIZATION:
       //Initialization notification can only be successful. Failure on initialization 
-      //only happens for ZED and is notified as BDB_COMMISSIONING_PARENT_LOST notification
-      
+      //only happens for ZED and is notified as BDB_COMMISSIONING_PARENT_LOST notification      
       //YOUR JOB:
-      //We are on a network, what now?
-      
+      //We are on a network, what now?     
     break;
 #if ZG_BUILD_ENDDEVICE_TYPE    
     case BDB_COMMISSIONING_PARENT_LOST:
       if(bdbCommissioningModeMsg->bdbCommissioningStatus == BDB_COMMISSIONING_NETWORK_RESTORED)
       {
         //We did recover from losing parent
+        HalLedSet(HAL_LED_3, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_4, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_5, HAL_LED_MODE_OFF);
       }
       else
       {
         //Parent not found, attempt to rejoin again after a fixed delay
         osal_start_timerEx(zclWC_TaskID, WC_END_DEVICE_REJOIN_EVT, WC_END_DEVICE_REJOIN_DELAY);
+        HalLedSet(HAL_LED_3, HAL_LED_MODE_ON);
+        HalLedSet(HAL_LED_4, HAL_LED_MODE_ON);
+        HalLedSet(HAL_LED_5, HAL_LED_MODE_ON);
+
       }
     break;
 #endif 
@@ -617,7 +628,11 @@ void zclWC_BatteryWarningCB(uint8 voltLevel)
 static void zclWC_UpdateBatteryAttributes(void)
 {
   zclWC_BatteryVoltage = (uint8)VDD3TOVOLTAGE(HalAdcCheckVddRaw());
-  zclWC_BatteryLevel = (zclWC_BatteryVoltage - zclWC_BatteryVoltageThresMin)*100/(zclWC_BatteryVoltageRated - zclWC_BatteryVoltageThresMin);
+
+  if (zclWC_BatteryVoltage < zclWC_BatteryVoltageThresMin)
+    zclWC_BatteryLevel = 0;
+  else
+    zclWC_BatteryLevel = (zclWC_BatteryVoltage - zclWC_BatteryVoltageThresMin)*200/(zclWC_BatteryVoltageRated - zclWC_BatteryVoltageThresMin);
   
   if (zclWC_BatteryVoltage <= zclWC_BatteryVoltageThres1)
   {

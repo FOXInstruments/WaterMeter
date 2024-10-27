@@ -83,6 +83,7 @@
 #define ENGINEERING_UNIT_TIME_HOUR     71
 #define ENGINEERING_UNIT_TIME_DAY      70
 
+// 0x0401 - 0x0FFF application NV ids
 #define WC_NV_ITEM_DESC1        0x0404
 #define WC_NV_ITEM_DESC2        WC_NV_ITEM_DESC1 + WC_DESCSIZE
 #define WC_NV_ITEM_BLOCK1       WC_NV_ITEM_DESC2 + 4
@@ -121,7 +122,8 @@ const uint8 zclWC_Desc2[WC_DESCSIZE] = {WC_DESCSIZE - 1, 'H', 'o', 't', ' ', ' '
 const uint8 zclWC_DeviceType = 0x02;    // Water meter
 
 uint8 zclWC_Flow1Desc[WC_DESCSIZE];
-uint32 zclWC_Flow1Value;
+uint48_t zclWC_Flow1Value;
+int24 zclWC_Flow1Demand;
 uint16 zclWC_Flow1Multiplier;
 uint16 zclWC_Flow1Divisor;
 uint8 zclWC_Flow1Unit;
@@ -130,7 +132,8 @@ uint16 zclWC_Flow1PrevDay;
 uint8 zclWC_Flow1Status;
 
 uint8 zclWC_Flow2Desc[WC_DESCSIZE];
-uint32 zclWC_Flow2Value;
+uint48_t zclWC_Flow2Value;
+int24 zclWC_Flow2Demand;
 uint16 zclWC_Flow2Multiplier;
 uint16 zclWC_Flow2Divisor;
 uint16 zclWC_Flow2Unit;
@@ -311,7 +314,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
     ZCL_CLUSTER_ID_GEN_POWER_CFG,
     {  // Attribute record
       ATTRID_POWER_CFG_BAT_ALARM_STATE,
-      ZCL_DATATYPE_UINT32, ACCESS_CONTROL_READ | ACCESS_REPORTABLE,
+      ZCL_DATATYPE_BITMAP32, ACCESS_CONTROL_READ | ACCESS_REPORTABLE,
       (void *)&zclWC_BatteryAlarmState
     }
   },
@@ -391,7 +394,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
     ZCL_CLUSTER_ID_SE_METERING,
     { 
       ATTRID_METER_0READINGSET_CURRSUMDELIVERED,
-      ZCL_DATATYPE_UINT32, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE | ACCESS_REPORTABLE),
+      ZCL_DATATYPE_UINT48, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE | ACCESS_REPORTABLE),
       (void *)&zclWC_Flow1Value
     }
   },
@@ -399,7 +402,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
     ZCL_CLUSTER_ID_SE_METERING,
     { 
       ATTRID_METER_0READINGSET_INTERVALREPORTING,
-      ZCL_DATATYPE_UINT32, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_FlowReportInterval
     }
   },
@@ -415,7 +418,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
     ZCL_CLUSTER_ID_SE_METERING,
     { 
       ATTRID_METER_2STATUS_STATUS,
-      ZCL_DATATYPE_UINT8, (ACCESS_CONTROL_READ),
+      ZCL_DATATYPE_BITMAP8, (ACCESS_CONTROL_READ),
       (void *)&zclWC_Flow1Status
     }
   },
@@ -439,7 +442,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
     ZCL_CLUSTER_ID_SE_METERING,
     { 
       ATTRID_METER_3FORMATTING_UNIT,
-      ZCL_DATATYPE_UINT8, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
+      ZCL_DATATYPE_ENUM8, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_Flow1Unit
     }
   },
@@ -463,7 +466,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
     ZCL_CLUSTER_ID_SE_METERING,
     { 
       ATTRID_METER_3FORMATTING_METERDEVICETYPE,
-      ZCL_DATATYPE_UINT8, (ACCESS_CONTROL_READ),
+      ZCL_DATATYPE_BITMAP8, (ACCESS_CONTROL_READ),
       (void *)&zclWC_DeviceType
     }
   },
@@ -478,8 +481,16 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   {
     ZCL_CLUSTER_ID_SE_METERING,
     { 
+      ATTRID_METER_4HISTORY_INSTANTDEMAND,
+      ZCL_DATATYPE_INT24, (ACCESS_CONTROL_READ),
+      (void *)&zclWC_Flow1Demand
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_SE_METERING,
+    { 
       ATTRID_METER_4HISTORY_PREVDAYCONSUMPTIONDELIVER,
-      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ),
+      ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ),
       (void *)&zclWC_Flow1PrevDay
     }
   },
@@ -503,7 +514,7 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
     ZCL_CLUSTER_ID_SE_METERING,
     { 
       ATTRID_METER_0READINGSET_CURRSUMDELIVERED,
-      ZCL_DATATYPE_UINT32, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE | ACCESS_REPORTABLE),
+      ZCL_DATATYPE_UINT48, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE | ACCESS_REPORTABLE),
       (void *)&zclWC_Flow2Value
     }
   },
@@ -511,7 +522,7 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
     ZCL_CLUSTER_ID_SE_METERING,
     { 
       ATTRID_METER_0READINGSET_INTERVALREPORTING,
-      ZCL_DATATYPE_UINT32, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_FlowReportInterval
     }
   },
@@ -527,7 +538,7 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
     ZCL_CLUSTER_ID_SE_METERING,
     { 
       ATTRID_METER_2STATUS_STATUS,
-      ZCL_DATATYPE_UINT8, (ACCESS_CONTROL_READ),
+      ZCL_DATATYPE_BITMAP8, (ACCESS_CONTROL_READ),
       (void *)&zclWC_Flow2Status
     }
   },
@@ -551,7 +562,7 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
     ZCL_CLUSTER_ID_SE_METERING,
     { 
       ATTRID_METER_3FORMATTING_UNIT,
-      ZCL_DATATYPE_UINT8, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
+      ZCL_DATATYPE_ENUM8, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_Flow2Unit
     }
   },
@@ -575,7 +586,7 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
     ZCL_CLUSTER_ID_SE_METERING,
     { 
       ATTRID_METER_3FORMATTING_METERDEVICETYPE,
-      ZCL_DATATYPE_UINT8, (ACCESS_CONTROL_READ),
+      ZCL_DATATYPE_BITMAP8, (ACCESS_CONTROL_READ),
       (void *)&zclWC_DeviceType
     }
   },
@@ -590,8 +601,16 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
   {
     ZCL_CLUSTER_ID_SE_METERING,
     { 
+      ATTRID_METER_4HISTORY_INSTANTDEMAND,
+      ZCL_DATATYPE_INT24, (ACCESS_CONTROL_READ),
+      (void *)&zclWC_Flow2Demand
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_SE_METERING,
+    { 
       ATTRID_METER_4HISTORY_PREVDAYCONSUMPTIONDELIVER,
-      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ),
+      ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ),
       (void *)&zclWC_Flow2PrevDay
     }
   },
@@ -657,8 +676,8 @@ SimpleDescriptionFormat_t zclWC_SimpleDesc2 =
   ZCL_HA_DEVICEID_METER_INTERFACE,      //  uint16 AppDeviceId[2];
   WC_DEVICE_VERSION,            //  int   AppDevVer:4;
   WC_FLAGS,                     //  int   AppFlags:4;
-  ZCLWC_MAX_INCLUSTERS,         //  byte  AppNumInClusters;
-  (cId_t *)zclWC_InClusterList, //  byte *pAppInClusterList;
+  ZCLWC_MAX_INCLUSTERS2,         //  byte  AppNumInClusters;
+  (cId_t *)zclWC_InClusterList2, //  byte *pAppInClusterList;
   0,                            //  byte  AppNumInClusters;
   NULL                          //  byte *pAppInClusterList;
 };
@@ -762,7 +781,7 @@ void zclWC_InitAttribute(uint16 id, uint16 len, const void *src, void *buf)
 void zclWC_ResetAttributesToDefaultValues(void)
 {
   int i;
-  uint32 src, dst;
+ // uint32 src, dst;
  // uint8 result;
   
   zclWC_LocationDescription[0] = 15;
