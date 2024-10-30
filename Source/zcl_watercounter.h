@@ -61,13 +61,14 @@ extern "C"
 #define WC_LONGPUSH_INTERVAL     100
 
 // Events for the sample app
-#define WC_END_DEVICE_REJOIN_EVT   0x0001        // event_flag is a 2-byte bitmap with each bit specifying an event
+#define WC_EVT_END_DEVICE_REJOIN   0x0001        // event_flag is a 2-byte bitmap with each bit specifying an event
 
 // Events
-#define WC_IMPULSE1_EVT            0x0002
-#define WC_IMPULSE2_EVT            0x0004  
-#define WC_EVERYHOUR_EVT           0x0008
-#define WC_LONGPUSH_EVT            0x0010
+#define WC_EVT_IMPULSE1            0x0002
+#define WC_EVT_IMPULSE2            0x0004  
+#define WC_EVT_EVERYHOUR           0x0008
+#define WC_EVT_LONGPUSH            0x0010
+#define WC_EVT_UPDATEPERIOD        0x0020       // InstanteniousDemand update event
 
 #define WC_END_DEVICE_REJOIN_DELAY 10000
 
@@ -86,7 +87,7 @@ extern "C"
 #define WC_MULTIPLYER              10    // Weight of one count
 #define WC_REPORT_INTERVAL         60 // Reporting interval in minutes
 #define WC_REPORT_CHANGE_VOLTAGE   1     // Change values for BDB_REPORTING (0.1V unit)
-#define WC_REPORT_CHANGE_FLOW      100
+#define WC_REPORT_CHANGE_FLOW      10
   
 #define TIME_SYNC_DIFF          5L       // Difference between device time and gate time
   
@@ -159,8 +160,12 @@ extern "C"
  */
 typedef union
 {
-  uint8       array[3];
-  uint32      dword;
+  uint8       array[5];
+  struct
+  {
+    uint32      lowDW;
+    uint16      hiW;
+  } dw;
 } uint48_t;
 
 /*********************************************************************
@@ -173,7 +178,9 @@ extern CONST zclAttrRec_t zclWC_Attrs[];
 extern CONST zclAttrRec_t zclWC_Attrs2[];
 
 extern uint8 zclWC_Flow1Desc[];
-extern uint32 zclWC_Flow1Value;
+extern uint48_t zclWC_Flow1Value;
+extern int24 zclWC_Flow1InstDemand;
+extern int24 zclWC_Flow1InstDemandPrev;
 extern uint16 zclWC_Flow1Multiplier;
 extern uint16 zclWC_Flow1Divisor;
 extern uint8 zclWC_Flow1Unit;
@@ -182,7 +189,9 @@ extern uint16 zclWC_Flow1PrevDay;
 extern uint8 zclWC_Flow1Status;
 
 extern uint8 zclWC_Flow2Desc[];
-extern uint32 zclWC_Flow2Value;
+extern uint48_t zclWC_Flow2Value;
+extern int24 zclWC_Flow2InstDemand;
+extern int24 zclWC_Flow2InstDemandPrev;
 extern uint16 zclWC_Flow2Multiplier;
 extern uint16 zclWC_Flow2Divisor;
 extern uint16 zclWC_Flow2Unit;
@@ -190,14 +199,15 @@ extern uint16 zclWC_Flow2VolumePerReport;
 extern uint16 zclWC_Flow2PrevDay;
 extern uint8 zclWC_Flow2Status;
 
-extern uint8 zclWC_BatteryVoltage;            // 0.1V unit
+extern uint8 zclWC_BatteryVoltage;             // 0.1V unit
 extern uint8 zclWC_BatteryVoltageRated;        // 0.1V unit, 3.6V LiFePO4
-extern uint8 zclWC_BatteryVoltageThresMin;    // 0.1V unit, 2.5V LiFePO4 T>0 degC
+extern uint8 zclWC_BatteryVoltageThresMin;     // 0.1V unit, 2.5V LiFePO4 T>0 degC
 extern uint8 zclWC_BatteryVoltageThres1;
-extern uint8 zclWC_BatteryLevel;              // 0 - 100%
+extern uint8 zclWC_BatteryLevel;               // 0 - 100%
 extern uint8 zclWC_BatteryAlarmMask;
 extern uint32 zclWC_BatteryAlarmState;
 
+extern uint8 zclWC_FlowUpdatePeriod;        // InstDemand update time period in seconds
 extern uint16 zclWC_FlowReportInterval;     // Time interval in seconds for Reporting compatability
 extern uint24 zclWC_Flow1HoursInOperation;
 extern uint24 zclWC_Flow2HoursInOperation;

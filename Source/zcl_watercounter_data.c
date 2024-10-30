@@ -90,8 +90,8 @@
 #define WC_NV_ITEM_BLOCK2       WC_NV_ITEM_BLOCK1 + 4
 #define WC_NV_ITEM_REPORT       WC_NV_ITEM_BLOCK2 + 4
 #define WC_NV_ITEM_VALUE1       WC_NV_ITEM_REPORT + 4
-#define WC_NV_ITEM_VALUE2       WC_NV_ITEM_VALUE1 + sizeof(zclWC_Flow1Value)
-#define WC_NV_ITEM_VALUEX       WC_NV_ITEM_VALUE2 + sizeof(zclWC_Flow2Value)
+#define WC_NV_ITEM_VALUE2       WC_NV_ITEM_VALUE1 + sizeof(zclWC_Flow1Value.dw.lowDW)
+#define WC_NV_ITEM_VALUEX       WC_NV_ITEM_VALUE2 + sizeof(zclWC_Flow2Value.dw.lowDW)
 
 /*********************************************************************
  * TYPEDEFS
@@ -123,7 +123,8 @@ const uint8 zclWC_DeviceType = 0x02;    // Water meter
 
 uint8 zclWC_Flow1Desc[WC_DESCSIZE];
 uint48_t zclWC_Flow1Value;
-int24 zclWC_Flow1Demand;
+int24 zclWC_Flow1InstDemand;
+int24 zclWC_Flow1InstDemandPrev;
 uint16 zclWC_Flow1Multiplier;
 uint16 zclWC_Flow1Divisor;
 uint8 zclWC_Flow1Unit;
@@ -133,7 +134,8 @@ uint8 zclWC_Flow1Status;
 
 uint8 zclWC_Flow2Desc[WC_DESCSIZE];
 uint48_t zclWC_Flow2Value;
-int24 zclWC_Flow2Demand;
+int24 zclWC_Flow2InstDemand;
+int24 zclWC_Flow2InstDemandPrev;
 uint16 zclWC_Flow2Multiplier;
 uint16 zclWC_Flow2Divisor;
 uint16 zclWC_Flow2Unit;
@@ -155,6 +157,7 @@ uint32 zclWC_BatteryAlarmState;
 uint8 zclWC_TimeStatus;
 uint32 zclWC_TimeLocal; */
 
+uint8 zclWC_FlowUpdatePeriod;   // InstDemand update time period in seconds
 uint16 zclWC_FlowReportInterval; // Time interval in minutes
 uint24 zclWC_Flow1HoursInOperation;
 uint24 zclWC_Flow2HoursInOperation;
@@ -401,6 +404,14 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   {
     ZCL_CLUSTER_ID_SE_METERING,
     { 
+      ATTRID_METER_0READINGSET_DEFAULTUPDATEPERIOD,
+      ZCL_DATATYPE_UINT8, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
+      (void *)&zclWC_FlowUpdatePeriod
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_SE_METERING,
+    { 
       ATTRID_METER_0READINGSET_INTERVALREPORTING,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_FlowReportInterval
@@ -482,8 +493,8 @@ CONST zclAttrRec_t zclWC_Attrs[] =
     ZCL_CLUSTER_ID_SE_METERING,
     { 
       ATTRID_METER_4HISTORY_INSTANTDEMAND,
-      ZCL_DATATYPE_INT24, (ACCESS_CONTROL_READ),
-      (void *)&zclWC_Flow1Demand
+      ZCL_DATATYPE_INT24, (ACCESS_CONTROL_READ | ACCESS_REPORTABLE),
+      (void *)&zclWC_Flow1InstDemand
     }
   },
   {
@@ -516,6 +527,14 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
       ATTRID_METER_0READINGSET_CURRSUMDELIVERED,
       ZCL_DATATYPE_UINT48, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE | ACCESS_REPORTABLE),
       (void *)&zclWC_Flow2Value
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_SE_METERING,
+    { 
+      ATTRID_METER_0READINGSET_DEFAULTUPDATEPERIOD,
+      ZCL_DATATYPE_UINT8, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
+      (void *)&zclWC_FlowUpdatePeriod
     }
   },
   {
@@ -602,8 +621,8 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
     ZCL_CLUSTER_ID_SE_METERING,
     { 
       ATTRID_METER_4HISTORY_INSTANTDEMAND,
-      ZCL_DATATYPE_INT24, (ACCESS_CONTROL_READ),
-      (void *)&zclWC_Flow2Demand
+      ZCL_DATATYPE_INT24, (ACCESS_CONTROL_READ | ACCESS_REPORTABLE),
+      (void *)&zclWC_Flow2InstDemand
     }
   },
   {
@@ -705,8 +724,8 @@ void zclWC_NVInitItems(void)
   
   result |= osal_nv_item_init(WC_NV_ITEM_DESC1, WC_DESCSIZE, NULL); 
   result |= osal_nv_item_init(WC_NV_ITEM_DESC2, WC_DESCSIZE, NULL); 
-  result |= osal_nv_item_init(WC_NV_ITEM_VALUE1, sizeof(zclWC_Flow1Value), NULL); 
-  result |= osal_nv_item_init(WC_NV_ITEM_VALUE2, sizeof(zclWC_Flow2Value), NULL);
+  result |= osal_nv_item_init(WC_NV_ITEM_VALUE1, sizeof(zclWC_Flow1Value.dw.lowDW), NULL); 
+  result |= osal_nv_item_init(WC_NV_ITEM_VALUE2, sizeof(zclWC_Flow2Value.dw.lowDW), NULL);
 /*  result |= osal_nv_item_init(WC_NV_ITEM_BLOCK1, 4, NULL); 
   result |= osal_nv_item_init(WC_NV_ITEM_BLOCK2, 4, NULL); 
   result |= osal_nv_item_init(WC_NV_ITEM_REPORT, 4, NULL); */
@@ -818,6 +837,17 @@ void zclWC_ResetAttributesToDefaultValues(void)
   zclWC_InitAttribute(WC_NV_ITEM_VALUE1, 4, &src, &zclWC_Flow1Value);
   zclWC_InitAttribute(WC_NV_ITEM_VALUE2, 4, &src, &zclWC_Flow2Value);*/
   
+  zclWC_Flow1Value.dw.lowDW = 0;
+  zclWC_Flow1Value.dw.hiW = 0;
+  zclWC_Flow2Value.dw.lowDW = 0;
+  zclWC_Flow2Value.dw.hiW = 0;
+  zclWC_Flow1InstDemand = 0;
+  zclWC_Flow2InstDemand = 0;
+  zclWC_Flow1InstDemandPrev = 0;
+  zclWC_Flow2InstDemandPrev = 0;
+  zclWC_Flow1PrevDay = 0;
+  zclWC_Flow2PrevDay = 0;
+  
   zclWC_Flow1Multiplier = 10;
   zclWC_Flow2Multiplier = 10;
   zclWC_Flow1Divisor = 1000;
@@ -826,16 +856,13 @@ void zclWC_ResetAttributesToDefaultValues(void)
   zclWC_Flow2HoursInOperation = 0;
   zclWC_Flow1Unit = ENGINEERING_UNIT_VOLUME_M3;
   zclWC_Flow2Unit = ENGINEERING_UNIT_VOLUME_M3;
-  zclWC_Flow1Value = 0;
-  zclWC_Flow2Value = 0;
-  zclWC_Flow1PrevDay = 0;
-  zclWC_Flow2PrevDay = 0;
   zclWC_Flow1VolumePerReport = WC_REPORT_CHANGE_FLOW;
   zclWC_Flow2VolumePerReport = WC_REPORT_CHANGE_FLOW;
   zclWC_Flow1Status = 0;
   zclWC_Flow2Status = 0;
   
-  zclWC_FlowReportInterval = WC_REPORT_INTERVAL; // Report interal in seconds
+  zclWC_FlowUpdatePeriod = 60;   // InstDemand update interval
+  zclWC_FlowReportInterval = WC_REPORT_INTERVAL; // Report interal in minutes
   
   zclWC_BatteryVoltageRated = VDD_VOLTAGE_RATED;
   zclWC_BatteryVoltageThresMin = VDD_VOLTAGE_MIN;

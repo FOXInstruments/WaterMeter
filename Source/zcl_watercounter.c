@@ -131,6 +131,26 @@ zclReadCmd_t readCmdTimeCluster = {4, {ATTRID_TIME_TIME, ATTRID_TIME_TIME_STATUS
 afAddrType_t zclWC_DstAddr;
 uint8 zclWC_LongPushCounter;
 
+CONST zclReportCmd_t zclWC_ReportCmd =
+{
+  1,
+  {
+    ATTRID_METER_4HISTORY_INSTANTDEMAND,
+    ZCL_DATATYPE_INT24,
+    (void*)&zclWC_Flow1InstDemand
+  },
+};
+
+CONST zclReportCmd_t zclWC_ReportCmd2 =
+{
+  1,
+  {
+    ATTRID_METER_4HISTORY_INSTANTDEMAND,
+    ZCL_DATATYPE_INT24,
+    (void*)&zclWC_Flow2InstDemand
+  },
+};
+
 // Endpoint to allow SYS_APP_MSGs
 static endPointDesc_t waterCounter_TestEp =
 {
@@ -337,7 +357,8 @@ void zclWC_Init(byte task_id)
   IEN2 |= BV(4);           // Enable interrupt Port1
   
   zclWC_HourCounter = 0;   // Initialize Hour counter for time synchronization every 24 hours
-  status = osal_start_timerEx(zclWC_TaskID, WC_EVERYHOUR_EVT, 10000);
+  status = osal_start_timerEx(zclWC_TaskID, WC_EVT_EVERYHOUR, 10000);
+  status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATEPERIOD, zclWC_FlowUpdatePeriod*1000L);
 }
 
 /*********************************************************************
@@ -388,14 +409,14 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
   }
 
 #if ZG_BUILD_ENDDEVICE_TYPE    
-  if (events & WC_END_DEVICE_REJOIN_EVT)
+  if (events & WC_EVT_END_DEVICE_REJOIN)
   {
     bdb_ZedAttemptRecoverNwk();
-    return (events ^ WC_END_DEVICE_REJOIN_EVT);
+    return (events ^ WC_EVT_END_DEVICE_REJOIN);
   }
 #endif
 
-  if(events & WC_EVERYHOUR_EVT) // Every hour event. To check month change
+  if(events & WC_EVT_EVERYHOUR) // Every hour event. To check month change
   {
     UTCTime time = osal_getClock();    
     // Battery voltage check
@@ -403,40 +424,68 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
     
     if ((zclWC_HourCounter == 0) && (bdbAttributes.bdbNodeIsOnANetwork))
     {
-      afAddrType_t dstAddr;
       zclDiscoverAttrsCmd_t discoverAttr;
-      dstAddr.addrMode = AddrBroadcast;
+      
+      zclWC_DstAddr.addrMode = afAddrBroadcast;
       discoverAttr.startAttr = ATTRID_TIME_TIME;
       discoverAttr.maxAttrIDs = ATTRID_TIME_VALID_UNTIL_TIME;
-      status = zcl_SendRead(WC_ENDPOINT, &dstAddr, ZCL_CLUSTER_ID_GEN_TIME, &readCmdTimeCluster, ZCL_FRAME_CLIENT_SERVER_DIR, true, zclWC_SeqNum++);
-      status = zcl_SendDiscoverAttrsCmd(WC_ENDPOINT, &dstAddr, ZCL_CLUSTER_ID_GEN_TIME, &discoverAttr, ZCL_FRAME_CLIENT_SERVER_DIR, true, zclWC_SeqNum++);
+      status = zcl_SendRead(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_GEN_TIME, &readCmdTimeCluster, ZCL_FRAME_CLIENT_SERVER_DIR, true, zclWC_SeqNum++);
+      if (status)
+        status = zcl_SendDiscoverAttrsCmd(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_GEN_TIME, &discoverAttr, ZCL_FRAME_CLIENT_SERVER_DIR, true, zclWC_SeqNum++);
     }
     zclWC_HourCounter = (zclWC_HourCounter + 1) % 24;
-    status = osal_start_timerEx(zclWC_TaskID, WC_EVERYHOUR_EVT, 1L*60L*60L*1000L);
-    return (events ^ WC_EVERYHOUR_EVT); // return unprocessed events
+    status = osal_start_timerEx(zclWC_TaskID, WC_EVT_EVERYHOUR, 1L*5L*60L*1000L);
+    return (events ^ WC_EVT_EVERYHOUR); // return unprocessed events
   }
   
-  if (events & WC_IMPULSE1_EVT) // Event from ISR function to recive impulse from counter
+  if(events & WC_EVT_UPDATEPERIOD) // InstantDemand update period
+  {
+      if ((zclWC_Flow1InstDemandPrev != 0) || (zclWC_Flow1InstDemand != 0))
+      {
+        zclWC_DstAddr.addrMode = afAddr16Bit;
+        zclWC_DstAddr.addr.shortAddr = 0;
+        zclWC_DstAddr.endPoint = 1;
+        zcl_SendReportCmd(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_SE_METERING, (zclReportCmd_t*)&zclWC_ReportCmd, ZCL_FRAME_CLIENT_SERVER_DIR, false, zclWC_SeqNum++);
+      }
+      if ((zclWC_Flow2InstDemandPrev != 0) || (zclWC_Flow2InstDemand != 0))
+      {
+        zclWC_DstAddr.addrMode = afAddr16Bit;
+        zclWC_DstAddr.addr.shortAddr = 0;
+        zclWC_DstAddr.endPoint = 2;
+        zcl_SendReportCmd(WC_ENDPOINT2, &zclWC_DstAddr, ZCL_CLUSTER_ID_SE_METERING, (zclReportCmd_t*)&zclWC_ReportCmd2, ZCL_FRAME_CLIENT_SERVER_DIR, false, zclWC_SeqNum++);
+      }
+    
+    zclWC_Flow1InstDemandPrev = zclWC_Flow1InstDemand;
+    zclWC_Flow2InstDemandPrev = zclWC_Flow2InstDemand;
+    zclWC_Flow1InstDemand = 0;
+    zclWC_Flow2InstDemand = 0;
+    status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATEPERIOD, zclWC_FlowUpdatePeriod*1000L);
+    return (events ^ WC_EVT_UPDATEPERIOD); // return unprocessed events
+  }
+  
+  if (events & WC_EVT_IMPULSE1) // Event from ISR function to recive impulse from counter
   {
     if (POLARITY_IMPULSE(P1_0))
     {
-      zclWC_Flow1Value ++;
+      zclWC_Flow1Value.dw.lowDW ++;
+      zclWC_Flow1InstDemand ++;
       HalLedBlink(HAL_LED_4, 1, 50, 100);
     }
-    return (events ^ WC_IMPULSE1_EVT);
+    return (events ^ WC_EVT_IMPULSE1);
   }
 
-  if (events & WC_IMPULSE2_EVT)
+  if (events & WC_EVT_IMPULSE2)
   {
     if (POLARITY_IMPULSE(P1_1))
     {
-      zclWC_Flow2Value ++;
+      zclWC_Flow2Value.dw.lowDW ++;
+      zclWC_Flow2InstDemand ++;
       HalLedBlink(HAL_LED_5, 1, 50, 100);
     }    
-    return (events ^ WC_IMPULSE2_EVT);
+    return (events ^ WC_EVT_IMPULSE2);
   }
   
-  if (events & WC_LONGPUSH_EVT)
+  if (events & WC_EVT_LONGPUSH)
   {
     if (HAL_PUSH_BUTTON()) // Button is still pressed between 100ms interval
     {
@@ -455,10 +504,10 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
         if (zclWC_LongPushCounter > 5)
           HalLedSet(HAL_LED_3, HAL_LED_MODE_TOGGLE);
         
-        status = osal_start_timerEx(zclWC_TaskID, WC_LONGPUSH_EVT, WC_LONGPUSH_INTERVAL);
+        status = osal_start_timerEx(zclWC_TaskID, WC_EVT_LONGPUSH, WC_LONGPUSH_INTERVAL);
       }
     }
-    return (events ^ WC_LONGPUSH_EVT);
+    return (events ^ WC_EVT_LONGPUSH);
   }
   // Discard unknown events
   return 0;
@@ -483,7 +532,7 @@ static void zclWC_HandleKeys(byte shift, byte keys)
   HalLedBlink(HAL_LED_3, 1, 50, WC_LONGPUSH_INTERVAL);
   if (HAL_PUSH_BUTTON()) // Button is still pressed, try to determine long press 
   {
-    osal_start_timerEx(zclWC_TaskID, WC_LONGPUSH_EVT, WC_LONGPUSH_INTERVAL);
+    osal_start_timerEx(zclWC_TaskID, WC_EVT_LONGPUSH, WC_LONGPUSH_INTERVAL);
     zclWC_LongPushCounter = 0;
   }
 }
@@ -560,7 +609,7 @@ static void zclWC_ProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
       else
       {
         //Parent not found, attempt to rejoin again after a fixed delay
-        osal_start_timerEx(zclWC_TaskID, WC_END_DEVICE_REJOIN_EVT, WC_END_DEVICE_REJOIN_DELAY);
+        osal_start_timerEx(zclWC_TaskID, WC_EVT_END_DEVICE_REJOIN, WC_END_DEVICE_REJOIN_DELAY);
         HalLedSet(HAL_LED_3, HAL_LED_MODE_ON);
         HalLedSet(HAL_LED_4, HAL_LED_MODE_ON);
         HalLedSet(HAL_LED_5, HAL_LED_MODE_ON);
@@ -623,7 +672,7 @@ void zclWC_BatteryWarningCB(uint8 voltLevel)
  *
  * @param   volt, level - voltage and level attributes
  *
- * @return  return ADC value
+ * @return  none
  */
 static void zclWC_UpdateBatteryAttributes(void)
 {
@@ -970,11 +1019,11 @@ HAL_ISR_FUNCTION(halPort1Isr, P1INT_VECTOR)
   
   if (P1IFG & BV(0))
   {
-    osal_start_timerEx(zclWC_TaskID, WC_IMPULSE1_EVT, WC_DEBOUNCE);
+    osal_start_timerEx(zclWC_TaskID, WC_EVT_IMPULSE1, WC_DEBOUNCE);
   }
   if (P1IFG & BV(1))
   {
-    osal_start_timerEx(zclWC_TaskID, WC_IMPULSE2_EVT, WC_DEBOUNCE);
+    osal_start_timerEx(zclWC_TaskID, WC_EVT_IMPULSE2, WC_DEBOUNCE);
   }
   P1IFG = 0;
   
