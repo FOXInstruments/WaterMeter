@@ -129,7 +129,8 @@ uint16 zclWC_Flow1Multiplier;
 uint16 zclWC_Flow1Divisor;
 uint8 zclWC_Flow1Unit;
 uint16 zclWC_Flow1VolumePerReport;
-uint16 zclWC_Flow1PrevDay;
+uint24 zclWC_Flow1CurrDay;
+uint24 zclWC_Flow1PrevDay;
 uint8 zclWC_Flow1Status;
 
 uint8 zclWC_Flow2Desc[WC_DESCSIZE];
@@ -140,7 +141,8 @@ uint16 zclWC_Flow2Multiplier;
 uint16 zclWC_Flow2Divisor;
 uint16 zclWC_Flow2Unit;
 uint16 zclWC_Flow2VolumePerReport;
-uint16 zclWC_Flow2PrevDay;
+uint24 zclWC_Flow2CurrDay;
+uint24 zclWC_Flow2PrevDay;
 uint8 zclWC_Flow2Status;
 
 // Power cluster variable
@@ -500,6 +502,14 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   {
     ZCL_CLUSTER_ID_SE_METERING,
     { 
+      ATTRID_METER_4HISTORY_CURRDAYCONSUMPTIONDELIVER,
+      ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ),
+      (void *)&zclWC_Flow1CurrDay
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_SE_METERING,
+    { 
       ATTRID_METER_4HISTORY_PREVDAYCONSUMPTIONDELIVER,
       ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ),
       (void *)&zclWC_Flow1PrevDay
@@ -623,6 +633,14 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
       ATTRID_METER_4HISTORY_INSTANTDEMAND,
       ZCL_DATATYPE_INT24, (ACCESS_CONTROL_READ | ACCESS_REPORTABLE),
       (void *)&zclWC_Flow2InstDemand
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_SE_METERING,
+    { 
+      ATTRID_METER_4HISTORY_CURRDAYCONSUMPTIONDELIVER,
+      ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ),
+      (void *)&zclWC_Flow2CurrDay
     }
   },
   {
@@ -847,6 +865,8 @@ void zclWC_ResetAttributesToDefaultValues(void)
   zclWC_Flow2InstDemandPrev = 0;
   zclWC_Flow1PrevDay = 0;
   zclWC_Flow2PrevDay = 0;
+  zclWC_Flow1CurrDay = 0;
+  zclWC_Flow2CurrDay = 0;
   
   zclWC_Flow1Multiplier = 10;
   zclWC_Flow2Multiplier = 10;

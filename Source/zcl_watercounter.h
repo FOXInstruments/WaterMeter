@@ -70,7 +70,7 @@ extern "C"
 #define WC_EVT_LONGPUSH            0x0010
 #define WC_EVT_UPDATEPERIOD        0x0020       // InstanteniousDemand update event
 
-#define WC_END_DEVICE_REJOIN_DELAY 10000
+#define WC_END_DEVICE_REJOIN_DELAY 60000
 
 // Vdd/3 / Internal Reference X ENOB --> (Vdd / 3) / 1.15 X 127
 #define VDD3_2_0                74   // 2.0 V required to safely read/write internal flash.
@@ -86,6 +86,7 @@ extern "C"
 #define WC_DESCSIZE                8
 #define WC_MULTIPLYER              10    // Weight of one count
 #define WC_REPORT_INTERVAL         60 // Reporting interval in minutes
+#define WC_UPDATE_PERIOD           60 // instDemand update period in seconds 60-254, 255 - disable
 #define WC_REPORT_CHANGE_VOLTAGE   1     // Change values for BDB_REPORTING (0.1V unit)
 #define WC_REPORT_CHANGE_FLOW      10
   
@@ -185,7 +186,8 @@ extern uint16 zclWC_Flow1Multiplier;
 extern uint16 zclWC_Flow1Divisor;
 extern uint8 zclWC_Flow1Unit;
 extern uint16 zclWC_Flow1VolumePerReport;
-extern uint16 zclWC_Flow1PrevDay;
+extern uint24 zclWC_Flow1CurrDay;
+extern uint24 zclWC_Flow1PrevDay;
 extern uint8 zclWC_Flow1Status;
 
 extern uint8 zclWC_Flow2Desc[];
@@ -196,7 +198,8 @@ extern uint16 zclWC_Flow2Multiplier;
 extern uint16 zclWC_Flow2Divisor;
 extern uint16 zclWC_Flow2Unit;
 extern uint16 zclWC_Flow2VolumePerReport;
-extern uint16 zclWC_Flow2PrevDay;
+extern uint24 zclWC_Flow2CurrDay;
+extern uint24 zclWC_Flow2PrevDay;
 extern uint8 zclWC_Flow2Status;
 
 extern uint8 zclWC_BatteryVoltage;             // 0.1V unit

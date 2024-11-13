@@ -137,7 +137,7 @@ CONST zclReportCmd_t zclWC_ReportCmd =
   {
     ATTRID_METER_4HISTORY_INSTANTDEMAND,
     ZCL_DATATYPE_INT24,
-    (void*)&zclWC_Flow1InstDemand
+    (void*)&zclWC_Flow1InstDemandPrev
   },
 };
 
@@ -147,7 +147,7 @@ CONST zclReportCmd_t zclWC_ReportCmd2 =
   {
     ATTRID_METER_4HISTORY_INSTANTDEMAND,
     ZCL_DATATYPE_INT24,
-    (void*)&zclWC_Flow2InstDemand
+    (void*)&zclWC_Flow2InstDemandPrev
   },
 };
 
@@ -302,7 +302,7 @@ void zclWC_Init(byte task_id)
   // Register for a test endpoint
   afRegister(&waterCounter_TestEp);
   afRegister(&waterCounter_TestEp2);
-  
+/*  
 #ifdef BDB_REPORTING
 #if (BDBREPORTING_MAX_ANALOG_ATTR_SIZE < 4)
 #error BDBREPORTING_MAX_ANALOG_ATTR_SIZE less then sizeof uint32 datatype
@@ -320,7 +320,7 @@ void zclWC_Init(byte task_id)
   status = bdb_RepAddAttrCfgRecordDefaultToList(WC_ENDPOINT, ZCL_CLUSTER_ID_SE_METERING, ATTRID_METER_0READINGSET_CURRSUMDELIVERED, \
                                        zclWC_FlowReportInterval*60, zclWC_FlowReportInterval*60*6, reportChange);
 #endif
-  
+*/  
 #ifdef ZCL_DIAGNOSTIC
   // Register the application's callback function to read/write attribute data.
   // This is only required when the attribute data format is unknown to ZCL.
@@ -356,9 +356,11 @@ void zclWC_Init(byte task_id)
   P1IFG &= ~BV(1);
   IEN2 |= BV(4);           // Enable interrupt Port1
   
-  zclWC_HourCounter = 0;   // Initialize Hour counter for time synchronization every 24 hours
+  zclWC_HourCounter = 24;   // Initialize Hour counter for time synchronization every 24 hours
   status = osal_start_timerEx(zclWC_TaskID, WC_EVT_EVERYHOUR, 10000);
-  status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATEPERIOD, zclWC_FlowUpdatePeriod*1000L);
+  if (zclWC_FlowUpdatePeriod != 0xFF ) status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATEPERIOD, zclWC_FlowUpdatePeriod*1000L);
+  
+  //bdb_StartCommissioning(BDB_COMMISSIONING_MODE_NWK_STEERING | BDB_COMMISSIONING_MODE_FINDING_BINDING);
 }
 
 /*********************************************************************
@@ -418,11 +420,27 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
 
   if(events & WC_EVT_EVERYHOUR) // Every hour event. To check month change
   {
-    UTCTime time = osal_getClock();    
+    UTCTimeStruct time;
+    osal_ConvertUTCTime(&time, osal_getClock());
+    
     // Battery voltage check
     zclWC_UpdateBatteryAttributes();
-    
-    if ((zclWC_HourCounter == 0) && (bdbAttributes.bdbNodeIsOnANetwork))
+    // Every 24 hours attribute update
+    if (time.hour == 0)
+    {
+      zclWC_Flow1PrevDay = zclWC_Flow1CurrDay;
+      zclWC_Flow2PrevDay = zclWC_Flow2CurrDay;
+      zclWC_Flow1CurrDay = 0;
+      zclWC_Flow2CurrDay = 0;
+      // Send report
+    }
+    // Every hour attribute update
+    if (time.minutes == 0)
+    {
+      ?
+    }
+    // Try time sync with coodinator every 24 hours or more
+    if ((zclWC_HourCounter > 23) && (bdbAttributes.bdbNodeIsOnANetwork))
     {
       zclDiscoverAttrsCmd_t discoverAttr;
       
@@ -433,13 +451,20 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
       if (status)
         status = zcl_SendDiscoverAttrsCmd(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_GEN_TIME, &discoverAttr, ZCL_FRAME_CLIENT_SERVER_DIR, true, zclWC_SeqNum++);
     }
-    zclWC_HourCounter = (zclWC_HourCounter + 1) % 24;
-    status = osal_start_timerEx(zclWC_TaskID, WC_EVT_EVERYHOUR, 1L*5L*60L*1000L);
+
+    zclWC_HourCounter++;
+    if (zclWC_HourCounter == 0) zclWC_HourCounter = 24;
+    
+    status = osal_start_timerEx(zclWC_TaskID, WC_EVT_EVERYHOUR, (3600L - time.minutes*60 - time.seconds)*1000L);
     return (events ^ WC_EVT_EVERYHOUR); // return unprocessed events
   }
   
   if(events & WC_EVT_UPDATEPERIOD) // InstantDemand update period
   {
+    if (zclWC_FlowUpdatePeriod < WC_UPDATE_PERIOD) zclWC_FlowUpdatePeriod = WC_UPDATE_PERIOD; // set minimum update intervel
+    
+    if (zclWC_FlowUpdatePeriod != 0xFF) // if 0xFF update is disabled
+    {
       if ((zclWC_Flow1InstDemandPrev != 0) || (zclWC_Flow1InstDemand != 0))
       {
         zclWC_DstAddr.addrMode = afAddr16Bit;
@@ -454,12 +479,13 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
         zclWC_DstAddr.endPoint = 2;
         zcl_SendReportCmd(WC_ENDPOINT2, &zclWC_DstAddr, ZCL_CLUSTER_ID_SE_METERING, (zclReportCmd_t*)&zclWC_ReportCmd2, ZCL_FRAME_CLIENT_SERVER_DIR, false, zclWC_SeqNum++);
       }
+      status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATEPERIOD, zclWC_FlowUpdatePeriod*1000L);
+    }
     
     zclWC_Flow1InstDemandPrev = zclWC_Flow1InstDemand;
     zclWC_Flow2InstDemandPrev = zclWC_Flow2InstDemand;
     zclWC_Flow1InstDemand = 0;
     zclWC_Flow2InstDemand = 0;
-    status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATEPERIOD, zclWC_FlowUpdatePeriod*1000L);
     return (events ^ WC_EVT_UPDATEPERIOD); // return unprocessed events
   }
   
@@ -492,15 +518,15 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
       zclWC_LongPushCounter++;
       if (zclWC_LongPushCounter > 50) // Key is pressed more than 5 sec, preform LocalReset and recommission
       {
-        //HalLedBlink(HAL_LED_3, 255, 50, 1000);
         HalLedSet(HAL_LED_3, HAL_LED_MODE_ON);
+        HalLedSet(HAL_LED_4, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_5, HAL_LED_MODE_OFF);
         //bdb_resetLocalAction();
         bdb_StartCommissioning(BDB_COMMISSIONING_MODE_NWK_STEERING | BDB_COMMISSIONING_MODE_FINDING_BINDING);
         //SystemReset();
       }
       else
       {
-        //HalLedBlink(HAL_LED_3, 1, 100, WC_LONGPUSH_INTERVAL);
         if (zclWC_LongPushCounter > 5)
           HalLedSet(HAL_LED_3, HAL_LED_MODE_TOGGLE);
         
@@ -828,6 +854,7 @@ static uint8 zclWC_ProcessInReadRspCmd(zclIncomingMsg_t *pInMsg)
               (ABS((int32)(*((uint32*)readRspCmd->attrList[i].data) - time)) > TIME_SYNC_DIFF))
           {
             osal_setClock(*((uint32*)readRspCmd->attrList[i].data));
+            zclWC_HourCounter = 0;
           }
         }
       }
