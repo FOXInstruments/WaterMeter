@@ -522,7 +522,8 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
         HalLedSet(HAL_LED_4, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_5, HAL_LED_MODE_OFF);
         //bdb_resetLocalAction();
-        bdb_StartCommissioning(BDB_COMMISSIONING_MODE_NWK_STEERING | BDB_COMMISSIONING_MODE_FINDING_BINDING);
+        //ZDApp_LeaveReset();
+        bdb_StartCommissioning(BDB_COMMISSIONING_MODE_INITIATOR_TL | BDB_COMMISSIONING_MODE_NWK_STEERING | BDB_COMMISSIONING_MODE_FINDING_BINDING);
         //SystemReset();
       }
       else
