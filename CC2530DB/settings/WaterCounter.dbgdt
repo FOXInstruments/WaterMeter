@@ -1141,7 +1141,7 @@
                     <item>zclWC_Flow2Value</item>
                     <item>buf</item>
                     <item>zclWC_FlowReportInterval</item>
-                    <item></item>
+                    <item />
                 </expressions>
                 <col-names>
                     <item>Expression</item>

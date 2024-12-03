@@ -151,6 +151,28 @@ CONST zclReportCmd_t zclWC_ReportCmd2 =
   },
 };
 
+CONST zclReportCmd_t zclWC_ReportCmdEveryHour =
+{
+  3,
+  {
+    {
+      ATTRID_METER_0READINGSET_CURRSUMDELIVERED,
+      ZCL_DATATYPE_UINT48,
+      (void*)&zclWC_Flow1Value
+    },
+    {
+      ATTRID_METER_4HISTORY_CURRDAYCONSUMPTIONDELIVER,
+      ZCL_DATATYPE_UINT24,
+      (void*)&zclWC_Flow1CurrDay
+    },
+    {
+      ATTRID_METER_4HISTORY_PREVDAYCONSUMPTIONDELIVER,
+      ZCL_DATATYPE_UINT24,
+      (void*)&zclWC_Flow1PrevDay
+    },
+  },
+};
+
 // Endpoint to allow SYS_APP_MSGs
 static endPointDesc_t waterCounter_TestEp =
 {
@@ -437,7 +459,10 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
     // Every hour attribute update
     if (time.minutes == 0)
     {
-      ?
+        zclWC_DstAddr.addrMode = afAddr16Bit;
+        zclWC_DstAddr.addr.shortAddr = 0;
+        zclWC_DstAddr.endPoint = 1;
+        zcl_SendReportCmd(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_SE_METERING, (zclReportCmd_t*)&zclWC_ReportCmdEveryHour, ZCL_FRAME_CLIENT_SERVER_DIR, false, zclWC_SeqNum++);  
     }
     // Try time sync with coodinator every 24 hours or more
     if ((zclWC_HourCounter > 23) && (bdbAttributes.bdbNodeIsOnANetwork))
@@ -476,7 +501,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
       {
         zclWC_DstAddr.addrMode = afAddr16Bit;
         zclWC_DstAddr.addr.shortAddr = 0;
-        zclWC_DstAddr.endPoint = 2;
+        zclWC_DstAddr.endPoint = 1;
         zcl_SendReportCmd(WC_ENDPOINT2, &zclWC_DstAddr, ZCL_CLUSTER_ID_SE_METERING, (zclReportCmd_t*)&zclWC_ReportCmd2, ZCL_FRAME_CLIENT_SERVER_DIR, false, zclWC_SeqNum++);
       }
       status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATEPERIOD, zclWC_FlowUpdatePeriod*1000L);
