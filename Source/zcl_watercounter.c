@@ -74,6 +74,9 @@
 #include "ZDObject.h"
 #include "ZDProfile.h"
 #include "MT_SYS.h"
+#if defined MT_DEBUG_FUNC
+#include "MT_DEBUG.h"
+#endif
 
 #include "zcl.h"
 #include "zcl_general.h"
@@ -380,7 +383,7 @@ void zclWC_Init(byte task_id)
   
   zclWC_HourCounter = 24;   // Initialize Hour counter for time synchronization every 24 hours
   status = osal_start_timerEx(zclWC_TaskID, WC_EVT_EVERYHOUR, 10000);
-  if (zclWC_FlowUpdatePeriod != 0xFF ) status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATEPERIOD, zclWC_FlowUpdatePeriod*1000L);
+  if (zclWC_FlowUpdatePeriod != 0xFF ) status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATEINSTDEMAND, zclWC_FlowUpdatePeriod*1000L);
   
   //bdb_StartCommissioning(BDB_COMMISSIONING_MODE_NWK_STEERING | BDB_COMMISSIONING_MODE_FINDING_BINDING);
 }
@@ -431,7 +434,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
     }
     return (events ^ SYS_EVENT_MSG); // return unprocessed events
   }
-
+  // ------------------------------------------------------------------
 #if ZG_BUILD_ENDDEVICE_TYPE    
   if (events & WC_EVT_END_DEVICE_REJOIN)
   {
@@ -439,7 +442,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
     return (events ^ WC_EVT_END_DEVICE_REJOIN);
   }
 #endif
-
+  // ------------------------------------------------------------------
   if(events & WC_EVT_EVERYHOUR) // Every hour event. To check month change
   {
     UTCTimeStruct time;
@@ -448,7 +451,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
     // Battery voltage check
     zclWC_UpdateBatteryAttributes();
     // Every 24 hours attribute update
-    if (time.hour == 0)
+    if (time.hour == 0 && time.minutes == 0)
     {
       zclWC_Flow1PrevDay = zclWC_Flow1CurrDay;
       zclWC_Flow2PrevDay = zclWC_Flow2CurrDay;
@@ -457,7 +460,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
       // Send report
     }
     // Every hour attribute update
-    if (time.minutes == 0)
+    if ((time.minutes == 0) && (bdbAttributes.bdbNodeIsOnANetwork))
     {
         zclWC_DstAddr.addrMode = afAddr16Bit;
         zclWC_DstAddr.addr.shortAddr = 0;
@@ -473,22 +476,23 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
       discoverAttr.startAttr = ATTRID_TIME_TIME;
       discoverAttr.maxAttrIDs = ATTRID_TIME_VALID_UNTIL_TIME;
       status = zcl_SendRead(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_GEN_TIME, &readCmdTimeCluster, ZCL_FRAME_CLIENT_SERVER_DIR, true, zclWC_SeqNum++);
-      if (status)
+      if (status) // if SendRead failure, try to discover device to sync the time
         status = zcl_SendDiscoverAttrsCmd(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_GEN_TIME, &discoverAttr, ZCL_FRAME_CLIENT_SERVER_DIR, true, zclWC_SeqNum++);
     }
 
     zclWC_HourCounter++;
-    if (zclWC_HourCounter == 0) zclWC_HourCounter = 24;
+    if (zclWC_HourCounter == 0) zclWC_HourCounter = 24; // if HourCounter was 255, time sync was not completed more than 255 hours
     
     status = osal_start_timerEx(zclWC_TaskID, WC_EVT_EVERYHOUR, (3600L - time.minutes*60 - time.seconds)*1000L);
+    
     return (events ^ WC_EVT_EVERYHOUR); // return unprocessed events
   }
-  
-  if(events & WC_EVT_UPDATEPERIOD) // InstantDemand update period
+  // ------------------------------------------------------------------
+  if(events & WC_EVT_UPDATEINSTDEMAND) // InstantDemand update period
   {
-    if (zclWC_FlowUpdatePeriod < WC_UPDATE_PERIOD) zclWC_FlowUpdatePeriod = WC_UPDATE_PERIOD; // set minimum update intervel
+    if (zclWC_FlowUpdatePeriod < WC_METER_INSTDEMAND_UPDATEPERIOD) zclWC_FlowUpdatePeriod = WC_METER_INSTDEMAND_UPDATEPERIOD; // set minimum update intervel
     
-    if (zclWC_FlowUpdatePeriod != 0xFF) // if 0xFF update is disabled
+    if ((zclWC_FlowUpdatePeriod != 0xFF) && (bdbAttributes.bdbNodeIsOnANetwork)) // if 0xFF update is disabled
     {
       if ((zclWC_Flow1InstDemandPrev != 0) || (zclWC_Flow1InstDemand != 0))
       {
@@ -504,16 +508,17 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
         zclWC_DstAddr.endPoint = 1;
         zcl_SendReportCmd(WC_ENDPOINT2, &zclWC_DstAddr, ZCL_CLUSTER_ID_SE_METERING, (zclReportCmd_t*)&zclWC_ReportCmd2, ZCL_FRAME_CLIENT_SERVER_DIR, false, zclWC_SeqNum++);
       }
-      status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATEPERIOD, zclWC_FlowUpdatePeriod*1000L);
     }
     
     zclWC_Flow1InstDemandPrev = zclWC_Flow1InstDemand;
     zclWC_Flow2InstDemandPrev = zclWC_Flow2InstDemand;
     zclWC_Flow1InstDemand = 0;
     zclWC_Flow2InstDemand = 0;
-    return (events ^ WC_EVT_UPDATEPERIOD); // return unprocessed events
+    status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATEINSTDEMAND, zclWC_FlowUpdatePeriod*1000L);
+    
+    return (events ^ WC_EVT_UPDATEINSTDEMAND); // return unprocessed events
   }
-  
+  // ------------------------------------------------------------------ 
   if (events & WC_EVT_IMPULSE1) // Event from ISR function to recive impulse from counter
   {
     if (POLARITY_IMPULSE(P1_0))
@@ -524,7 +529,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
     }
     return (events ^ WC_EVT_IMPULSE1);
   }
-
+  // ------------------------------------------------------------------
   if (events & WC_EVT_IMPULSE2)
   {
     if (POLARITY_IMPULSE(P1_1))
@@ -535,7 +540,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
     }    
     return (events ^ WC_EVT_IMPULSE2);
   }
-  
+  // ------------------------------------------------------------------  
   if (events & WC_EVT_LONGPUSH)
   {
     if (HAL_PUSH_BUTTON()) // Button is still pressed between 100ms interval
@@ -881,6 +886,14 @@ static uint8 zclWC_ProcessInReadRspCmd(zclIncomingMsg_t *pInMsg)
           {
             osal_setClock(*((uint32*)readRspCmd->attrList[i].data));
             zclWC_HourCounter = 0;
+
+#if defined MT_DEBUG_FUNC
+            char str[] = "Time sync completed";
+            mtDebugStr_t debugstr;
+            debugstr.strLen = sizeof(str);
+            debugstr.pString = (uint8*)str;            
+            MT_ProcessDebugStr(&debugstr);
+#endif
           }
         }
       }

@@ -68,7 +68,7 @@ extern "C"
 #define WC_EVT_IMPULSE2            0x0004  
 #define WC_EVT_EVERYHOUR           0x0008
 #define WC_EVT_LONGPUSH            0x0010
-#define WC_EVT_UPDATEPERIOD        0x0020       // InstanteniousDemand update event
+#define WC_EVT_UPDATEINSTDEMAND    0x0020       // InstanteniousDemand update event
 
 #define WC_END_DEVICE_REJOIN_DELAY 60000
 
@@ -83,12 +83,13 @@ extern "C"
 #define VDD_VOLTAGE_THRES1      27           // 0.1V unit
 #define VDD3TOVOLTAGE(v)        (v * 11.5 * 3 / 127.0)   // Convert ADC value to Voltage 0.1V unit
   
-#define WC_DESCSIZE                8
-#define WC_MULTIPLYER              10    // Weight of one count
-#define WC_REPORT_INTERVAL         60 // Reporting interval in minutes
-#define WC_UPDATE_PERIOD           60 // instDemand update period in seconds 60-254, 255 - disable
-#define WC_REPORT_CHANGE_VOLTAGE   1     // Change values for BDB_REPORTING (0.1V unit)
-#define WC_REPORT_CHANGE_FLOW      10
+#define WC_DESCSIZE                       8
+#define WC_METER_MULTIPLIER               10    // Weight of one count
+#define WC_METER_DIVISOR                  1000  // Divider to calculate flow rate
+#define WC_METER_REPORT_INTERVAL          60 // Reporting interval in minutes
+#define WC_METER_INSTDEMAND_UPDATEPERIOD  120 // instDemand update period in seconds 60-254, 255 - disable
+#define WC_REPORT_CHANGE_VOLTAGE          1     // Change values for BDB_REPORTING (0.1V unit)
+#define WC_REPORT_CHANGE_FLOW             10
   
 #define TIME_SYNC_DIFF          5L       // Difference between device time and gate time
   

@@ -5431,7 +5431,7 @@
             <name>$ZSTACKDIR$\Components\stack\bdb\bdb_touchlink.c</name>
         </file>
         <file>
-            <name>$ZSTACKDIR$\Components\stack\bdb\bdb_touchLink.h</name>
+            <name>$ZSTACKDIR$\Components\stack\bdb\bdb_touchlink.h</name>
         </file>
         <file>
             <name>$ZSTACKDIR$\Components\stack\bdb\bdb_touchlink_initiator.c</name>

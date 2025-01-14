@@ -2664,13 +2664,14 @@
                     <state>NV_RESTORE</state>
                     <state>xPOWER_SAVING</state>
                     <state>NWK_AUTO_POLL</state>
-                    <state>xZTOOL_P1</state>
-                    <state>xMT_TASK</state>
-                    <state>xMT_APP_FUNC</state>
-                    <state>xMT_SYS_FUNC</state>
-                    <state>xMT_ZDO_FUNC</state>
-                    <state>xMT_ZDO_MGMT</state>
-                    <state>xMT_APP_CNF_FUNC</state>
+                    <state>ZTOOL_P2</state>
+                    <state>MT_TASK</state>
+                    <state>MT_APP_FUNC</state>
+                    <state>MT_SYS_FUNC</state>
+                    <state>MT_DEBUG_FUNC</state>
+                    <state>MT_ZDO_FUNC</state>
+                    <state>MT_ZDO_MGMT</state>
+                    <state>MT_APP_CNF_FUNC</state>
                     <state>xLCD_SUPPORTED=DEBUG</state>
                     <state>MULTICAST_ENABLED=FALSE</state>
                     <state>HAL_LCD=FALSE</state>

@@ -868,10 +868,10 @@ void zclWC_ResetAttributesToDefaultValues(void)
   zclWC_Flow1CurrDay = 0;
   zclWC_Flow2CurrDay = 0;
   
-  zclWC_Flow1Multiplier = 10;
-  zclWC_Flow2Multiplier = 10;
-  zclWC_Flow1Divisor = 1000;
-  zclWC_Flow2Divisor = 1000;
+  zclWC_Flow1Multiplier = WC_METER_MULTIPLIER;
+  zclWC_Flow2Multiplier = WC_METER_MULTIPLIER;
+  zclWC_Flow1Divisor = WC_METER_DIVISOR;
+  zclWC_Flow2Divisor = WC_METER_DIVISOR;
   zclWC_Flow1HoursInOperation = 0;
   zclWC_Flow2HoursInOperation = 0;
   zclWC_Flow1Unit = ENGINEERING_UNIT_VOLUME_M3;
@@ -881,8 +881,8 @@ void zclWC_ResetAttributesToDefaultValues(void)
   zclWC_Flow1Status = 0;
   zclWC_Flow2Status = 0;
   
-  zclWC_FlowUpdatePeriod = 60;   // InstDemand update interval
-  zclWC_FlowReportInterval = WC_REPORT_INTERVAL; // Report interal in minutes
+  zclWC_FlowUpdatePeriod = WC_METER_INSTDEMAND_UPDATEPERIOD;   // InstDemand update interval
+  zclWC_FlowReportInterval = WC_METER_REPORT_INTERVAL; // Report interal in minutes
   
   zclWC_BatteryVoltageRated = VDD_VOLTAGE_RATED;
   zclWC_BatteryVoltageThresMin = VDD_VOLTAGE_MIN;
