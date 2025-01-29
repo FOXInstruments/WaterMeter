@@ -2665,6 +2665,7 @@
                     <state>xPOWER_SAVING</state>
                     <state>NWK_AUTO_POLL</state>
                     <state>ZTOOL_P2</state>
+                    <state>MT_UART_DEFAULT_OVERFLOW=FALSE</state>
                     <state>MT_TASK</state>
                     <state>MT_APP_FUNC</state>
                     <state>MT_SYS_FUNC</state>

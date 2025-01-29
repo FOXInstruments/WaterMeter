@@ -1680,7 +1680,7 @@
                 </option>
                 <option>
                     <name>ChipconFlashLockInfo</name>
-                    <state>&lt;page size info. missing&gt;</state>
+                    <state>Page size info is missing</state>
                 </option>
                 <option>
                     <name>ChipconBootLock</name>

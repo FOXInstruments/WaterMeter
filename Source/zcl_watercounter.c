@@ -122,7 +122,7 @@ uint8 zclWC_SeqNum;
 
 uint8 zclWC_HourCounter;        // Hour counter for Time synchronization every 24 hours 
 
-zclReadCmd_t readCmdTimeCluster = {4, {ATTRID_TIME_TIME, ATTRID_TIME_TIME_STATUS, ATTRID_TIME_TIME_ZONE, ATTRID_TIME_LOCAL_TIME}};
+const zclReadCmd_t readCmdTimeCluster = {4, {ATTRID_TIME_TIME, ATTRID_TIME_TIME_STATUS, ATTRID_TIME_TIME_ZONE, ATTRID_TIME_LOCAL_TIME}};
 
 /*********************************************************************
  * GLOBAL FUNCTIONS
@@ -154,7 +154,7 @@ CONST zclReportCmd_t zclWC_ReportCmd2 =
   },
 };
 
-CONST zclReportCmd_t zclWC_ReportCmdEveryHour =
+const zclReportCmd_t zclWC_ReportCmdEveryHour =
 {
   3,
   {
@@ -383,6 +383,7 @@ void zclWC_Init(byte task_id)
   
   zclWC_HourCounter = 24;   // Initialize Hour counter for time synchronization every 24 hours
   status = osal_start_timerEx(zclWC_TaskID, WC_EVT_EVERYHOUR, 10000);
+  (void)status;
   if (zclWC_FlowUpdatePeriod != 0xFF ) status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATEINSTDEMAND, zclWC_FlowUpdatePeriod*1000L);
   
   //bdb_StartCommissioning(BDB_COMMISSIONING_MODE_NWK_STEERING | BDB_COMMISSIONING_MODE_FINDING_BINDING);
@@ -451,39 +452,48 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
     // Battery voltage check
     zclWC_UpdateBatteryAttributes();
     // Every 24 hours attribute update
-    if (time.hour == 0 && time.minutes == 0)
+    if (time.hour == 0 && time.minutes <= 1)
     {
       zclWC_Flow1PrevDay = zclWC_Flow1CurrDay;
       zclWC_Flow2PrevDay = zclWC_Flow2CurrDay;
       zclWC_Flow1CurrDay = 0;
       zclWC_Flow2CurrDay = 0;
-      // Send report
     }
     // Every hour attribute update
-    if ((time.minutes == 0) && (bdbAttributes.bdbNodeIsOnANetwork))
+    if (/*(time.minutes <= 1) &&*/ (bdbAttributes.bdbNodeIsOnANetwork))
     {
         zclWC_DstAddr.addrMode = afAddr16Bit;
         zclWC_DstAddr.addr.shortAddr = 0;
         zclWC_DstAddr.endPoint = 1;
-        zcl_SendReportCmd(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_SE_METERING, (zclReportCmd_t*)&zclWC_ReportCmdEveryHour, ZCL_FRAME_CLIENT_SERVER_DIR, false, zclWC_SeqNum++);  
+        zcl_SendReportCmd(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_SE_METERING, /*(zclReportCmd_t*)*/&zclWC_ReportCmdEveryHour, ZCL_FRAME_SERVER_CLIENT_DIR, false, zclWC_SeqNum++);  
     }
     // Try time sync with coodinator every 24 hours or more
     if ((zclWC_HourCounter > 23) && (bdbAttributes.bdbNodeIsOnANetwork))
-    {
-      zclDiscoverAttrsCmd_t discoverAttr;
+    {     
+      zclWC_DstAddr.addrMode = afAddr16Bit;
+      zclWC_DstAddr.addr.shortAddr = 0;
+      zclWC_DstAddr.endPoint = 1;
       
-      zclWC_DstAddr.addrMode = afAddrBroadcast;
-      discoverAttr.startAttr = ATTRID_TIME_TIME;
-      discoverAttr.maxAttrIDs = ATTRID_TIME_VALID_UNTIL_TIME;
-      status = zcl_SendRead(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_GEN_TIME, &readCmdTimeCluster, ZCL_FRAME_CLIENT_SERVER_DIR, true, zclWC_SeqNum++);
+      status = zcl_SendRead(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_GEN_TIME, &readCmdTimeCluster, ZCL_FRAME_CLIENT_SERVER_DIR, false, zclWC_SeqNum++);
       if (status) // if SendRead failure, try to discover device to sync the time
-        status = zcl_SendDiscoverAttrsCmd(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_GEN_TIME, &discoverAttr, ZCL_FRAME_CLIENT_SERVER_DIR, true, zclWC_SeqNum++);
+      {
+        zclDiscoverAttrsCmd_t discoverAttr;
+        
+        zclWC_DstAddr.addrMode = afAddrBroadcast;
+        discoverAttr.startAttr = ATTRID_TIME_TIME;
+        discoverAttr.maxAttrIDs = ATTRID_TIME_VALID_UNTIL_TIME;
+        status = zcl_SendDiscoverAttrsCmd(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_GEN_TIME, &discoverAttr, ZCL_FRAME_CLIENT_SERVER_DIR, false, zclWC_SeqNum++);
+      }
     }
 
     zclWC_HourCounter++;
     if (zclWC_HourCounter == 0) zclWC_HourCounter = 24; // if HourCounter was 255, time sync was not completed more than 255 hours
     
-    status = osal_start_timerEx(zclWC_TaskID, WC_EVT_EVERYHOUR, (3600L - time.minutes*60 - time.seconds)*1000L);
+    status = osal_start_timerEx(zclWC_TaskID, WC_EVT_EVERYHOUR, /*(3600L - time.minutes*60 - time.seconds)*/ 120000L);
+    
+#warning For testing only
+    osal_set_event(zclWC_TaskID, WC_EVT_IMPULSE1);
+    osal_set_event(zclWC_TaskID, WC_EVT_IMPULSE2);
     
     return (events ^ WC_EVT_EVERYHOUR); // return unprocessed events
   }
@@ -521,10 +531,12 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
   // ------------------------------------------------------------------ 
   if (events & WC_EVT_IMPULSE1) // Event from ISR function to recive impulse from counter
   {
-    if (POLARITY_IMPULSE(P1_0))
+#warning Disabled For testing only
+    //if (POLARITY_IMPULSE(P1_0))
     {
-      zclWC_Flow1Value.dw.lowDW ++;
-      zclWC_Flow1InstDemand ++;
+      zclWC_Flow1Value.dw.lowDW++;
+      zclWC_Flow1CurrDay++;
+      if (zclWC_FlowUpdatePeriod != 0xFF) zclWC_Flow1InstDemand++;
       HalLedBlink(HAL_LED_4, 1, 50, 100);
     }
     return (events ^ WC_EVT_IMPULSE1);
@@ -532,10 +544,12 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
   // ------------------------------------------------------------------
   if (events & WC_EVT_IMPULSE2)
   {
-    if (POLARITY_IMPULSE(P1_1))
+#warning Disabled For testing only
+    //if (POLARITY_IMPULSE(P1_1))
     {
-      zclWC_Flow2Value.dw.lowDW ++;
-      zclWC_Flow2InstDemand ++;
+      zclWC_Flow2Value.dw.lowDW++;
+      zclWC_Flow2CurrDay++;
+      if (zclWC_FlowUpdatePeriod != 0xFF) zclWC_Flow2InstDemand++;
       HalLedBlink(HAL_LED_5, 1, 50, 100);
     }    
     return (events ^ WC_EVT_IMPULSE2);
@@ -870,34 +884,40 @@ static uint8 zclWC_ProcessInReadRspCmd(zclIncomingMsg_t *pInMsg)
   readRspCmd = (zclReadRspCmd_t *)pInMsg->attrCmd;
   
   // Processing TIME read response command for time sync
-  if (pInMsg->clusterId == ZCL_CLUSTER_ID_GEN_TIME)
+  switch(pInMsg->clusterId)
   {
-    for (i = 0; i < readRspCmd->numAttr; i++)
-    {
-      if (readRspCmd->attrList[i].status == ZCL_STATUS_SUCCESS)
+    case ZCL_CLUSTER_ID_GEN_POWER_CFG:
+      break;
+    case ZCL_CLUSTER_ID_GEN_TIME:
+      for (i = 0; i < readRspCmd->numAttr; i++)
       {
-        if (readRspCmd->attrList[i].attrID == ATTRID_TIME_TIME_STATUS) status = *readRspCmd->attrList[i].data;
-        if (readRspCmd->attrList[i].attrID == ATTRID_TIME_LOCAL_TIME)
+        if (readRspCmd->attrList[i].status == ZCL_STATUS_SUCCESS)
         {
-          time = osal_getClock();
-          if ((status & TIME_STATUS_MASTER) && (status & TIME_STATUS_SYNCH) &&
-              (*((uint32*)readRspCmd->attrList[i].data) > 0L) &&
-              (ABS((int32)(*((uint32*)readRspCmd->attrList[i].data) - time)) > TIME_SYNC_DIFF))
+          if (readRspCmd->attrList[i].attrID == ATTRID_TIME_TIME_STATUS) status = *readRspCmd->attrList[i].data;
+          if (readRspCmd->attrList[i].attrID == ATTRID_TIME_LOCAL_TIME)
           {
-            osal_setClock(*((uint32*)readRspCmd->attrList[i].data));
-            zclWC_HourCounter = 0;
+            time = osal_getClock();
+            if ((status & TIME_STATUS_MASTER) && (status & TIME_STATUS_SYNCH) &&
+                (*((uint32*)readRspCmd->attrList[i].data) > 0L) &&
+                (ABS((int32)(*((uint32*)readRspCmd->attrList[i].data) - time)) > TIME_SYNC_DIFF))
+            {
+              osal_setClock(*((uint32*)readRspCmd->attrList[i].data));
+              zclWC_HourCounter = 0;
 
 #if defined MT_DEBUG_FUNC
-            char str[] = "Time sync completed";
-            mtDebugStr_t debugstr;
-            debugstr.strLen = sizeof(str);
-            debugstr.pString = (uint8*)str;            
-            MT_ProcessDebugStr(&debugstr);
+              char str[] = "Time sync completed";
+              mtDebugStr_t debugstr;
+              debugstr.strLen = 19;
+              debugstr.pString = (uint8*)str;            
+              MT_ProcessDebugStr(&debugstr);
 #endif
+            }
           }
         }
       }
-    }
+      break;
+    default:
+      break;
   }
 
   return TRUE;
