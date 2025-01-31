@@ -972,7 +972,7 @@
                     <item>waterCounter_TestEp</item>
                     <item>zclWC_ReportCmdEveryHour</item>
                     <item>pData</item>
-                    <item></item>
+                    <item />
                 </expressions>
                 <col-names>
                     <item>Expression</item>
@@ -1168,7 +1168,7 @@
                     <item>zclWC_FlowReportInterval</item>
                     <item>readCmdTimeCluster</item>
                     <item>zclWC_ReportCmdEveryHour</item>
-                    <item></item>
+                    <item />
                 </expressions>
                 <col-names>
                     <item>Expression</item>

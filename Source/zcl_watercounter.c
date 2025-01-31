@@ -122,7 +122,7 @@ uint8 zclWC_SeqNum;
 
 uint8 zclWC_HourCounter;        // Hour counter for Time synchronization every 24 hours 
 
-const zclReadCmd_t readCmdTimeCluster = {4, {ATTRID_TIME_TIME, ATTRID_TIME_TIME_STATUS, ATTRID_TIME_TIME_ZONE, ATTRID_TIME_LOCAL_TIME}};
+const zclReadCmd_t zclWC_ReadCmdTime = {4, {ATTRID_TIME_TIME, ATTRID_TIME_TIME_STATUS, ATTRID_TIME_TIME_ZONE, ATTRID_TIME_LOCAL_TIME}};
 
 /*********************************************************************
  * GLOBAL FUNCTIONS
@@ -134,7 +134,29 @@ const zclReadCmd_t readCmdTimeCluster = {4, {ATTRID_TIME_TIME, ATTRID_TIME_TIME_
 afAddrType_t zclWC_DstAddr;
 uint8 zclWC_LongPushCounter;
 
-CONST zclReportCmd_t zclWC_ReportCmd =
+const zclReportCmd_t zclWC_ReportCmdBattery =
+{
+  3,
+  {
+    {
+      ATTRID_POWER_CFG_BATTERY_VOLTAGE,
+      ZCL_DATATYPE_UINT8,
+      (void *)&zclWC_BatteryVoltage
+    },
+    {
+      ATTRID_POWER_CFG_BATTERY_PERCENTAGE_REMAINING,
+      ZCL_DATATYPE_UINT8,
+      (void *)&zclWC_BatteryLevel
+    },
+    {
+      ATTRID_POWER_CFG_BAT_ALARM_STATE,
+      ZCL_DATATYPE_BITMAP32,
+      (void *)&zclWC_BatteryAlarmState
+    },
+  },
+};
+
+const zclReportCmd_t zclWC_ReportCmdInstDemand =
 {
   1,
   {
@@ -144,7 +166,7 @@ CONST zclReportCmd_t zclWC_ReportCmd =
   },
 };
 
-CONST zclReportCmd_t zclWC_ReportCmd2 =
+const zclReportCmd_t zclWC_ReportCmdInstDemand2 =
 {
   1,
   {
@@ -172,6 +194,28 @@ const zclReportCmd_t zclWC_ReportCmdEveryHour =
       ATTRID_METER_4HISTORY_PREVDAYCONSUMPTIONDELIVER,
       ZCL_DATATYPE_UINT24,
       (void*)&zclWC_Flow1PrevDay
+    },
+  },
+};
+
+const zclReportCmd_t zclWC_ReportCmdEveryHour2 =
+{
+  3,
+  {
+    {
+      ATTRID_METER_0READINGSET_CURRSUMDELIVERED,
+      ZCL_DATATYPE_UINT48,
+      (void*)&zclWC_Flow2Value
+    },
+    {
+      ATTRID_METER_4HISTORY_CURRDAYCONSUMPTIONDELIVER,
+      ZCL_DATATYPE_UINT24,
+      (void*)&zclWC_Flow2CurrDay
+    },
+    {
+      ATTRID_METER_4HISTORY_PREVDAYCONSUMPTIONDELIVER,
+      ZCL_DATATYPE_UINT24,
+      (void*)&zclWC_Flow2PrevDay
     },
   },
 };
@@ -232,6 +276,10 @@ static void zclWC_ProcessOTAMsgs(zclOTA_CallbackMsg_t* pMsg);
 
 static void zclWC_BatteryWarningCB(uint8 voltLevel);
 static void zclWC_UpdateBatteryAttributes(void);
+
+#ifdef MT_DEBUG_FUNC
+void MT_ProcessDebugString(const char *str);
+#endif
 
 /*********************************************************************
  * CONSTANTS
@@ -465,7 +513,8 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
         zclWC_DstAddr.addrMode = afAddr16Bit;
         zclWC_DstAddr.addr.shortAddr = 0;
         zclWC_DstAddr.endPoint = 1;
-        zcl_SendReportCmd(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_SE_METERING, /*(zclReportCmd_t*)*/&zclWC_ReportCmdEveryHour, ZCL_FRAME_SERVER_CLIENT_DIR, false, zclWC_SeqNum++);  
+        zcl_SendReportCmd(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zclWC_ReportCmdEveryHour, ZCL_FRAME_SERVER_CLIENT_DIR, false, zclWC_SeqNum++);  
+        zcl_SendReportCmd(WC_ENDPOINT2, &zclWC_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zclWC_ReportCmdEveryHour2, ZCL_FRAME_SERVER_CLIENT_DIR, false, zclWC_SeqNum++);  
     }
     // Try time sync with coodinator every 24 hours or more
     if ((zclWC_HourCounter > 23) && (bdbAttributes.bdbNodeIsOnANetwork))
@@ -474,7 +523,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
       zclWC_DstAddr.addr.shortAddr = 0;
       zclWC_DstAddr.endPoint = 1;
       
-      status = zcl_SendRead(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_GEN_TIME, &readCmdTimeCluster, ZCL_FRAME_CLIENT_SERVER_DIR, false, zclWC_SeqNum++);
+      status = zcl_SendRead(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_GEN_TIME, &zclWC_ReadCmdTime, ZCL_FRAME_CLIENT_SERVER_DIR, false, zclWC_SeqNum++);
       if (status) // if SendRead failure, try to discover device to sync the time
       {
         zclDiscoverAttrsCmd_t discoverAttr;
@@ -509,14 +558,14 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
         zclWC_DstAddr.addrMode = afAddr16Bit;
         zclWC_DstAddr.addr.shortAddr = 0;
         zclWC_DstAddr.endPoint = 1;
-        zcl_SendReportCmd(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_SE_METERING, (zclReportCmd_t*)&zclWC_ReportCmd, ZCL_FRAME_CLIENT_SERVER_DIR, false, zclWC_SeqNum++);
+        zcl_SendReportCmd(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zclWC_ReportCmdInstDemand, ZCL_FRAME_CLIENT_SERVER_DIR, false, zclWC_SeqNum++);
       }
       if ((zclWC_Flow2InstDemandPrev != 0) || (zclWC_Flow2InstDemand != 0))
       {
         zclWC_DstAddr.addrMode = afAddr16Bit;
         zclWC_DstAddr.addr.shortAddr = 0;
         zclWC_DstAddr.endPoint = 1;
-        zcl_SendReportCmd(WC_ENDPOINT2, &zclWC_DstAddr, ZCL_CLUSTER_ID_SE_METERING, (zclReportCmd_t*)&zclWC_ReportCmd2, ZCL_FRAME_CLIENT_SERVER_DIR, false, zclWC_SeqNum++);
+        zcl_SendReportCmd(WC_ENDPOINT2, &zclWC_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zclWC_ReportCmdInstDemand2, ZCL_FRAME_CLIENT_SERVER_DIR, false, zclWC_SeqNum++);
       }
     }
     
@@ -638,7 +687,9 @@ static void zclWC_ProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
       {
         //YOUR JOB:
         //We are on the nwk, what now?
-        HalLedSet(HAL_LED_4, HAL_LED_MODE_ON);
+        HalLedSet(HAL_LED_3, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_4, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_5, HAL_LED_MODE_OFF);
       }
       else
       {
@@ -646,6 +697,9 @@ static void zclWC_ProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
         //No suitable networks found
         //Want to try other channels?
         //try with bdb_setChannelAttribute
+        HalLedSet(HAL_LED_3, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_4, HAL_LED_MODE_ON);
+        HalLedSet(HAL_LED_5, HAL_LED_MODE_ON);
       }
     break;
     case BDB_COMMISSIONING_FINDING_BINDING:
@@ -910,6 +964,7 @@ static uint8 zclWC_ProcessInReadRspCmd(zclIncomingMsg_t *pInMsg)
               debugstr.strLen = 19;
               debugstr.pString = (uint8*)str;            
               MT_ProcessDebugStr(&debugstr);
+              MT_ProcessDebugString("Time sync completed");
 #endif
             }
           }
@@ -1115,6 +1170,33 @@ HAL_ISR_FUNCTION(halPort1Isr, P1INT_VECTOR)
   
   HAL_EXIT_ISR();
 }
+
+/***************************************************************************************************
+ * @fn      MT_ProcessDebugString
+ *
+ * @brief   Build and send a debug string.
+ *
+ * @param   char *str - pointer to the string of the debug message
+ *
+ * @return  void
+ ***************************************************************************************************/
+#ifdef MT_DEBUG_FUNC
+void MT_ProcessDebugString(const char *str)
+{
+  byte len = 0;
+
+  while((str[len] != 0) && (len != 255)) len++;
+  if ( (len > 0) && (len < 255))
+  {
+#ifdef MT_UART_DEFAULT_PORT
+    /* Debug message is set to AREQ CMD 0x80 for now */
+    /* Build and send back the response */
+    MT_BuildAndSendZToolResponse(((uint8)MT_RPC_CMD_AREQ | (uint8)MT_RPC_SYS_DBG), MT_DEBUG_MSG, len, str);
+#endif
+  }
+}
+#endif
+
 /****************************************************************************
 ****************************************************************************/
 

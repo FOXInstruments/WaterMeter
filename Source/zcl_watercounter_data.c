@@ -269,7 +269,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   // ********************************** //
   {
     ZCL_CLUSTER_ID_GEN_POWER_CFG,
-    {  // Attribute record
+    {
       ATTRID_POWER_CFG_BATTERY_VOLTAGE,
       ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ | ACCESS_REPORTABLE,
       (void *)&zclWC_BatteryVoltage
@@ -277,7 +277,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_GEN_POWER_CFG,
-    {  // Attribute record
+    {
       ATTRID_POWER_CFG_BATTERY_PERCENTAGE_REMAINING,
       ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ | ACCESS_REPORTABLE,
       (void *)&zclWC_BatteryLevel
@@ -285,7 +285,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_GEN_POWER_CFG,
-    {  // Attribute record
+    {
       ATTRID_POWER_CFG_BAT_RATED_VOLTAGE,
       ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE,
       (void *)&zclWC_BatteryVoltageRated
@@ -293,7 +293,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_GEN_POWER_CFG,
-    {  // Attribute record
+    {
       ATTRID_POWER_CFG_BAT_ALARM_MASK,
       ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE,
       (void *)&zclWC_BatteryAlarmMask
@@ -301,7 +301,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_GEN_POWER_CFG,
-    {  // Attribute record
+    {
       ATTRID_POWER_CFG_BAT_VOLT_MIN_THRES,
       ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ,
       (void *)&zclWC_BatteryVoltageThresMin
@@ -309,7 +309,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_GEN_POWER_CFG,
-    {  // Attribute record
+    {
       ATTRID_POWER_CFG_BAT_VOLT_THRES_1,
       ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ,
       (void *)&zclWC_BatteryVoltageThres1
@@ -317,7 +317,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_GEN_POWER_CFG,
-    {  // Attribute record
+    {
       ATTRID_POWER_CFG_BAT_ALARM_STATE,
       ZCL_DATATYPE_BITMAP32, ACCESS_CONTROL_READ | ACCESS_REPORTABLE,
       (void *)&zclWC_BatteryAlarmState
@@ -325,7 +325,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_GEN_POWER_CFG,
-    {  // Attribute record
+    {
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, ACCESS_CONTROL_READ,
       (void *)&zclWC_clusterRevision_all
