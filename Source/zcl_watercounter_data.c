@@ -112,12 +112,12 @@ const uint16 zclWC_clusterRevision_all = 0x0001; //currently all cluster impleme
 const uint8 zclWC_HWRevision = WC_HWVERSION;
 const uint8 zclWC_ZCLVersion = WC_ZCLVERSION;
 const uint8 zclWC_ManufacturerName[] = { 15, 'F','o','x','.','I','n','s','t','r','u','m','e','n','t','s' };
-const uint8 zclWC_ModelId[] = { 15, 'F','O','X','0','0','1',' ',' ',' ',' ',' ',' ',' ',' ',' ' };
-const uint8 zclWC_DateCode[] = { 15, '2','0','2','4','0','2','0','2',' ',' ',' ',' ',' ',' ',' ' };
+const uint8 zclWC_ModelId[] = { 12, 'F','O','X','-','M','e','t','e','r','0','0','1',};
+const uint8 zclWC_DateCode[] = { 10, '2','0','2','4','-','0','2','-','0','2'};
 const uint8 zclWC_PowerSource = POWER_SOURCE_BATTERY;
 
-const uint8 zclWC_Desc1[WC_DESCSIZE] = {WC_DESCSIZE - 1, 'C', 'o', 'l', 'd', ' ', ' ', ' ' };   // Constants to initialize default values
-const uint8 zclWC_Desc2[WC_DESCSIZE] = {WC_DESCSIZE - 1, 'H', 'o', 't', ' ', ' ', ' ', ' ' };
+const uint8 zclWC_Desc1[WC_DESCSIZE] = {WC_DESCSIZE - 1, 'C', 'o', 'l', 'd', 0, 0, 0};   // Constants to initialize default values
+const uint8 zclWC_Desc2[WC_DESCSIZE] = {WC_DESCSIZE - 1, 'H', 'o', 't',  0,  0, 0, 0};
 
 const uint8 zclWC_DeviceType = 0x02;    // Water meter
 
@@ -361,30 +361,6 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   // ********* Time Cluster ********* //
   // ********************************** //
-/*  {
-    ZCL_CLUSTER_ID_GEN_TIME,
-    {  
-      ATTRID_TIME_TIME,
-      ZCL_DATATYPE_UTC, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
-      (void *)&zclWC_Time
-    }
-  },
-  {
-    ZCL_CLUSTER_ID_GEN_TIME,
-    {  
-      ATTRID_TIME_TIME_STATUS,
-      ZCL_DATATYPE_UINT8, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWC_TimeStatus
-    }
-  },
-   {
-    ZCL_CLUSTER_ID_GEN_TIME,
-    {  
-      ATTRID_TIME_LOCAL_TIME,
-      ZCL_DATATYPE_UINT32, (ACCESS_CONTROL_READ),
-      (void *)&zclWC_TimeLocal
-    }
-  },*/
   {
     ZCL_CLUSTER_ID_GEN_TIME,
     {  

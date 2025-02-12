@@ -86,8 +86,8 @@ extern "C"
 #define WC_DESCSIZE                       8
 #define WC_METER_MULTIPLIER               10    // Weight of one count
 #define WC_METER_DIVISOR                  1000  // Divider to calculate flow rate
-#define WC_METER_REPORT_INTERVAL          60 // Reporting interval in minutes
-#define WC_METER_INSTDEMAND_UPDATEPERIOD  120 // instDemand update period in seconds 60-254, 255 - disable
+#define WC_METER_REPORT_INTERVAL          60    // Reporting interval in minutes
+#define WC_METER_INSTDEMAND_UPDATEPERIOD  120   // instDemand update period in seconds 60-254, 255 - disable
 #define WC_REPORT_CHANGE_VOLTAGE          1     // Change values for BDB_REPORTING (0.1V unit)
 #define WC_REPORT_CHANGE_FLOW             10
   
@@ -212,7 +212,7 @@ extern uint8 zclWC_BatteryAlarmMask;
 extern uint32 zclWC_BatteryAlarmState;
 
 extern uint8 zclWC_FlowUpdatePeriod;        // InstDemand update time period in seconds
-extern uint16 zclWC_FlowReportInterval;     // Time interval in seconds for Reporting compatability
+extern uint16 zclWC_FlowReportInterval;     // Time interval in minutes for Reporting compatability
 extern uint24 zclWC_Flow1HoursInOperation;
 extern uint24 zclWC_Flow2HoursInOperation;
 
