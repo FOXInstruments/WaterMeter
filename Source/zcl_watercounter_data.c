@@ -85,7 +85,7 @@
 
 // 0x0401 - 0x0FFF application NV ids
 #define WC_NV_ITEM_DESC1        0x0404
-#define WC_NV_ITEM_DESC2        WC_NV_ITEM_DESC1 + WC_DESCSIZE
+#define WC_NV_ITEM_DESC2        WC_NV_ITEM_DESC1 + WC_METER_SITEID_SIZE
 #define WC_NV_ITEM_BLOCK1       WC_NV_ITEM_DESC2 + 4
 #define WC_NV_ITEM_BLOCK2       WC_NV_ITEM_BLOCK1 + 4
 #define WC_NV_ITEM_REPORT       WC_NV_ITEM_BLOCK2 + 4
@@ -116,29 +116,29 @@ const uint8 zclWC_ModelId[] = { 12, 'F','O','X','-','M','e','t','e','r','0','0',
 const uint8 zclWC_DateCode[] = { 10, '2','0','2','4','-','0','2','-','0','2'};
 const uint8 zclWC_PowerSource = POWER_SOURCE_BATTERY;
 
-const uint8 zclWC_Desc1[WC_DESCSIZE] = {WC_DESCSIZE - 1, 'C', 'o', 'l', 'd', 0, 0, 0};   // Constants to initialize default values
-const uint8 zclWC_Desc2[WC_DESCSIZE] = {WC_DESCSIZE - 1, 'H', 'o', 't',  0,  0, 0, 0};
+const uint8 zclWC_Desc1[WC_METER_SITEID_SIZE] = {WC_METER_SITEID_SIZE - 1, 'C', 'o', 'l', 'd', ' ', ' ', ' '};   // Constants to initialize default values
+const uint8 zclWC_Desc2[WC_METER_SITEID_SIZE] = {WC_METER_SITEID_SIZE - 1, 'H', 'o', 't', ' ', ' ', ' ', ' '};
 
 const uint8 zclWC_DeviceType = 0x02;    // Water meter
 
-uint8 zclWC_Flow1Desc[WC_DESCSIZE];
+uint8 zclWC_Flow1Desc[WC_METER_SITEID_SIZE];
 uint48_t zclWC_Flow1Value;
 int24 zclWC_Flow1InstDemand;
 int24 zclWC_Flow1InstDemandPrev;
-uint16 zclWC_Flow1Multiplier;
-uint16 zclWC_Flow1Divisor;
+uint24 zclWC_Flow1Multiplier;
+uint24 zclWC_Flow1Divisor;
 uint8 zclWC_Flow1Unit;
 uint16 zclWC_Flow1VolumePerReport;
 uint24 zclWC_Flow1CurrDay;
 uint24 zclWC_Flow1PrevDay;
 uint8 zclWC_Flow1Status;
 
-uint8 zclWC_Flow2Desc[WC_DESCSIZE];
+uint8 zclWC_Flow2Desc[WC_METER_SITEID_SIZE];
 uint48_t zclWC_Flow2Value;
 int24 zclWC_Flow2InstDemand;
 int24 zclWC_Flow2InstDemandPrev;
-uint16 zclWC_Flow2Multiplier;
-uint16 zclWC_Flow2Divisor;
+uint24 zclWC_Flow2Multiplier;
+uint24 zclWC_Flow2Divisor;
 uint16 zclWC_Flow2Unit;
 uint16 zclWC_Flow2VolumePerReport;
 uint24 zclWC_Flow2CurrDay;
@@ -439,7 +439,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
     ZCL_CLUSTER_ID_SE_METERING,
     { 
       ATTRID_METER_3FORMATTING_MULTIPLIER,
-      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
+      ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_Flow1Multiplier
     }
   },
@@ -447,7 +447,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
     ZCL_CLUSTER_ID_SE_METERING,
     { 
       ATTRID_METER_3FORMATTING_DIVISOR,
-      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
+      ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_Flow1Divisor
     }
   },
@@ -463,7 +463,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
     ZCL_CLUSTER_ID_SE_METERING,
     { 
       ATTRID_METER_3FORMATTING_SITEID,
-      ZCL_DATATYPE_CHAR_STR, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
+      ZCL_DATATYPE_OCTET_STR, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_Flow1Desc
     }
   },
@@ -575,7 +575,7 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
     ZCL_CLUSTER_ID_SE_METERING,
     { 
       ATTRID_METER_3FORMATTING_MULTIPLIER,
-      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
+      ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_Flow2Multiplier
     }
   },
@@ -583,7 +583,7 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
     ZCL_CLUSTER_ID_SE_METERING,
     { 
       ATTRID_METER_3FORMATTING_DIVISOR,
-      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
+      ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_Flow2Divisor
     }
   },
@@ -599,7 +599,7 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
     ZCL_CLUSTER_ID_SE_METERING,
     { 
       ATTRID_METER_3FORMATTING_SITEID,
-      ZCL_DATATYPE_CHAR_STR, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
+      ZCL_DATATYPE_OCTET_STR, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_Flow2Desc
     }
   },
@@ -716,8 +716,8 @@ void zclWC_NVInitItems(void)
 {
   uint8 result = 0;
   
-  result |= osal_nv_item_init(WC_NV_ITEM_DESC1, WC_DESCSIZE, NULL); 
-  result |= osal_nv_item_init(WC_NV_ITEM_DESC2, WC_DESCSIZE, NULL); 
+  result |= osal_nv_item_init(WC_NV_ITEM_DESC1, WC_METER_SITEID_SIZE, NULL); 
+  result |= osal_nv_item_init(WC_NV_ITEM_DESC2, WC_METER_SITEID_SIZE, NULL); 
   result |= osal_nv_item_init(WC_NV_ITEM_VALUE1, sizeof(zclWC_Flow1Value.dw.lowDW), NULL); 
   result |= osal_nv_item_init(WC_NV_ITEM_VALUE2, sizeof(zclWC_Flow2Value.dw.lowDW), NULL);
 /*  result |= osal_nv_item_init(WC_NV_ITEM_BLOCK1, 4, NULL); 
@@ -808,11 +808,11 @@ void zclWC_ResetAttributesToDefaultValues(void)
   
   zclWC_IdentifyTime = DEFAULT_IDENTIFY_TIME;
   
-  osal_memcpy(zclWC_Flow1Desc, zclWC_Desc1, WC_DESCSIZE);
-  osal_memcpy(zclWC_Flow2Desc, zclWC_Desc2, WC_DESCSIZE);
+  osal_memcpy(zclWC_Flow1Desc, zclWC_Desc1, WC_METER_SITEID_SIZE);
+  osal_memcpy(zclWC_Flow2Desc, zclWC_Desc2, WC_METER_SITEID_SIZE);
   
-  /*zclWC_InitAttribute(WC_NV_ITEM_DESC1, WC_DESCSIZE, zclWC_Desc1, zclWC_Flow1Desc);
-  zclWC_InitAttribute(WC_NV_ITEM_DESC2, WC_DESCSIZE, zclWC_Desc2, zclWC_Flow2Desc);
+  /*zclWC_InitAttribute(WC_NV_ITEM_DESC1, WC_METER_SITEID_SIZE, zclWC_Desc1, zclWC_Flow1Desc);
+  zclWC_InitAttribute(WC_NV_ITEM_DESC2, WC_METER_SITEID_SIZE, zclWC_Desc2, zclWC_Flow2Desc);
   
   src = WC_MULTIPLYER;
   src = (src << 16) | ENGINEERING_UNIT_VOLUME_L;
@@ -857,10 +857,10 @@ void zclWC_ResetAttributesToDefaultValues(void)
   zclWC_Flow1Status = 0;
   zclWC_Flow2Status = 0;
   
-  zclWC_FlowUpdatePeriod = WC_METER_INSTDEMAND_UPDATEPERIOD;   // InstDemand update interval
+  zclWC_FlowUpdatePeriod = WC_METER_INSTDEMAND_UPDATEPERIOD_MAX;   // InstDemand update interval
   zclWC_FlowReportInterval = WC_METER_REPORT_INTERVAL; // Report interal in minutes
   
-  zclWC_BatteryVoltageRated = VDD_VOLTAGE_RATED;
+  zclWC_BatteryVoltageRated = VDD_VOLTAGE_RATED36;
   zclWC_BatteryVoltageThresMin = VDD_VOLTAGE_MIN;
   zclWC_BatteryVoltageThres1 = VDD_VOLTAGE_THRES1;
   zclWC_BatteryAlarmMask = BAT_ALARM_MASK_VOLT_2_LOW | BAT_ALARM_MASK_BATTERY_ALARM_1;

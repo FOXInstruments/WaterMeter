@@ -2404,7 +2404,7 @@
                 <option>
                     <name>Workseg Size</name>
                     <version>0</version>
-                    <state>8</state>
+                    <state>16</state>
                 </option>
                 <option>
                     <name>Constant Placement</name>
@@ -2689,12 +2689,15 @@
                     <state>ZCL_BASIC</state>
                     <state>ZCL_IDENTIFY</state>
                     <state>xZCL_ON_OFF</state>
-                    <state>ZCL_GROUPS</state>
+                    <state>xZCL_GROUPS</state>
                     <state>ZCL_REPORT</state>
                     <state>ZCL_TIME</state>
                     <state>ZCL_POWER_CONFIG</state>
                     <state>ZCL_ALARMS</state>
                     <state>BDB_REPORTING</state>
+                    <state>DPRINTF_HEAPTRACE</state>
+                    <state>OSALMEM_METRICS=TRUE</state>
+                    <state>OSAL_TOTAL_MEM</state>
                 </option>
                 <option>
                     <name>CCPreprocFile</name>

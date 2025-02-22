@@ -134,6 +134,7 @@ const zclReadCmd_t zclWC_ReadCmdTime = {4, {ATTRID_TIME_TIME, ATTRID_TIME_TIME_S
 afAddrType_t zclWC_DstAddr;
 uint8 zclWC_LongPushCounter;
 const uint16 zclWC_ReportIntervals[] = {5, 10, 15, 20, 30, 60, 2*60, 3*60, 4*60, 6*60, 8*60, 12*60, 24*60};
+const uint8 zclWC_RatedVoltages[] = {30, 33, VDD_VOLTAGE_RATED36, 42};
 
 const zclReportCmd_t zclWC_ReportCmdBattery =
 {
@@ -582,9 +583,9 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
   // ------------------------------------------------------------------
   if(events & WC_EVT_UPDATEINSTDEMAND) // InstantDemand update period
   {
-    if (zclWC_FlowUpdatePeriod < WC_METER_INSTDEMAND_UPDATEPERIOD) zclWC_FlowUpdatePeriod = WC_METER_INSTDEMAND_UPDATEPERIOD; // set minimum update intervel
+    if (zclWC_FlowUpdatePeriod < WC_METER_INSTDEMAND_UPDATEPERIOD_MIN) zclWC_FlowUpdatePeriod = WC_METER_INSTDEMAND_UPDATEPERIOD_MIN; // set minimum update intervel
     
-    if ((zclWC_FlowUpdatePeriod != 0xFF) && (bdbAttributes.bdbNodeIsOnANetwork)) // if 0xFF update is disabled
+    if ((zclWC_FlowUpdatePeriod != WC_METER_INSTDEMAND_UPDATEPERIOD_MAX) && (bdbAttributes.bdbNodeIsOnANetwork)) // if 0xFF update is disabled
     {
       if ((zclWC_Flow1InstDemandPrev != 0) || (zclWC_Flow1InstDemand != 0))
       {
@@ -992,11 +993,6 @@ static uint8 zclWC_ProcessInReadRspCmd(zclIncomingMsg_t *pInMsg)
               zclWC_MinutesCounter = 0;
 
               #if defined MT_DEBUG_FUNC
-                /*char str[] = "Time sync completed";
-                mtDebugStr_t debugstr;
-                debugstr.strLen = 19;
-                debugstr.pString = (uint8*)str;            
-                MT_ProcessDebugStr(&debugstr);*/
                 MT_ProcessDebugString("ReadRsp.TimeSync");
               #endif
             }
@@ -1048,7 +1044,7 @@ static uint8 zclWC_ProcessInWriteRspCmd(zclIncomingMsg_t *pInMsg)
  */
 uint8 zclWC_ValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
 {
-  uint8 j;
+  uint8 j, validate = TRUE;
 
   if (pAttr->clusterID == ZCL_CLUSTER_ID_SE_METERING)
   {
@@ -1057,29 +1053,40 @@ uint8 zclWC_ValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
       case ATTRID_METER_0READINGSET_CURRSUMDELIVERED:
         break;
       case ATTRID_METER_0READINGSET_DEFAULTUPDATEPERIOD:
+        if (*pAttrInfo->attrData < WC_METER_INSTDEMAND_UPDATEPERIOD_MIN)
+          *pAttrInfo->attrData = WC_METER_INSTDEMAND_UPDATEPERIOD_MIN;
+        #ifdef MT_DEBUG_FUNC
+          MT_ProcessDebugString("Write.UpdatePeriod");
+        #endif
         break;
       case ATTRID_METER_0READINGSET_INTERVALREPORTING:
         for (j = 0; j < sizeof(zclWC_ReportIntervals)/sizeof(zclWC_ReportIntervals[0]) - 1; j++)
         {
           if (*(uint16*)pAttrInfo->attrData < (zclWC_ReportIntervals[j + 1] - zclWC_ReportIntervals[j]) / 2)
           {
-            zclWC_FlowReportInterval = zclWC_ReportIntervals[j];
+            //zclWC_FlowReportInterval = zclWC_ReportIntervals[j];
+            *(uint16*)pAttrInfo->attrData = zclWC_ReportIntervals[j];
             break;
           }
         }
         if (j == sizeof(zclWC_ReportIntervals)/sizeof(zclWC_ReportIntervals[0]) - 1)
-          zclWC_FlowReportInterval = zclWC_ReportIntervals[sizeof(zclWC_ReportIntervals)/sizeof(zclWC_ReportIntervals[0]) - 1];
+          *(uint16*)pAttrInfo->attrData = zclWC_ReportIntervals[sizeof(zclWC_ReportIntervals)/sizeof(zclWC_ReportIntervals[0]) - 1];
+          //zclWC_FlowReportInterval = zclWC_ReportIntervals[sizeof(zclWC_ReportIntervals)/sizeof(zclWC_ReportIntervals[0]) - 1];
         #ifdef MT_DEBUG_FUNC
           MT_ProcessDebugString("Write.IntervalReporting");
         #endif
         break;
       case ATTRID_METER_3FORMATTING_SITEID:
+        if (*pAttrInfo->attrData > WC_METER_SITEID_SIZE)
+        {
+          validate = FALSE;
+        }
         #ifdef MT_DEBUG_FUNC
           MT_ProcessDebugString("Write.SiteID");
         #endif
         break;
       case ATTRID_METER_3FORMATTING_UNIT:
-        #ifdef MT_DEBUG_FUNC            
+        #ifdef MT_DEBUG_FUNC
           MT_ProcessDebugString("Write.Unit");
         #endif
         break;
@@ -1095,10 +1102,18 @@ uint8 zclWC_ValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
         break;
     }
   }
-  if (pAttr->clusterID == ZCL_CLUSTER_ID_GEN_POWER_CFG)
+  else if (pAttr->clusterID == ZCL_CLUSTER_ID_GEN_POWER_CFG)
   {
+    switch (pAttrInfo->attrID)
+    {
+      case ATTRID_POWER_CFG_BAT_RATED_VOLTAGE:
+        for (j = 0; sizeof(zclWC_RatedVoltages) / sizeof(zclWC_RatedVoltages[0]) - 1; j++)
+        {
+        }
+        break;
+    }
   }
-  return TRUE;
+  return validate;
 }
 #endif // ZCL_WRITE
 

@@ -1169,7 +1169,7 @@
                     <item>zclWC_Flow1VolumePerReport</item>
                     <item>str</item>
                     <item>len</item>
-                    <item></item>
+                    <item />
                 </expressions>
                 <col-names>
                     <item>Expression</item>

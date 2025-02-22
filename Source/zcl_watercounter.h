@@ -78,16 +78,17 @@ extern "C"
 #define VDD3_MIN_RUN            (VDD_2_0+4)  // VDD_MIN_RUN = VDD_MIN_NV
 #define VDD3_MIN_NV             (VDD_2_0+4)  // 5% margin over minimum to survive a page erase and compaction.
 #define VDD3_MIN_GOOD           (VDD_2_0+8)  // 10% margin over minimum to survive a page erase and compaction.
-#define VDD_VOLTAGE_RATED       36           // 0.1V unit
+#define VDD_VOLTAGE_RATED36     36           // 0.1V unit
 #define VDD_VOLTAGE_MIN         25           // 0.1V unit
 #define VDD_VOLTAGE_THRES1      27           // 0.1V unit
 #define VDD3TOVOLTAGE(v)        (v * 11.5 * 3 / 127.0)   // Convert ADC value to Voltage 0.1V unit
   
-#define WC_DESCSIZE                       8
+#define WC_METER_SITEID_SIZE              8
 #define WC_METER_MULTIPLIER               10    // Weight of one count
 #define WC_METER_DIVISOR                  1000  // Divider to calculate flow rate
 #define WC_METER_REPORT_INTERVAL          60    // Reporting interval in minutes
-#define WC_METER_INSTDEMAND_UPDATEPERIOD  120   // instDemand update period in seconds 60-254, 255 - disable
+#define WC_METER_INSTDEMAND_UPDATEPERIOD_MIN  60   // instDemand update period in seconds 60-254, 255 - disable
+#define WC_METER_INSTDEMAND_UPDATEPERIOD_MAX  255
 #define WC_REPORT_CHANGE_VOLTAGE          1     // Change values for BDB_REPORTING (0.1V unit)
 #define WC_REPORT_CHANGE_FLOW             10
   
@@ -183,8 +184,8 @@ extern uint8 zclWC_Flow1Desc[];
 extern uint48_t zclWC_Flow1Value;
 extern int24 zclWC_Flow1InstDemand;
 extern int24 zclWC_Flow1InstDemandPrev;
-extern uint16 zclWC_Flow1Multiplier;
-extern uint16 zclWC_Flow1Divisor;
+extern uint24 zclWC_Flow1Multiplier;
+extern uint24 zclWC_Flow1Divisor;
 extern uint8 zclWC_Flow1Unit;
 extern uint16 zclWC_Flow1VolumePerReport;
 extern uint24 zclWC_Flow1CurrDay;
@@ -195,8 +196,8 @@ extern uint8 zclWC_Flow2Desc[];
 extern uint48_t zclWC_Flow2Value;
 extern int24 zclWC_Flow2InstDemand;
 extern int24 zclWC_Flow2InstDemandPrev;
-extern uint16 zclWC_Flow2Multiplier;
-extern uint16 zclWC_Flow2Divisor;
+extern uint24 zclWC_Flow2Multiplier;
+extern uint24 zclWC_Flow2Divisor;
 extern uint16 zclWC_Flow2Unit;
 extern uint16 zclWC_Flow2VolumePerReport;
 extern uint24 zclWC_Flow2CurrDay;
