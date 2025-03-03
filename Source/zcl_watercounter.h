@@ -83,7 +83,7 @@ extern "C"
 #define VDD_VOLTAGE_THRES1      27           // 0.1V unit
 #define VDD3TOVOLTAGE(v)        (v * 11.5 * 3 / 127.0)   // Convert ADC value to Voltage 0.1V unit
   
-#define WC_METER_SITEID_SIZE              8
+#define WC_METER_SITEID_SIZE              10
 #define WC_METER_MULTIPLIER               10    // Weight of one count
 #define WC_METER_DIVISOR                  1000  // Divider to calculate flow rate
 #define WC_METER_REPORT_INTERVAL          60    // Reporting interval in minutes

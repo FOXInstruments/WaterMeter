@@ -134,7 +134,9 @@ const zclReadCmd_t zclWC_ReadCmdTime = {4, {ATTRID_TIME_TIME, ATTRID_TIME_TIME_S
 afAddrType_t zclWC_DstAddr;
 uint8 zclWC_LongPushCounter;
 const uint16 zclWC_ReportIntervals[] = {5, 10, 15, 20, 30, 60, 2*60, 3*60, 4*60, 6*60, 8*60, 12*60, 24*60};
+CONST uint8 zclWC_ReportIntervalsSize_1 = sizeof(zclWC_ReportIntervals) / sizeof(zclWC_ReportIntervals[0]) - 1;
 const uint8 zclWC_RatedVoltages[] = {30, 33, VDD_VOLTAGE_RATED36, 42};
+CONST uint8 zclWC_RatedVoltagesSize_1 = sizeof(zclWC_RatedVoltages) / sizeof(zclWC_RatedVoltages[0]) - 1;
 
 const zclReportCmd_t zclWC_ReportCmdBattery =
 {
@@ -497,7 +499,13 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
 #if ZG_BUILD_ENDDEVICE_TYPE    
   if (events & WC_EVT_END_DEVICE_REJOIN)
   {
+#ifdef MT_DEBUG_FUNC
+    MT_ProcessDebugMsg3(osal_heap_mem_used(), osal_heap_block_free(), osal_heap_high_water());
+#endif    
     bdb_ZedAttemptRecoverNwk();
+#ifdef MT_DEBUG_FUNC
+    MT_ProcessDebugMsg3(osal_heap_mem_used(), osal_heap_block_free(), osal_heap_high_water());
+#endif    
     return (events ^ WC_EVT_END_DEVICE_REJOIN);
   }
 #endif
@@ -506,7 +514,9 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
   {
     UTCTimeStruct time;
     osal_ConvertUTCTime(&time, osal_getClock());
-    
+#ifdef MT_DEBUG_FUNC
+    MT_ProcessDebugMsg3(osal_heap_mem_used(), osal_heap_block_free(), osal_heap_high_water());
+#endif    
     // Battery voltage check
     zclWC_UpdateBatteryAttributes();
     // Every 24 hours attribute update
@@ -1044,7 +1054,7 @@ static uint8 zclWC_ProcessInWriteRspCmd(zclIncomingMsg_t *pInMsg)
  */
 uint8 zclWC_ValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
 {
-  uint8 j, validate = TRUE;
+  uint8 l, r, m, validate = TRUE;
 
   if (pAttr->clusterID == ZCL_CLUSTER_ID_SE_METERING)
   {
@@ -1059,23 +1069,32 @@ uint8 zclWC_ValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
           MT_ProcessDebugString("Write.UpdatePeriod");
         #endif
         break;
+        
       case ATTRID_METER_0READINGSET_INTERVALREPORTING:
-        for (j = 0; j < sizeof(zclWC_ReportIntervals)/sizeof(zclWC_ReportIntervals[0]) - 1; j++)
+        l = 0;
+        r = zclWC_ReportIntervalsSize_1;
+        m = 5;
+        while (l <= r)
         {
-          if (*(uint16*)pAttrInfo->attrData < (zclWC_ReportIntervals[j + 1] - zclWC_ReportIntervals[j]) / 2)
+          m = l + (r - l) / 2;
+          if (*(uint16*)pAttrInfo->attrData < zclWC_ReportIntervals[m] - (zclWC_ReportIntervals[m] - zclWC_ReportIntervals[m - 1])/2)
           {
-            //zclWC_FlowReportInterval = zclWC_ReportIntervals[j];
-            *(uint16*)pAttrInfo->attrData = zclWC_ReportIntervals[j];
-            break;
+            if (m == 1) { m = 0; break; }
+            r = m - 1;
           }
+          else if (*(uint16*)pAttrInfo->attrData > zclWC_ReportIntervals[m] + (zclWC_ReportIntervals[m + 1] - zclWC_ReportIntervals[m])/2)
+          {
+            if (m == zclWC_ReportIntervalsSize_1 - 1) { m = zclWC_ReportIntervalsSize_1; break; }
+            l = m + 1;
+          }
+          else
+            break;
         }
-        if (j == sizeof(zclWC_ReportIntervals)/sizeof(zclWC_ReportIntervals[0]) - 1)
-          *(uint16*)pAttrInfo->attrData = zclWC_ReportIntervals[sizeof(zclWC_ReportIntervals)/sizeof(zclWC_ReportIntervals[0]) - 1];
-          //zclWC_FlowReportInterval = zclWC_ReportIntervals[sizeof(zclWC_ReportIntervals)/sizeof(zclWC_ReportIntervals[0]) - 1];
         #ifdef MT_DEBUG_FUNC
           MT_ProcessDebugString("Write.IntervalReporting");
         #endif
         break;
+        
       case ATTRID_METER_3FORMATTING_SITEID:
         if (*pAttrInfo->attrData > WC_METER_SITEID_SIZE)
         {
@@ -1107,8 +1126,14 @@ uint8 zclWC_ValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
     switch (pAttrInfo->attrID)
     {
       case ATTRID_POWER_CFG_BAT_RATED_VOLTAGE:
-        for (j = 0; sizeof(zclWC_RatedVoltages) / sizeof(zclWC_RatedVoltages[0]) - 1; j++)
+        *pAttrInfo->attrData = zclWC_RatedVoltages[zclWC_RatedVoltagesSize_1];
+        for (l = 0; l <= zclWC_RatedVoltagesSize_1; l++)
         {
+          if (*pAttrInfo->attrData <= zclWC_RatedVoltages[l])
+          {
+            *pAttrInfo->attrData = zclWC_RatedVoltages[l];
+            break;
+          }
         }
         break;
     }

@@ -116,12 +116,12 @@ const uint8 zclWC_ModelId[] = { 12, 'F','O','X','-','M','e','t','e','r','0','0',
 const uint8 zclWC_DateCode[] = { 10, '2','0','2','4','-','0','2','-','0','2'};
 const uint8 zclWC_PowerSource = POWER_SOURCE_BATTERY;
 
-const uint8 zclWC_Desc1[WC_METER_SITEID_SIZE] = {WC_METER_SITEID_SIZE - 1, 'C', 'o', 'l', 'd', ' ', ' ', ' '};   // Constants to initialize default values
-const uint8 zclWC_Desc2[WC_METER_SITEID_SIZE] = {WC_METER_SITEID_SIZE - 1, 'H', 'o', 't', ' ', ' ', ' ', ' '};
+const uint8 zclWC_Desc1[WC_METER_SITEID_SIZE + 1] = {WC_METER_SITEID_SIZE, 'C', 'o', 'l', 'd', ' ', ' ', ' ', ' ', ' ', ' '};   // Constants to initialize default values
+const uint8 zclWC_Desc2[WC_METER_SITEID_SIZE + 1] = {WC_METER_SITEID_SIZE, 'H', 'o', 't', ' ', ' ', ' ', ' ', ' ', ' ', ' '};
 
 const uint8 zclWC_DeviceType = 0x02;    // Water meter
 
-uint8 zclWC_Flow1Desc[WC_METER_SITEID_SIZE];
+uint8 zclWC_Flow1Desc[WC_METER_SITEID_SIZE + 1];
 uint48_t zclWC_Flow1Value;
 int24 zclWC_Flow1InstDemand;
 int24 zclWC_Flow1InstDemandPrev;
@@ -133,7 +133,7 @@ uint24 zclWC_Flow1CurrDay;
 uint24 zclWC_Flow1PrevDay;
 uint8 zclWC_Flow1Status;
 
-uint8 zclWC_Flow2Desc[WC_METER_SITEID_SIZE];
+uint8 zclWC_Flow2Desc[WC_METER_SITEID_SIZE + 1];
 uint48_t zclWC_Flow2Value;
 int24 zclWC_Flow2InstDemand;
 int24 zclWC_Flow2InstDemandPrev;
@@ -808,8 +808,8 @@ void zclWC_ResetAttributesToDefaultValues(void)
   
   zclWC_IdentifyTime = DEFAULT_IDENTIFY_TIME;
   
-  osal_memcpy(zclWC_Flow1Desc, zclWC_Desc1, WC_METER_SITEID_SIZE);
-  osal_memcpy(zclWC_Flow2Desc, zclWC_Desc2, WC_METER_SITEID_SIZE);
+  osal_memcpy(zclWC_Flow1Desc, zclWC_Desc1, WC_METER_SITEID_SIZE + 1);
+  osal_memcpy(zclWC_Flow2Desc, zclWC_Desc2, WC_METER_SITEID_SIZE + 1);
   
   /*zclWC_InitAttribute(WC_NV_ITEM_DESC1, WC_METER_SITEID_SIZE, zclWC_Desc1, zclWC_Flow1Desc);
   zclWC_InitAttribute(WC_NV_ITEM_DESC2, WC_METER_SITEID_SIZE, zclWC_Desc2, zclWC_Flow2Desc);
