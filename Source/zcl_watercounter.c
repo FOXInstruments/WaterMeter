@@ -441,7 +441,7 @@ void zclWC_Init(byte task_id)
   IEN2 |= BV(4);           // Enable interrupt Port1
   
   zclWC_MinutesCounter = 24*60;   // Initialize Hour counter for time synchronization every 24 hours
-  status = osal_start_timerEx(zclWC_TaskID, WC_EVT_EVERYHOUR, 10000);
+  status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATE, 10000);
   (void)status;
   if (zclWC_FlowUpdatePeriod != 0xFF ) status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATEINSTDEMAND, zclWC_FlowUpdatePeriod*1000L);
   
@@ -500,22 +500,35 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
   if (events & WC_EVT_END_DEVICE_REJOIN)
   {
 #ifdef MT_DEBUG_FUNC
-    MT_ProcessDebugMsg3(osal_heap_mem_used(), osal_heap_block_free(), osal_heap_high_water());
+    MT_ProcessDebugMsg4(osal_heap_block_cnt(), osal_heap_block_free(), osal_heap_mem_used(), osal_heap_high_water());
 #endif    
     bdb_ZedAttemptRecoverNwk();
 #ifdef MT_DEBUG_FUNC
-    MT_ProcessDebugMsg3(osal_heap_mem_used(), osal_heap_block_free(), osal_heap_high_water());
+    MT_ProcessDebugMsg4(osal_heap_block_cnt(), osal_heap_block_free(), osal_heap_mem_used(), osal_heap_high_water());
 #endif    
     return (events ^ WC_EVT_END_DEVICE_REJOIN);
   }
 #endif
   // ------------------------------------------------------------------
-  if(events & WC_EVT_EVERYHOUR) // Every hour event. To check month change
+  if (events & WC_EVT_BATTERY)
+  {
+    zclWC_UpdateBatteryAttributes();
+    if (bdbAttributes.bdbNodeIsOnANetwork)
+    {
+        zclWC_DstAddr.addrMode = afAddr16Bit;
+        zclWC_DstAddr.addr.shortAddr = 0;
+        zclWC_DstAddr.endPoint = 1;
+        zcl_SendReportCmd(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_GEN_POWER_CFG, &zclWC_ReportCmdBattery, ZCL_FRAME_SERVER_CLIENT_DIR, false, zclWC_SeqNum++);
+    }
+    return (events ^ WC_EVT_BATTERY);
+  }
+  // ------------------------------------------------------------------
+  if(events & WC_EVT_UPDATE) // Update event. To check month change
   {
     UTCTimeStruct time;
     osal_ConvertUTCTime(&time, osal_getClock());
 #ifdef MT_DEBUG_FUNC
-    MT_ProcessDebugMsg3(osal_heap_mem_used(), osal_heap_block_free(), osal_heap_high_water());
+    MT_ProcessDebugMsg4(osal_heap_block_cnt(), osal_heap_block_free(), osal_heap_mem_used(), osal_heap_high_water());
 #endif    
     // Battery voltage check
     zclWC_UpdateBatteryAttributes();
@@ -526,8 +539,8 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
       zclWC_Flow2PrevDay = zclWC_Flow2CurrDay;
       zclWC_Flow1CurrDay = 0;
       zclWC_Flow2CurrDay = 0;
-      zclWC_Flow1HoursInOperation += 24;
-      zclWC_Flow2HoursInOperation += 24;
+      zclWC_Flow1HoursInOperation += 24*(zclWC_MinutesCounter != 24*60);
+      zclWC_Flow2HoursInOperation = zclWC_Flow1HoursInOperation;
     }
     // Every hour attribute update
     if (/*(time.minutes <= 1) &&*/ (bdbAttributes.bdbNodeIsOnANetwork))
@@ -560,7 +573,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
     uint16 timeRemain = (23 - time.hour)*60 + (59 - time.minutes);
     if (timeRemain <= zclWC_FlowReportInterval)
     {
-      status = osal_start_timerEx(zclWC_TaskID, WC_EVT_EVERYHOUR, (timeRemain*60 + (60 - time.seconds))*1000L);
+      status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATE, (timeRemain*60 + (60 - time.seconds))*1000L);
       zclWC_MinutesCounter += timeRemain;
     }
     else
@@ -569,18 +582,23 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
       {        
         timeRemain = (59 - time.minutes);
         if (timeRemain <= zclWC_FlowReportInterval)
-          status = osal_start_timerEx(zclWC_TaskID, WC_EVT_EVERYHOUR, (timeRemain*60 + (60 - time.seconds))*1000L);
+        {
+          status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATE, (timeRemain*60 + (60 - time.seconds))*1000L);
+          zclWC_MinutesCounter += timeRemain;
+        }
         else
-          status = osal_start_timerEx(zclWC_TaskID, WC_EVT_EVERYHOUR, (zclWC_FlowReportInterval*60 + (60 - time.seconds))*1000L);          
+        {
+          status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATE, (zclWC_FlowReportInterval*60 + (60 - time.seconds))*1000L);          
           zclWC_MinutesCounter += zclWC_FlowReportInterval;
+        }
       }
       else
       {          
-          status = osal_start_timerEx(zclWC_TaskID, WC_EVT_EVERYHOUR, ((zclWC_FlowReportInterval - 60)*60 + (59 - time.minutes)*60 + (60 - time.seconds))*1000L);                  
-          zclWC_MinutesCounter += zclWC_FlowReportInterval;
+        status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATE, ((zclWC_FlowReportInterval - 60)*60 + (59 - time.minutes)*60 + (60 - time.seconds))*1000L);                  
+        zclWC_MinutesCounter += zclWC_FlowReportInterval;
       }
     }
-    if (zclWC_MinutesCounter > 32768) zclWC_MinutesCounter = 24*60; // if HourCounter was 255, time sync was not completed more than 255 hours
+    if (zclWC_MinutesCounter > 32768) zclWC_MinutesCounter = 24*60 + 1; // if HourCounter was 255, time sync was not completed more than 255 hours
     
     //status = osal_start_timerEx(zclWC_TaskID, WC_EVT_EVERYHOUR, /*(3600L - time.minutes*60 - time.seconds)*/ 120000L);
     
@@ -588,7 +606,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
     osal_set_event(zclWC_TaskID, WC_EVT_IMPULSE1);
     osal_set_event(zclWC_TaskID, WC_EVT_IMPULSE2);
     
-    return (events ^ WC_EVT_EVERYHOUR); // return unprocessed events
+    return (events ^ WC_EVT_UPDATE); // return unprocessed events
   }
   // ------------------------------------------------------------------
   if(events & WC_EVT_UPDATEINSTDEMAND) // InstantDemand update period
@@ -660,7 +678,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
         HalLedSet(HAL_LED_5, HAL_LED_MODE_OFF);
         //bdb_resetLocalAction();
         //ZDApp_LeaveReset();
-        bdb_StartCommissioning(BDB_COMMISSIONING_MODE_INITIATOR_TL | BDB_COMMISSIONING_MODE_NWK_STEERING | BDB_COMMISSIONING_MODE_FINDING_BINDING);
+        bdb_StartCommissioning(BDB_COMMISSIONING_MODE_INITIATOR_TL | BDB_COMMISSIONING_MODE_NWK_STEERING /*| BDB_COMMISSIONING_MODE_FINDING_BINDING*/);
         //SystemReset();
       }
       else
@@ -1065,6 +1083,8 @@ uint8 zclWC_ValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
       case ATTRID_METER_0READINGSET_DEFAULTUPDATEPERIOD:
         if (*pAttrInfo->attrData < WC_METER_INSTDEMAND_UPDATEPERIOD_MIN)
           *pAttrInfo->attrData = WC_METER_INSTDEMAND_UPDATEPERIOD_MIN;
+        if (*pAttrInfo->attrData != zclWC_FlowUpdatePeriod)
+          osal_set_event(zclWC_TaskID, WC_EVT_UPDATEINSTDEMAND);
         #ifdef MT_DEBUG_FUNC
           MT_ProcessDebugString("Write.UpdatePeriod");
         #endif
@@ -1090,6 +1110,9 @@ uint8 zclWC_ValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
           else
             break;
         }
+        *(uint16*)pAttrInfo->attrData = zclWC_ReportIntervals[m];
+        if (*(uint16*)pAttrInfo->attrData != zclWC_FlowReportInterval)
+          osal_set_event(zclWC_TaskID, WC_EVT_UPDATE);
         #ifdef MT_DEBUG_FUNC
           MT_ProcessDebugString("Write.IntervalReporting");
         #endif
@@ -1135,6 +1158,8 @@ uint8 zclWC_ValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
             break;
           }
         }
+        if (*pAttrInfo->attrData != zclWC_BatteryVoltageRated)
+          osal_set_event(zclWC_TaskID, WC_EVT_BATTERY);
         break;
     }
   }

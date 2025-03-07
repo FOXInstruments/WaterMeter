@@ -2695,7 +2695,7 @@
                     <state>ZCL_POWER_CONFIG</state>
                     <state>ZCL_ALARMS</state>
                     <state>BDB_REPORTING</state>
-                    <state>DPRINTF_HEAPTRACE</state>
+                    <state>xDPRINTF_OSALHEAPTRACE</state>
                     <state>OSALMEM_METRICS=TRUE</state>
                     <state>OSAL_TOTAL_MEM</state>
                 </option>

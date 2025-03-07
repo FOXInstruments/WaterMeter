@@ -66,9 +66,10 @@ extern "C"
 // Events
 #define WC_EVT_IMPULSE1            0x0002
 #define WC_EVT_IMPULSE2            0x0004  
-#define WC_EVT_EVERYHOUR           0x0008
+#define WC_EVT_UPDATE              0x0008
 #define WC_EVT_LONGPUSH            0x0010
 #define WC_EVT_UPDATEINSTDEMAND    0x0020       // InstanteniousDemand update event
+#define WC_EVT_BATTERY             0x0040
 
 #define WC_END_DEVICE_REJOIN_DELAY 60000
 

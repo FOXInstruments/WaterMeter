@@ -328,33 +328,29 @@ void MT_ProcessDebugMsg( mtDebugMsg_t *msg )
  *
  * @return  void
  ***************************************************************************************************/
-void MT_ProcessDebugMsg3( uint16 param1, uint16 param2, uint16 param3 )
+void MT_ProcessDebugMsg4( uint16 param1, uint16 param2, uint16 param3, uint16 param4 )
 {
-  uint8 buf[11];
+  uint8 buf[8];
   uint8 *pBuf;
 
   /* Build the message */
   pBuf = buf;
-  *pBuf++ = 0;
-  *pBuf++ = 0;
-  *pBuf++ = 3;
-
-  *pBuf++ = LO_UINT16( param1 );
   *pBuf++ = HI_UINT16( param1 );
+  *pBuf++ = LO_UINT16( param1 );
   
-  *pBuf++ = LO_UINT16( param2 );
   *pBuf++ = HI_UINT16( param2 );
+  *pBuf++ = LO_UINT16( param2 );
   
-  *pBuf++ = LO_UINT16( param3 );
   *pBuf++ = HI_UINT16( param3 );
+  *pBuf++ = LO_UINT16( param3 );
   
-  *pBuf++ = 0;
-  *pBuf = 0;
+  *pBuf++ = HI_UINT16( param4 );
+  *pBuf++ = LO_UINT16( param4 );
 
 #ifdef MT_UART_DEFAULT_PORT
   /* Debug message is set to AREQ CMD 0x80 for now */
   /* Build and send back the response */
-  MT_BuildAndSendZToolResponse(((uint8)MT_RPC_CMD_AREQ | (uint8)MT_RPC_SYS_DBG), 0x80, 11, buf);
+  MT_BuildAndSendZToolResponse(((uint8)MT_RPC_CMD_AREQ | (uint8)MT_RPC_SYS_DBG), 0x80, 8, buf);
 #endif
 }
 

@@ -102,7 +102,7 @@ extern uint8 MT_DebugCommandProcessing(uint8 *pBuf);
  * Process MT_DEBUG messages
  */
 extern void MT_ProcessDebugMsg(mtDebugMsg_t *pData);
-extern void MT_ProcessDebugMsg3( uint16 param1, uint16 param2, uint16 param3 );
+extern void MT_ProcessDebugMsg4( uint16 param1, uint16 param2, uint16 param3, uint16 param4 );
 /*
  * Process MT_DEBUG strings
  */
