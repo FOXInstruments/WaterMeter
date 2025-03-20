@@ -613,7 +613,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
   {
     if (zclWC_FlowUpdatePeriod < WC_METER_INSTDEMAND_UPDATEPERIOD_MIN) zclWC_FlowUpdatePeriod = WC_METER_INSTDEMAND_UPDATEPERIOD_MIN; // set minimum update intervel
     
-    if ((zclWC_FlowUpdatePeriod != WC_METER_INSTDEMAND_UPDATEPERIOD_MAX) && (bdbAttributes.bdbNodeIsOnANetwork)) // if 0xFF update is disabled
+    if (bdbAttributes.bdbNodeIsOnANetwork) // if 0xFF update is disabled
     {
       if ((zclWC_Flow1InstDemandPrev != 0) || (zclWC_Flow1InstDemand != 0))
       {
@@ -635,7 +635,9 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
     zclWC_Flow2InstDemandPrev = zclWC_Flow2InstDemand;
     zclWC_Flow1InstDemand = 0;
     zclWC_Flow2InstDemand = 0;
-    status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATEINSTDEMAND, zclWC_FlowUpdatePeriod*1000L);
+    
+    if (zclWC_FlowUpdatePeriod != WC_METER_INSTDEMAND_UPDATEPERIOD_MAX)
+      status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATEINSTDEMAND, zclWC_FlowUpdatePeriod*1000L);
     
     return (events ^ WC_EVT_UPDATEINSTDEMAND); // return unprocessed events
   }
@@ -1083,7 +1085,7 @@ uint8 zclWC_ValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
       case ATTRID_METER_0READINGSET_DEFAULTUPDATEPERIOD:
         if (*pAttrInfo->attrData < WC_METER_INSTDEMAND_UPDATEPERIOD_MIN)
           *pAttrInfo->attrData = WC_METER_INSTDEMAND_UPDATEPERIOD_MIN;
-        if (*pAttrInfo->attrData != zclWC_FlowUpdatePeriod)
+        if ((*pAttrInfo->attrData != zclWC_FlowUpdatePeriod) && (*pAttrInfo->attrData != WC_METER_INSTDEMAND_UPDATEPERIOD_MAX))
           osal_set_event(zclWC_TaskID, WC_EVT_UPDATEINSTDEMAND);
         #ifdef MT_DEBUG_FUNC
           MT_ProcessDebugString("Write.UpdatePeriod");

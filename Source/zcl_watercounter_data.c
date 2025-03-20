@@ -84,14 +84,20 @@
 #define ENGINEERING_UNIT_TIME_DAY      70
 
 // 0x0401 - 0x0FFF application NV ids
-#define WC_NV_DESC1        0x0404
-#define WC_NV_DESC2        WC_NV_DESC1 + WC_METER_SITEID_SIZE
-#define WC_NV_BLOCK1       WC_NV_DESC2 + 4
-#define WC_NV_BLOCK2       WC_NV_BLOCK1 + 4
-#define WC_NV_REPORT       WC_NV_BLOCK2 + 4
-#define WC_NV_VALUE1       WC_NV_REPORT + 4
-#define WC_NV_VALUE2       WC_NV_VALUE1 + sizeof(zclWC_Flow1Value.dw.lowDW)
-#define WC_NV_VALUEX       WC_NV_VALUE2 + sizeof(zclWC_Flow2Value.dw.lowDW)
+#define WC_NV_DESC1             0x0404
+#define WC_NV_DESC2             0x0405
+#define WC_NV_UNIT1             0x0406
+#define WC_NV_UNIT2             0x0407
+#define WC_NV_MULTIPLIER1       0x0408
+#define WC_NV_MULTIPLIER2       0x0409
+#define WC_NV_DIVISOR1          0x040A
+#define WC_NV_DIVISOR2          0x040B
+#define WC_NV_VOLUMEREPORT1     0x040C
+#define WC_NV_VOLUMEREPORT2     0x040D
+#define WC_NV_REPORTPERIOD      0x040E
+#define WC_NV_VALUES1           0x040F
+#define WC_NV_VALUES2           0x0410
+#define WC_NV_DATES             0x0411
 
 /*********************************************************************
  * TYPEDEFS
