@@ -120,7 +120,8 @@ byte zclWC_TaskID;
 
 uint8 zclWC_SeqNum;
 
-uint16 zclWC_MinutesCounter;        // Minutes counter for Time synchronization and update fields every 24 hours 
+uint8 zclWC_TimeHasSynced;             // True if time has synced
+uint16 zclWC_TimeSynchElapsedMinutes;  // Minutes elapsed since Time synchronization
 
 const zclReadCmd_t zclWC_ReadCmdTime = {4, {ATTRID_TIME_TIME, ATTRID_TIME_TIME_STATUS, ATTRID_TIME_TIME_ZONE, ATTRID_TIME_LOCAL_TIME}};
 
@@ -272,6 +273,7 @@ static uint8 zclWC_ProcessInReadRspCmd(zclIncomingMsg_t *pInMsg);
 static uint8 zclWC_ProcessInWriteRspCmd(zclIncomingMsg_t *pInMsg);
 static uint8 zclWC_ValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo);
 #endif
+ZStatus_t zclWC_AuthorizeCB( afAddrType_t *srcAddr, zclAttrRec_t *pAttr, uint8 oper );
 static uint8 zclWC_ProcessInDefaultRspCmd(zclIncomingMsg_t *pInMsg);
 #ifdef ZCL_DISCOVER
 static uint8 zclWC_ProcessInDiscCmdsRspCmd(zclIncomingMsg_t *pInMsg);
@@ -371,6 +373,7 @@ void zclWC_Init(byte task_id)
   zcl_registerAttrList(WC_ENDPOINT2, zclWC_NumAttributes2, zclWC_Attrs2);
   
   zcl_registerValidateAttrData(zclWC_ValidateAddrDataCB);
+  zcl_registerReadWriteCB(WC_ENDPOINT, NULL, zclWC_AuthorizeCB);
 
   // Register the Application to receive the unprocessed Foundation command/response messages
   zcl_registerForMsg(zclWC_TaskID);
@@ -440,13 +443,17 @@ void zclWC_Init(byte task_id)
   P1IFG &= ~BV(1);
   IEN2 |= BV(4);           // Enable interrupt Port1
   
-  zclWC_MinutesCounter = 24*60;   // Initialize Hour counter for time synchronization every 24 hours
+  zclWC_TimeSynchElapsedMinutes = 0;   // Initialize counter for time synchronization
+  zclWC_TimeHasSynced = false;
+  
   status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATE, 10000);
   (void)status;
   if (zclWC_FlowUpdatePeriod != 0xFF ) status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATEINSTDEMAND, zclWC_FlowUpdatePeriod*1000L);
   
   //bdb_StartCommissioning(BDB_COMMISSIONING_MODE_NWK_STEERING | BDB_COMMISSIONING_MODE_FINDING_BINDING);
+#ifdef MT_DEBUG_FUNC
   MT_ProcessDebugString("Init completed");
+#endif
 }
 
 /*********************************************************************
@@ -539,7 +546,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
       zclWC_Flow2PrevDay = zclWC_Flow2CurrDay;
       zclWC_Flow1CurrDay = 0;
       zclWC_Flow2CurrDay = 0;
-      zclWC_Flow1HoursInOperation += 24*(zclWC_MinutesCounter != 24*60);
+      zclWC_Flow1HoursInOperation += 24*(zclWC_TimeSynchElapsedMinutes != 24*60);
       zclWC_Flow2HoursInOperation = zclWC_Flow1HoursInOperation;
     }
     // Every hour attribute update
@@ -553,7 +560,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
         zcl_SendReportCmd(WC_ENDPOINT2, &zclWC_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zclWC_ReportCmdEveryHour2, ZCL_FRAME_SERVER_CLIENT_DIR, false, zclWC_SeqNum++);
     }
     // Try time sync with coodinator every 24 hours or more
-    if ((zclWC_MinutesCounter >= 24*60) && (bdbAttributes.bdbNodeIsOnANetwork))
+    if ((zclWC_TimeSynchElapsedMinutes >= 24*60) && (bdbAttributes.bdbNodeIsOnANetwork))
     {     
       zclWC_DstAddr.addrMode = afAddr16Bit;
       zclWC_DstAddr.addr.shortAddr = 0;
@@ -574,7 +581,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
     if (timeRemain <= zclWC_FlowReportInterval)
     {
       status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATE, (timeRemain*60 + (60 - time.seconds))*1000L);
-      zclWC_MinutesCounter += timeRemain;
+      zclWC_TimeSynchElapsedMinutes += timeRemain;
     }
     else
     {
@@ -584,21 +591,21 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
         if (timeRemain <= zclWC_FlowReportInterval)
         {
           status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATE, (timeRemain*60 + (60 - time.seconds))*1000L);
-          zclWC_MinutesCounter += timeRemain;
+          zclWC_TimeSynchElapsedMinutes += timeRemain;
         }
         else
         {
           status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATE, (zclWC_FlowReportInterval*60 + (60 - time.seconds))*1000L);          
-          zclWC_MinutesCounter += zclWC_FlowReportInterval;
+          zclWC_TimeSynchElapsedMinutes += zclWC_FlowReportInterval;
         }
       }
       else
       {          
         status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATE, ((zclWC_FlowReportInterval - 60)*60 + (59 - time.minutes)*60 + (60 - time.seconds))*1000L);                  
-        zclWC_MinutesCounter += zclWC_FlowReportInterval;
+        zclWC_TimeSynchElapsedMinutes += zclWC_FlowReportInterval;
       }
     }
-    if (zclWC_MinutesCounter > 32768) zclWC_MinutesCounter = 24*60 + 1; // if HourCounter was 255, time sync was not completed more than 255 hours
+    if (zclWC_TimeSynchElapsedMinutes > 32768) zclWC_TimeSynchElapsedMinutes = 24*60 + 1; // if HourCounter was 255, time sync was not completed more than 255 hours
     
     //status = osal_start_timerEx(zclWC_TaskID, WC_EVT_EVERYHOUR, /*(3600L - time.minutes*60 - time.seconds)*/ 120000L);
     
@@ -999,7 +1006,7 @@ static uint8 zclWC_ProcessInReadRspCmd(zclIncomingMsg_t *pInMsg)
   zclReadRspCmd_t *readRspCmd;
   uint8 i;
   uint8 status = 0;
-  uint32 time = 0;
+  uint32 time;
 
   readRspCmd = (zclReadRspCmd_t *)pInMsg->attrCmd;
   
@@ -1020,7 +1027,8 @@ static uint8 zclWC_ProcessInReadRspCmd(zclIncomingMsg_t *pInMsg)
                 (ABS((int32)(*((uint32*)readRspCmd->attrList[i].data) - time)) > TIME_SYNC_DIFF))
             {
               osal_setClock(*((uint32*)readRspCmd->attrList[i].data));
-              zclWC_MinutesCounter = 0;
+              zclWC_TimeHasSynced = true;
+              zclWC_TimeSynchElapsedMinutes = 0;
 
               #if defined MT_DEBUG_FUNC
                 MT_ProcessDebugString("ReadRsp.TimeSync");
@@ -1070,7 +1078,7 @@ static uint8 zclWC_ProcessInWriteRspCmd(zclIncomingMsg_t *pInMsg)
  *
  * @param   Attribute to write
  *
- * @return  none
+ * @return  return  TRUE if data valid. FALSE, otherwise.
  */
 uint8 zclWC_ValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
 {
@@ -1169,6 +1177,20 @@ uint8 zclWC_ValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
 }
 #endif // ZCL_WRITE
 
+/*********************************************************************
+ * @fn      zclWC_ValidateAttrDataCB
+ *
+ * @brief   Process the "Profile" Write Command Validate Attr data
+ *
+ * @param   Attribute to write
+ *
+ * @return  ZCL_STATUS_SUCCESS: Operation authorized
+ *          ZCL_STATUS_NOT_AUTHORIZED: Operation not authorized
+ */
+ZStatus_t zclWC_AuthorizeCB( afAddrType_t *srcAddr, zclAttrRec_t *pAttr, uint8 oper )
+{
+  return ZCL_STATUS_SUCCESS;
+}
 /*********************************************************************
  * @fn      zclWC_ProcessInDefaultRspCmd
  *
