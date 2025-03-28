@@ -725,8 +725,8 @@ void zclWC_NVInitItems(void)
   
   result |= osal_nv_item_init(WC_NV_DESC1, WC_METER_SITEID_SIZE, NULL); 
   result |= osal_nv_item_init(WC_NV_DESC2, WC_METER_SITEID_SIZE, NULL); 
-  result |= osal_nv_item_init(WC_NV_VALUE1, sizeof(zclWC_Flow1Value.dw.lowDW), NULL); 
-  result |= osal_nv_item_init(WC_NV_VALUE2, sizeof(zclWC_Flow2Value.dw.lowDW), NULL);
+  result |= osal_nv_item_init(WC_NV_VALUES1, sizeof(zclWC_Flow1Value.dw.lowDW), NULL); 
+  result |= osal_nv_item_init(WC_NV_VALUES2, sizeof(zclWC_Flow2Value.dw.lowDW), NULL);
 /*  result |= osal_nv_item_init(WC_NV_BLOCK1, 4, NULL); 
   result |= osal_nv_item_init(WC_NV_BLOCK2, 4, NULL); 
   result |= osal_nv_item_init(WC_NV_REPORT, 4, NULL); */
