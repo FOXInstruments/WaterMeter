@@ -105,11 +105,9 @@
 /*********************************************************************
  * MACROS
  */
-#define APP_TITLE       "TI Water counter"
-   
-#define HAL_LED_STATUS  HAL_LED_3
-#define HAL_LED_IN1     HAL_LED_4
-#define HAL_LED_IN2     HAL_LED_5   
+// #define UI_STATE_TOGGLE_LIGHT 1 //UI_STATE_BACK_FROM_APP_MENU is item #0, so app item numbers should start from 1
+
+#define APP_TITLE "TI Water counter"
 
 /*********************************************************************
  * TYPEDEFS
@@ -124,7 +122,6 @@ uint8 zclWC_SeqNum;
 
 uint8 zclWC_TimeHasSynced;             // True if time has synced
 uint16 zclWC_TimeSynchElapsedMinutes;  // Minutes elapsed since Time synchronization
-uint16 zclWC_MinutesInOperation;       // Minutes to calculate InOperation attribute
 
 const zclReadCmd_t zclWC_ReadCmdTime = {4, {ATTRID_TIME_TIME, ATTRID_TIME_TIME_STATUS, ATTRID_TIME_TIME_ZONE, ATTRID_TIME_LOCAL_TIME}};
 
@@ -448,23 +445,12 @@ void zclWC_Init(byte task_id)
   
   zclWC_TimeSynchElapsedMinutes = 0;   // Initialize counter for time synchronization
   zclWC_TimeHasSynced = false;
-  zclWC_MinutesInOperation = 0;        // Init to calculate HoursInOperation attribute
   
-  if (zclWC_FlowUpdatePeriod != 0xFF )
-    status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATEINSTDEMAND, zclWC_FlowUpdatePeriod*1000L);
+  status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATE, 10000);
+  (void)status;
+  if (zclWC_FlowUpdatePeriod != 0xFF ) status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATEINSTDEMAND, zclWC_FlowUpdatePeriod*1000L);
   
-  status = 0;
-  osal_nv_read(ZCD_NV_BDBNODEISONANETWORK, 0, sizeof(bdbAttributes.bdbNodeIsOnANetwork), &status);
-  if (status == true)  // Connect to network after reboot if device was commissioned OnNetwork
-    bdb_StartCommissioning(BDB_COMMISSIONING_MODE_INITIATOR_TL | BDB_COMMISSIONING_MODE_NWK_STEERING /*| BDB_COMMISSIONING_MODE_FINDING_BINDING*/);
-  
-  //status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATE, 10000);
-  status = osal_set_event(zclWC_TaskID, WC_EVT_UPDATE);
-  
-  HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_ON); // to show NoNetwork state
-  HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
-  HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
-  
+  //bdb_StartCommissioning(BDB_COMMISSIONING_MODE_NWK_STEERING | BDB_COMMISSIONING_MODE_FINDING_BINDING);
 #ifdef MT_DEBUG_FUNC
   MT_ProcessDebugString("Init completed");
 #endif
@@ -553,10 +539,6 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
 #endif    
     // Battery voltage check
     zclWC_UpdateBatteryAttributes();
-    // Calculate HoursInOperation attribute
-    zclWC_Flow1HoursInOperation += zclWC_MinutesInOperation / 60;
-    zclWC_MinutesInOperation = zclWC_MinutesInOperation % 60;
-    zclWC_Flow2HoursInOperation = zclWC_Flow1HoursInOperation;
     // Every 24 hours attribute update
     if (time.hour == 0 && time.minutes <= 1)
     {
@@ -564,34 +546,34 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
       zclWC_Flow2PrevDay = zclWC_Flow2CurrDay;
       zclWC_Flow1CurrDay = 0;
       zclWC_Flow2CurrDay = 0;
+      zclWC_Flow1HoursInOperation += 24*(zclWC_TimeSynchElapsedMinutes != 24*60);
+      zclWC_Flow2HoursInOperation = zclWC_Flow1HoursInOperation;
     }
-    // Every interval attributes update
-    if (bdbAttributes.bdbNodeIsOnANetwork && ((bdbAttributes.bdbCommissioningStatus == BDB_COMMISSIONING_NETWORK_RESTORED) ||
-                                              (bdbAttributes.bdbCommissioningStatus == BDB_COMMISSIONING_SUCCESS)))
+    // Every hour attribute update
+    if (/*(time.minutes <= 1) &&*/ (bdbAttributes.bdbNodeIsOnANetwork))
     {
-      zclWC_DstAddr.addrMode = afAddr16Bit;
-      zclWC_DstAddr.addr.shortAddr = 0;
-      zclWC_DstAddr.endPoint = 1;
-      zcl_SendReportCmd(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_GEN_POWER_CFG, &zclWC_ReportCmdBattery, ZCL_FRAME_SERVER_CLIENT_DIR, false, zclWC_SeqNum++);
-      zcl_SendReportCmd(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zclWC_ReportCmdEveryHour, ZCL_FRAME_SERVER_CLIENT_DIR, false, zclWC_SeqNum++);
-      zcl_SendReportCmd(WC_ENDPOINT2, &zclWC_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zclWC_ReportCmdEveryHour2, ZCL_FRAME_SERVER_CLIENT_DIR, false, zclWC_SeqNum++);
-      
-      // Try time sync with coodinator every 24 hours or more
-      if ((zclWC_TimeHasSynced == false) || (zclWC_TimeSynchElapsedMinutes >= 24*60))
-      {     
         zclWC_DstAddr.addrMode = afAddr16Bit;
         zclWC_DstAddr.addr.shortAddr = 0;
         zclWC_DstAddr.endPoint = 1;
-        
-        status = zcl_SendRead(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_GEN_TIME, &zclWC_ReadCmdTime, ZCL_FRAME_CLIENT_SERVER_DIR, false, zclWC_SeqNum++);
-        if (status) // if SendRead failure, try to discover device to sync the time
-        {
-          zclDiscoverAttrsCmd_t discoverAttr;
-          zclWC_DstAddr.addrMode = afAddrBroadcast;
-          discoverAttr.startAttr = ATTRID_TIME_TIME;
-          discoverAttr.maxAttrIDs = ATTRID_TIME_VALID_UNTIL_TIME;
-          status = zcl_SendDiscoverAttrsCmd(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_GEN_TIME, &discoverAttr, ZCL_FRAME_CLIENT_SERVER_DIR, false, zclWC_SeqNum++);
-        }
+        zcl_SendReportCmd(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_GEN_POWER_CFG, &zclWC_ReportCmdBattery, ZCL_FRAME_SERVER_CLIENT_DIR, false, zclWC_SeqNum++);
+        zcl_SendReportCmd(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zclWC_ReportCmdEveryHour, ZCL_FRAME_SERVER_CLIENT_DIR, false, zclWC_SeqNum++);
+        zcl_SendReportCmd(WC_ENDPOINT2, &zclWC_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zclWC_ReportCmdEveryHour2, ZCL_FRAME_SERVER_CLIENT_DIR, false, zclWC_SeqNum++);
+    }
+    // Try time sync with coodinator every 24 hours or more
+    if ((zclWC_TimeSynchElapsedMinutes >= 24*60) && (bdbAttributes.bdbNodeIsOnANetwork))
+    {     
+      zclWC_DstAddr.addrMode = afAddr16Bit;
+      zclWC_DstAddr.addr.shortAddr = 0;
+      zclWC_DstAddr.endPoint = 1;
+      
+      status = zcl_SendRead(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_GEN_TIME, &zclWC_ReadCmdTime, ZCL_FRAME_CLIENT_SERVER_DIR, false, zclWC_SeqNum++);
+      if (status) // if SendRead failure, try to discover device to sync the time
+      {
+        zclDiscoverAttrsCmd_t discoverAttr;
+        zclWC_DstAddr.addrMode = afAddrBroadcast;
+        discoverAttr.startAttr = ATTRID_TIME_TIME;
+        discoverAttr.maxAttrIDs = ATTRID_TIME_VALID_UNTIL_TIME;
+        status = zcl_SendDiscoverAttrsCmd(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_GEN_TIME, &discoverAttr, ZCL_FRAME_CLIENT_SERVER_DIR, false, zclWC_SeqNum++);
       }
     }
 
@@ -600,7 +582,6 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
     {
       status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATE, (timeRemain*60 + (60 - time.seconds))*1000L);
       zclWC_TimeSynchElapsedMinutes += timeRemain;
-      zclWC_MinutesInOperation += timeRemain;
     }
     else
     {
@@ -611,23 +592,20 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
         {
           status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATE, (timeRemain*60 + (60 - time.seconds))*1000L);
           zclWC_TimeSynchElapsedMinutes += timeRemain;
-          zclWC_MinutesInOperation += timeRemain;
         }
         else
         {
           status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATE, (zclWC_FlowReportInterval*60 + (60 - time.seconds))*1000L);          
           zclWC_TimeSynchElapsedMinutes += zclWC_FlowReportInterval;
-          zclWC_MinutesInOperation += zclWC_FlowReportInterval;
         }
       }
       else
       {          
         status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATE, ((zclWC_FlowReportInterval - 60)*60 + (59 - time.minutes)*60 + (60 - time.seconds))*1000L);                  
         zclWC_TimeSynchElapsedMinutes += zclWC_FlowReportInterval;
-        zclWC_MinutesInOperation += zclWC_FlowReportInterval;
       }
     }
-    if (zclWC_TimeSynchElapsedMinutes > 32768) zclWC_TimeSynchElapsedMinutes = 24*60; // if HourCounter was 255, time sync was not completed more than 255 hours
+    if (zclWC_TimeSynchElapsedMinutes > 32768) zclWC_TimeSynchElapsedMinutes = 24*60 + 1; // if HourCounter was 255, time sync was not completed more than 255 hours
     
     //status = osal_start_timerEx(zclWC_TaskID, WC_EVT_EVERYHOUR, /*(3600L - time.minutes*60 - time.seconds)*/ 120000L);
     
@@ -679,7 +657,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
       zclWC_Flow1Value.dw.lowDW++;
       zclWC_Flow1CurrDay++;
       if (zclWC_FlowUpdatePeriod != 0xFF) zclWC_Flow1InstDemand++;
-      HalLedBlink(HAL_LED_IN1, 1, 50, 100);
+      HalLedBlink(HAL_LED_4, 1, 50, 100);
     }
     return (events ^ WC_EVT_IMPULSE1);
   }
@@ -692,7 +670,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
       zclWC_Flow2Value.dw.lowDW++;
       zclWC_Flow2CurrDay++;
       if (zclWC_FlowUpdatePeriod != 0xFF) zclWC_Flow2InstDemand++;
-      HalLedBlink(HAL_LED_IN2, 1, 50, 100);
+      HalLedBlink(HAL_LED_5, 1, 50, 100);
     }    
     return (events ^ WC_EVT_IMPULSE2);
   }
@@ -704,9 +682,9 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
       zclWC_LongPushCounter++;
       if (zclWC_LongPushCounter > 50) // Key is pressed more than 5 sec, preform LocalReset and recommission
       {
-        HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_ON);
-        HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
-        HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_3, HAL_LED_MODE_ON);
+        HalLedSet(HAL_LED_4, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_5, HAL_LED_MODE_OFF);
         //bdb_resetLocalAction();
         //ZDApp_LeaveReset();
         bdb_StartCommissioning(BDB_COMMISSIONING_MODE_INITIATOR_TL | BDB_COMMISSIONING_MODE_NWK_STEERING /*| BDB_COMMISSIONING_MODE_FINDING_BINDING*/);
@@ -715,7 +693,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
       else
       {
         if (zclWC_LongPushCounter > 5)
-          HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_TOGGLE);
+          HalLedSet(HAL_LED_3, HAL_LED_MODE_TOGGLE);
         
         status = osal_start_timerEx(zclWC_TaskID, WC_EVT_LONGPUSH, WC_LONGPUSH_INTERVAL);
       }
@@ -742,7 +720,7 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
  */
 static void zclWC_HandleKeys(byte shift, byte keys)
 {
-  HalLedBlink(HAL_LED_STATUS, 1, 50, WC_LONGPUSH_INTERVAL);
+  HalLedBlink(HAL_LED_3, 1, 50, WC_LONGPUSH_INTERVAL);
   if (HAL_PUSH_BUTTON()) // Button is still pressed, try to determine long press 
   {
     osal_start_timerEx(zclWC_TaskID, WC_EVT_LONGPUSH, WC_LONGPUSH_INTERVAL);
@@ -778,48 +756,37 @@ static void zclWC_ProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
     case BDB_COMMISSIONING_NWK_STEERING:
       if(bdbCommissioningModeMsg->bdbCommissioningStatus == BDB_COMMISSIONING_SUCCESS)
       {
+        //YOUR JOB:
         //We are on the nwk, what now?
-        HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
-        HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
-        HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
-        
-        if (zclWC_TimeHasSynced == false)
-        {
-          uint32 timeout;
-          // Timer's remain time substracts from InOperation time
-          timeout = osal_get_timeoutEx(zclWC_TaskID, WC_EVT_UPDATE);
-          timeout /= (60*1000);
-          if (zclWC_MinutesInOperation < (uint24)timeout)
-            zclWC_MinutesInOperation = 0;
-          else
-            zclWC_MinutesInOperation -= timeout;
-          
-          osal_set_event(zclWC_TaskID, WC_EVT_UPDATE);
-        }
+        HalLedSet(HAL_LED_3, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_4, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_5, HAL_LED_MODE_OFF);
       }
       else
       {
         //See the possible errors for nwk steering procedure
-        //No suitable networks found. Want to try other channels? Try with bdb_setChannelAttribute
-        HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_ON);
-        HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
-        HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
+        //No suitable networks found
+        //Want to try other channels?
+        //try with bdb_setChannelAttribute
+        HalLedSet(HAL_LED_3, HAL_LED_MODE_ON);
+        HalLedSet(HAL_LED_4, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_5, HAL_LED_MODE_OFF);
       }
     break;
     case BDB_COMMISSIONING_FINDING_BINDING:
       if(bdbCommissioningModeMsg->bdbCommissioningStatus == BDB_COMMISSIONING_SUCCESS)
       {
         //YOUR JOB:
-        HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
-        HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
-        HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_3, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_4, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_5, HAL_LED_MODE_OFF);
       }
       else
       {
         //YOUR JOB:
-        //HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
-        HalLedSet(HAL_LED_IN1, HAL_LED_MODE_ON);
-        HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
+        //HalLedSet(HAL_LED_3, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_4, HAL_LED_MODE_ON);
+        HalLedSet(HAL_LED_5, HAL_LED_MODE_OFF);
       }
     break;
     case BDB_COMMISSIONING_INITIALIZATION:
@@ -833,17 +800,17 @@ static void zclWC_ProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
       if(bdbCommissioningModeMsg->bdbCommissioningStatus == BDB_COMMISSIONING_NETWORK_RESTORED)
       {
         //We did recover from losing parent
-        HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
-        HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
-        HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_3, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_4, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_5, HAL_LED_MODE_OFF);
       }
       else
       {
         //Parent not found, attempt to rejoin again after a fixed delay
         osal_start_timerEx(zclWC_TaskID, WC_EVT_END_DEVICE_REJOIN, WC_END_DEVICE_REJOIN_DELAY);
-        HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
-        HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
-        HalLedSet(HAL_LED_IN2, HAL_LED_MODE_ON);
+        HalLedSet(HAL_LED_3, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_4, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_5, HAL_LED_MODE_ON);
 
       }
     break;

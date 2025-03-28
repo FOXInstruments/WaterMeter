@@ -70,10 +70,8 @@ extern "C"
 #define WC_EVT_LONGPUSH            0x0010
 #define WC_EVT_UPDATEINSTDEMAND    0x0020       // InstanteniousDemand update event
 #define WC_EVT_BATTERY             0x0040
-#define WC_EVT_TIMESYNC            0x0080
-#define WC_EVT_COMMISSION          0x0100       // Init commission if device was connected to network
 
-#define WC_END_DEVICE_REJOIN_DELAY 60000        // msec
+#define WC_END_DEVICE_REJOIN_DELAY 60000
 
 // Vdd/3 / Internal Reference X ENOB --> (Vdd / 3) / 1.15 X 127
 #define VDD3_2_0                74   // 2.0 V required to safely read/write internal flash.

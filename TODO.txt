@@ -20,7 +20,3 @@ TODO list.
    
 7. Long press button (10 seconds) to reset device to the Factory New State.
    Status LED blinks rapidly and after 10 seconds all LEDs set ON that indicates that Reset to FN is initiated.
-
-8. Switch debug messages to DebugTrace.h
-
-9. Update WorkingHours attribute every Hour
