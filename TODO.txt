@@ -1,9 +1,10 @@
 TODO list.
 
-1. Time syncronization.
++1. Time syncronization.
+   After commissioning initiates TimeSync if it has not done yet or time elapsed from last sync more then 24 hours
    
 
-2. When the device recives the read Battery attributes it have to update the values before sends response.
++2. When the device recives the read Battery attributes it has to update the values before sends response.
    Using AthorizeAccess flag of atributes.
    
 3. Write and restore the attributes to-from NV
@@ -13,14 +14,14 @@ TODO list.
    Last reboot time = Time of first sync + Current time of device
    HEAP memory statistics.
    
-5. Initiate Comissioning procedure after reboot if device was connected to Network
++5. Initiate Comissioning procedure after reboot if device was connected to Network
 
-6. Long press button (5 seconds) to initiate Comissioning or to deactivate it.
++6. Long press button (5 seconds) to initiate Comissioning or to deactivate it.
    Status LED blinks slowly after 5 sec it starts to blink rapidply and if release the button than Status LED sets ON and Comissioning procedure is activated
    
-7. Long press button (10 seconds) to reset device to the Factory New State.
++7. Long press button (10 seconds) to reset device to the Factory New State.
    Status LED blinks rapidly and after 10 seconds all LEDs set ON that indicates that Reset to FN is initiated.
 
 8. Switch debug messages to DebugTrace.h
 
-9. Update WorkingHours attribute every Hour
++9. Update WorkingHours attribute every Hour

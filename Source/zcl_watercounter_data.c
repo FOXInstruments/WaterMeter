@@ -76,8 +76,19 @@
 #define DEFAULT_DEVICE_ENABLE_STATE DEVICE_ENABLED
 #define DEFAULT_IDENTIFY_TIME 0
 
-#define ENGINEERING_UNIT_VOLUME_L      0x87
-#define ENGINEERING_UNIT_VOLUME_M3     0x81
+#define ENGINEERING_UNIT_METER_KWH    0x00
+#define ENGINEERING_UNIT_METER_M3     0x01
+#define ENGINEERING_UNIT_METER_FT3    0x02
+#define ENGINEERING_UNIT_METER_CCF    0x03      // (100 or Centum) Cubic Feet
+#define ENGINEERING_UNIT_METER_USGL   0x04      // US Gallons
+#define ENGINEERING_UNIT_METER_IMPGL  0x05      // Imperial Gallons
+#define ENGINEERING_UNIT_METER_BTU    0x06
+#define ENGINEERING_UNIT_METER_L      0x07
+#define ENGINEERING_UNIT_METER_KPA    0x08      // gauge
+#define ENGINEERING_UNIT_METER_KPAA   0x09      // absolute
+#define ENGINEERING_UNIT_METER_MCF    0x0A      // 1000 Cubic Feet
+#define ENGINEERING_UNIT_METER_UNITLESS  0x0B   // Unitless
+#define ENGINEERING_UNIT_METER_MJ        0x0C   // Mega Joule
 #define ENGINEERING_UNIT_TIME_SEC      73
 #define ENGINEERING_UNIT_TIME_MIN      72
 #define ENGINEERING_UNIT_TIME_HOUR     71
@@ -123,8 +134,8 @@ const uint8 zclWC_DateCode[] = { 10, '2','0','2','4','-','0','2','-','0','2'};
 
 const uint8 zclWC_PowerSource = POWER_SOURCE_BATTERY;
 
-const uint8 zclWC_Desc1[WC_METER_SITEID_SIZE + 1] = {WC_METER_SITEID_SIZE, 'C', 'o', 'l', 'd', ' ', ' ', ' ', ' ', ' ', ' '};   // Constants to initialize default values
-const uint8 zclWC_Desc2[WC_METER_SITEID_SIZE + 1] = {WC_METER_SITEID_SIZE, 'H', 'o', 't', ' ', ' ', ' ', ' ', ' ', ' ', ' '};
+const uint8 zclWC_cDesc1[WC_METER_SITEID_SIZE + 1] = {WC_METER_SITEID_SIZE, 'C', 'o', 'l', 'd', ' ', ' ', ' ', ' ', ' ', ' '};   // Constants to initialize default values
+const uint8 zclWC_cDesc2[WC_METER_SITEID_SIZE + 1] = {WC_METER_SITEID_SIZE, 'H', 'o', 't', ' ', ' ', ' ', ' ', ' ', ' ', ' '};
 
 const uint8 zclWC_DeviceType = 0x02;    // Water meter
 
@@ -175,7 +186,7 @@ uint8 zclWC_LocationDescription[16];
 uint8 zclWC_PhysicalEnvironment;
 uint8 zclWC_DeviceEnable = DEVICE_ENABLED;
 
-uint8 zclWC_NVItemsInitStatus;
+uint16 zclWC_NVItemsInitStatus;
 
 // Identify Cluster
 uint16 zclWC_IdentifyTime = 0;
@@ -286,7 +297,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
     ZCL_CLUSTER_ID_GEN_POWER_CFG,
     {
       ATTRID_POWER_CFG_BATTERY_PERCENTAGE_REMAINING,
-      ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ | ACCESS_REPORTABLE,
+      ZCL_DATATYPE_UINT8, ACCESS_CONTROL_AUTH_READ | ACCESS_REPORTABLE,
       (void *)&zclWC_BatteryLevel
     }
   },
@@ -721,21 +732,22 @@ SimpleDescriptionFormat_t zclWC_SimpleDesc2 =
  */
 void zclWC_NVInitItems(void)
 {
-  uint8 result = 0;
+  zclWC_NVItemsInitStatus = 0;
   
-  result |= osal_nv_item_init(WC_NV_DESC1, WC_METER_SITEID_SIZE, NULL); 
-  result |= osal_nv_item_init(WC_NV_DESC2, WC_METER_SITEID_SIZE, NULL); 
-  result |= osal_nv_item_init(WC_NV_VALUES1, sizeof(zclWC_Flow1Value.dw.lowDW), NULL); 
-  result |= osal_nv_item_init(WC_NV_VALUES2, sizeof(zclWC_Flow2Value.dw.lowDW), NULL);
-/*  result |= osal_nv_item_init(WC_NV_BLOCK1, 4, NULL); 
-  result |= osal_nv_item_init(WC_NV_BLOCK2, 4, NULL); 
-  result |= osal_nv_item_init(WC_NV_REPORT, 4, NULL); */
-  
-  if (result == SUCCESS) { // SUCCESS only if all init calls were SUCCESS
-    zclWC_NVItemsInitStatus = SUCCESS;
-  } else {
-    zclWC_NVItemsInitStatus = FAILURE;
-  }
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DESC1, WC_METER_SITEID_SIZE, NULL) == NV_OPER_FAILED ? 1 : 0;
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DESC2, WC_METER_SITEID_SIZE, NULL) == NV_OPER_FAILED ? 1<<1 : 0;
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_UNIT1, sizeof(zclWC_Flow1Unit), NULL) == NV_OPER_FAILED ? 1<<2 : 0;
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_UNIT2, sizeof(zclWC_Flow2Unit), NULL) == NV_OPER_FAILED ? 1<<3 : 0;
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_MULTIPLIER1, sizeof(zclWC_Flow1Multiplier), NULL) == NV_OPER_FAILED ? 1<<4 : 0;
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_MULTIPLIER2, sizeof(zclWC_Flow2Multiplier), NULL) == NV_OPER_FAILED ? 1<<5 : 0;
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DIVISOR1, sizeof(zclWC_Flow1Divisor), NULL) == NV_OPER_FAILED ? 1<<6 : 0;
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DIVISOR2, sizeof(zclWC_Flow2Divisor), NULL) == NV_OPER_FAILED ? 1<<7 : 0;
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VOLUMEREPORT1, sizeof(zclWC_Flow1VolumePerReport), NULL) == NV_OPER_FAILED ? 1<<8 : 0;
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VOLUMEREPORT2, sizeof(zclWC_Flow2VolumePerReport), NULL) == NV_OPER_FAILED ? 1<<9 : 0;
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_REPORTPERIOD, sizeof(zclWC_FlowReportInterval), NULL) == NV_OPER_FAILED ? 1<<10 : 0;  
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VALUES1, sizeof(zclWC_Flow1Value.dw.lowDW), NULL) == NV_OPER_FAILED ? 1<<11 : 0;; 
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VALUES2, sizeof(zclWC_Flow2Value.dw.lowDW), NULL) == NV_OPER_FAILED ? 1<<12 : 0;;
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DATES, sizeof(uint32), NULL) == NV_OPER_FAILED ? 1<<13 : 0;;
 }
 
 /*********************************************************************
@@ -747,14 +759,18 @@ void zclWC_NVInitItems(void)
  *
  * @return  SUCCESS, FAILURE
  */
-uint8 zclWC_NVItemCheck(uint16 id)
+uint8 zclWC_NVItemCheck(uint16 id, uint16 len)
 {
   uint32 buf;
   
-  if (zclWC_NVItemsInitStatus == SUCCESS)
+  if (len > 4)
+    len = 4;
+  
+  if ((zclWC_NVItemsInitStatus & (1 << (id - WC_NV_DESC1))) == 0)
   {
-    if (osal_nv_read(id, 0, 4, &buf) == SUCCESS)
+    if (osal_nv_read(id, 0, len, &buf) == SUCCESS)
     {
+      buf |= 0xFFFFFFFF << len*8;
       if (buf != 0xFFFFFFFF)
       {
         return SUCCESS;
@@ -775,18 +791,13 @@ uint8 zclWC_NVItemCheck(uint16 id)
  */
 void zclWC_InitAttribute(uint16 id, uint16 len, const void *src, void *buf)
 {
-  uint8 result;
-  
-  result = zclWC_NVItemCheck(id);
-  if (result == SUCCESS)
+  if (zclWC_NVItemCheck(id, len) == SUCCESS)
   {
-      result |= osal_nv_read(id, 0, len, buf);
+    if (osal_nv_read(id, 0, len, buf) == SUCCESS)
+      return;
   }
   
-  if (result != SUCCESS)
-  {
-    osal_memcpy(buf, src, len);
-  }
+  osal_memcpy(buf, src, len);
 }
 
 /*********************************************************************
@@ -801,7 +812,7 @@ void zclWC_InitAttribute(uint16 id, uint16 len, const void *src, void *buf)
 void zclWC_ResetAttributesToDefaultValues(void)
 {
   int i;
- // uint32 src, dst;
+  uint32 src;
  // uint8 result;
   
   zclWC_LocationDescription[0] = 15;
@@ -815,28 +826,18 @@ void zclWC_ResetAttributesToDefaultValues(void)
   
   zclWC_IdentifyTime = DEFAULT_IDENTIFY_TIME;
   
-  osal_memcpy(zclWC_Flow1Desc, zclWC_Desc1, WC_METER_SITEID_SIZE + 1);
-  osal_memcpy(zclWC_Flow2Desc, zclWC_Desc2, WC_METER_SITEID_SIZE + 1);
+  //osal_memcpy(zclWC_Flow1Desc, zclWC_cDesc1, WC_METER_SITEID_SIZE + 1);
+  //osal_memcpy(zclWC_Flow2Desc, zclWC_cDesc2, WC_METER_SITEID_SIZE + 1);
   
-  /*zclWC_InitAttribute(WC_NV_DESC1, WC_METER_SITEID_SIZE, zclWC_Desc1, zclWC_Flow1Desc);
-  zclWC_InitAttribute(WC_NV_DESC2, WC_METER_SITEID_SIZE, zclWC_Desc2, zclWC_Flow2Desc);
+  zclWC_InitAttribute(WC_NV_DESC1, WC_METER_SITEID_SIZE, zclWC_cDesc1, zclWC_Flow1Desc);
+  zclWC_InitAttribute(WC_NV_DESC2, WC_METER_SITEID_SIZE, zclWC_cDesc2, zclWC_Flow2Desc);
   
-  src = WC_MULTIPLYER;
-  src = (src << 16) | ENGINEERING_UNIT_VOLUME_L;
-  zclWC_InitAttribute(WC_NV_BLOCK1, 4, &src, &dst);
-  zclWC_Flow1Multiplier = (dst >> 16) & 0xFFFF;
-  zclWC_Flow1Unit = dst & 0xFFFF;
-    
-  zclWC_InitAttribute(WC_NV_BLOCK2, 4, &src, &dst);
-  zclWC_Flow2Multiplier = (dst >> 16) & 0xFFFF;
-  zclWC_Flow2Unit = dst & 0xFFFF;
-
-  src = WC_REPORT_INTERVAL;
-  zclWC_InitAttribute(WC_NV_REPORT, 4, &src, &zclWC_FlowReportInterval);
+  src = WC_METER_REPORT_INTERVAL;
+  zclWC_InitAttribute(WC_NV_REPORTPERIOD, sizeof(zclWC_FlowReportInterval), &src, &zclWC_FlowReportInterval);
 
   src = 0;
-  zclWC_InitAttribute(WC_NV_VALUE1, 4, &src, &zclWC_Flow1Value);
-  zclWC_InitAttribute(WC_NV_VALUE2, 4, &src, &zclWC_Flow2Value);*/
+  zclWC_InitAttribute(WC_NV_VALUES1, sizeof(zclWC_Flow1Value.dw.lowDW), &src, &zclWC_Flow1Value.dw.lowDW);
+  zclWC_InitAttribute(WC_NV_VALUES2, sizeof(zclWC_Flow1Value.dw.lowDW), &src, &zclWC_Flow2Value.dw.lowDW);
   
   zclWC_Flow1Value.dw.lowDW = 0;
   zclWC_Flow1Value.dw.hiW = 0;
@@ -857,8 +858,8 @@ void zclWC_ResetAttributesToDefaultValues(void)
   zclWC_Flow2Divisor = WC_METER_DIVISOR;
   zclWC_Flow1HoursInOperation = 0;
   zclWC_Flow2HoursInOperation = 0;
-  zclWC_Flow1Unit = ENGINEERING_UNIT_VOLUME_M3;
-  zclWC_Flow2Unit = ENGINEERING_UNIT_VOLUME_M3;
+  zclWC_Flow1Unit = ENGINEERING_UNIT_METER_M3;
+  zclWC_Flow2Unit = ENGINEERING_UNIT_METER_M3;
   zclWC_Flow1VolumePerReport = WC_REPORT_CHANGE_FLOW;
   zclWC_Flow2VolumePerReport = WC_REPORT_CHANGE_FLOW;
   zclWC_Flow1Status = 0;

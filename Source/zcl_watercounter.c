@@ -455,16 +455,15 @@ void zclWC_Init(byte task_id)
   
   status = 0;
   osal_nv_read(ZCD_NV_BDBNODEISONANETWORK, 0, sizeof(bdbAttributes.bdbNodeIsOnANetwork), &status);
-  if (status == true)  // Connect to network after reboot if device was commissioned OnNetwork
+  if ((status == true) && (status != 0xFF))  // Connect to network after reboot if device was commissioned OnNetwork
     bdb_StartCommissioning(BDB_COMMISSIONING_MODE_INITIATOR_TL | BDB_COMMISSIONING_MODE_NWK_STEERING /*| BDB_COMMISSIONING_MODE_FINDING_BINDING*/);
-  
-  //status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATE, 10000);
-  status = osal_set_event(zclWC_TaskID, WC_EVT_UPDATE);
   
   HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_ON); // to show NoNetwork state
   HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
   HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
   
+  //status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATE, 10000);
+  status = osal_set_event(zclWC_TaskID, WC_EVT_UPDATE);
 #ifdef MT_DEBUG_FUNC
   MT_ProcessDebugString("Init completed");
 #endif
@@ -697,28 +696,37 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
     return (events ^ WC_EVT_IMPULSE2);
   }
   // ------------------------------------------------------------------  
+  // Button is pressed 0 sec -> 5 sec - Wakeup and Blink LED, if it is not released than LED Blink 100ms
+  // Button is pressed 5 sec -> 10 sec - Start commissioning, if it is not released than LED Blink 25% faster
+  // Button is pressed more 10 sec - Reset network settings
   if (events & WC_EVT_LONGPUSH)
   {
     if (HAL_PUSH_BUTTON()) // Button is still pressed between 100ms interval
     {
       zclWC_LongPushCounter++;
-      if (zclWC_LongPushCounter > 50) // Key is pressed more than 5 sec, preform LocalReset and recommission
+      if (zclWC_LongPushCounter > 100) // Key is pressed more than 10 sec, preform LocalReset and recommission
       {
         HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_ON);
         HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
-        //bdb_resetLocalAction();
-        //ZDApp_LeaveReset();
-        bdb_StartCommissioning(BDB_COMMISSIONING_MODE_INITIATOR_TL | BDB_COMMISSIONING_MODE_NWK_STEERING /*| BDB_COMMISSIONING_MODE_FINDING_BINDING*/);
+        bdb_resetLocalAction();
+        ZDApp_LeaveReset(TRUE);
+        //bdb_StartCommissioning(BDB_COMMISSIONING_MODE_INITIATOR_TL | BDB_COMMISSIONING_MODE_NWK_STEERING /*| BDB_COMMISSIONING_MODE_FINDING_BINDING*/);
         //SystemReset();
       }
       else
       {
-        if (zclWC_LongPushCounter > 5)
-          HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_TOGGLE);
-        
-        status = osal_start_timerEx(zclWC_TaskID, WC_EVT_LONGPUSH, WC_LONGPUSH_INTERVAL);
+        HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_TOGGLE);
+        if (zclWC_LongPushCounter < 50)
+          status = osal_start_timerEx(zclWC_TaskID, WC_EVT_LONGPUSH, WC_LONGPUSH_INTERVAL);
+        else
+          status = osal_start_timerEx(zclWC_TaskID, WC_EVT_LONGPUSH, WC_LONGPUSH_INTERVAL*5/4);        
       }
+    }
+    else
+    { //Button is released
+        if (zclWC_LongPushCounter > 50)
+          bdb_StartCommissioning(BDB_COMMISSIONING_MODE_INITIATOR_TL | BDB_COMMISSIONING_MODE_NWK_STEERING /*| BDB_COMMISSIONING_MODE_FINDING_BINDING*/);
     }
     return (events ^ WC_EVT_LONGPUSH);
   }
@@ -788,7 +796,7 @@ static void zclWC_ProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
           uint32 timeout;
           // Timer's remain time substracts from InOperation time
           timeout = osal_get_timeoutEx(zclWC_TaskID, WC_EVT_UPDATE);
-          timeout /= (60*1000);
+          timeout = timeout / (60*1000L);
           if (zclWC_MinutesInOperation < (uint24)timeout)
             zclWC_MinutesInOperation = 0;
           else
@@ -1222,6 +1230,13 @@ uint8 zclWC_ValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
  */
 ZStatus_t zclWC_AuthorizeCB( afAddrType_t *srcAddr, zclAttrRec_t *pAttr, uint8 oper )
 {
+  switch (pAttr->clusterID)
+  {
+    case ZCL_CLUSTER_ID_GEN_POWER_CFG:
+      if (pAttr->attr.attrId == ATTRID_POWER_CFG_BATTERY_PERCENTAGE_REMAINING)
+        zclWC_UpdateBatteryAttributes();
+      break;
+  }    
   return ZCL_STATUS_SUCCESS;
 }
 /*********************************************************************
