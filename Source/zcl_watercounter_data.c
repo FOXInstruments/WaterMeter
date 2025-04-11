@@ -106,9 +106,10 @@
 #define WC_NV_VOLUMEREPORT1     0x040C
 #define WC_NV_VOLUMEREPORT2     0x040D
 #define WC_NV_REPORTPERIOD      0x040E
-#define WC_NV_VALUES1           0x040F
-#define WC_NV_VALUES2           0x0410
-#define WC_NV_DATES             0x0411
+#define WC_NV_VOLTAGERATED      0x040F
+#define WC_NV_VALUES1           0x0400
+#define WC_NV_VALUES2           0x0411
+#define WC_NV_DATES             0x0412
 
 /*********************************************************************
  * TYPEDEFS
@@ -132,12 +133,11 @@ const uint8 zclWC_ManufacturerName[] = { 15, 'F','o','x','.','I','n','s','t','r'
 const uint8 zclWC_ModelId[] = { 12, 'F','O','X','-','M','e','t','e','r','0','0','1',};
 const uint8 zclWC_DateCode[] = { 10, '2','0','2','4','-','0','2','-','0','2'};
 
+const uint8 zclWC_DeviceType = 0x02;    // Water meter
 const uint8 zclWC_PowerSource = POWER_SOURCE_BATTERY;
 
 const uint8 zclWC_cDesc1[WC_METER_SITEID_SIZE + 1] = {WC_METER_SITEID_SIZE, 'C', 'o', 'l', 'd', ' ', ' ', ' ', ' ', ' ', ' '};   // Constants to initialize default values
 const uint8 zclWC_cDesc2[WC_METER_SITEID_SIZE + 1] = {WC_METER_SITEID_SIZE, 'H', 'o', 't', ' ', ' ', ' ', ' ', ' ', ' ', ' '};
-
-const uint8 zclWC_DeviceType = 0x02;    // Water meter
 
 uint8 zclWC_Flow1Desc[WC_METER_SITEID_SIZE + 1];
 uint48_t zclWC_Flow1Value;
@@ -187,9 +187,17 @@ uint8 zclWC_PhysicalEnvironment;
 uint8 zclWC_DeviceEnable = DEVICE_ENABLED;
 
 uint16 zclWC_NVItemsInitStatus;
+uint16 zclWC_NVItemsWriteCouter;        // Number of writes to NV memory
 
 // Identify Cluster
 uint16 zclWC_IdentifyTime = 0;
+// Constants set Attribute value limitations
+const uint16 zclWC_cReportIntervals[] = {5, 10, 15, 20, 30, 60, 2*60, 3*60, 4*60, 6*60, 8*60, 12*60, 24*60};
+CONST uint8 zclWC_cReportIntervalsSize_1 = sizeof(zclWC_cReportIntervals) / sizeof(zclWC_cReportIntervals[0]) - 1;
+const uint8 zclWC_cRatedVoltages[] = {VDD_VOLTAGE_RATED30, VDD_VOLTAGE_RATED33, VDD_VOLTAGE_RATED36, VDD_VOLTAGE_RATED42};
+CONST uint8 zclWC_cRatedVoltagesSize_1 = sizeof(zclWC_cRatedVoltages) / sizeof(zclWC_cRatedVoltages[0]) - 1;
+const uint8 zclWC_cRatedVoltageThres[] = {28, 28, VDD_VOLTAGE36_THRES1, 30};
+const uint8 zclWC_cRatedVoltageThresMin[] = {27, 27, VDD_VOLTAGE36_MIN, 26};
 
 /*********************************************************************
  * ATTRIBUTE DEFINITIONS - Uses REAL cluster IDs
@@ -759,7 +767,7 @@ void zclWC_NVInitItems(void)
  *
  * @return  SUCCESS, FAILURE
  */
-uint8 zclWC_NVItemCheck(uint16 id, uint16 len)
+uint8 zclWC_NVCheckItem(uint16 id, uint16 len)
 {
   uint32 buf;
   
@@ -781,7 +789,7 @@ uint8 zclWC_NVItemCheck(uint16 id, uint16 len)
 }
 
 /*********************************************************************
- * @fn      zclWC_InitAttribute
+ * @fn      zclWC_InitAttrValue
  *
  * @brief   Init attribute from NV stored item or Default value.
  *
@@ -789,9 +797,9 @@ uint8 zclWC_NVItemCheck(uint16 id, uint16 len)
  *
  * @return  none
  */
-void zclWC_InitAttribute(uint16 id, uint16 len, const void *src, void *buf)
+void zclWC_InitAttrValue(uint16 id, uint16 len, const void *src, void *buf)
 {
-  if (zclWC_NVItemCheck(id, len) == SUCCESS)
+  if (zclWC_NVCheckItem(id, len) == SUCCESS)
   {
     if (osal_nv_read(id, 0, len, buf) == SUCCESS)
       return;
@@ -800,6 +808,71 @@ void zclWC_InitAttribute(uint16 id, uint16 len, const void *src, void *buf)
   osal_memcpy(buf, src, len);
 }
 
+/*********************************************************************
+ * @fn      zclWC_UpdateAttrIntervalReporting
+ *
+ * @brief   Update value according to array of valid values
+ *
+ * @param   checked value
+ *
+ * @return  valid value
+ */
+void zclWC_UpdateAttrIntervalReporting(uint16 *data)
+{
+  uint8 l, r, m;
+
+  l = 0;
+  r = zclWC_cReportIntervalsSize_1;
+  m = 5;
+  while (l <= r)
+  {
+    m = l + (r - l) / 2;
+    if (*data < zclWC_cReportIntervals[m] - (zclWC_cReportIntervals[m] - zclWC_cReportIntervals[m - 1])/2)
+    {
+      if (m == 1) { m = 0; break; }
+      r = m - 1;
+    }
+    else if (*data > zclWC_cReportIntervals[m] + (zclWC_cReportIntervals[m + 1] - zclWC_cReportIntervals[m])/2)
+    {
+      if (m == zclWC_cReportIntervalsSize_1 - 1) { m = zclWC_cReportIntervalsSize_1; break; }
+      l = m + 1;
+    }
+    else
+      break;
+  }
+  *data = zclWC_cReportIntervals[m];
+}
+
+/*********************************************************************
+ * @fn      zclWC_UpdateAttrRatedVaoltage
+ *
+ * @brief   Update value according to array of valid values
+ *
+ * @param   checked value
+ *
+ * @return  valid value
+ */
+void zclWC_UpdateAttrRatedVoltage(uint8 *data)
+{
+  uint8 i;
+  
+  for (i = 0; i <= zclWC_cRatedVoltagesSize_1; i++)
+  {
+    if (*data <= zclWC_cRatedVoltages[i])
+    {
+      *data = zclWC_cRatedVoltages[i];
+      zclWC_BatteryVoltageThres1 = zclWC_cRatedVoltageThres[i];
+      zclWC_BatteryVoltageThresMin = zclWC_cRatedVoltageThresMin[i];
+      break;
+    }
+  }
+  if (i > zclWC_cRatedVoltagesSize_1)
+  {
+    *data = zclWC_cRatedVoltages[zclWC_cRatedVoltagesSize_1];
+    zclWC_BatteryVoltageThres1 = zclWC_cRatedVoltageThres[zclWC_cRatedVoltagesSize_1];
+    zclWC_BatteryVoltageThresMin = zclWC_cRatedVoltageThresMin[zclWC_cRatedVoltagesSize_1];
+  }
+}
 /*********************************************************************
  * @fn      zclWC_ResetAttributesToDefaultValues
  *
@@ -829,19 +902,16 @@ void zclWC_ResetAttributesToDefaultValues(void)
   //osal_memcpy(zclWC_Flow1Desc, zclWC_cDesc1, WC_METER_SITEID_SIZE + 1);
   //osal_memcpy(zclWC_Flow2Desc, zclWC_cDesc2, WC_METER_SITEID_SIZE + 1);
   
-  zclWC_InitAttribute(WC_NV_DESC1, WC_METER_SITEID_SIZE, zclWC_cDesc1, zclWC_Flow1Desc);
-  zclWC_InitAttribute(WC_NV_DESC2, WC_METER_SITEID_SIZE, zclWC_cDesc2, zclWC_Flow2Desc);
+  zclWC_InitAttrValue(WC_NV_DESC1, WC_METER_SITEID_SIZE, zclWC_cDesc1, zclWC_Flow1Desc);
+  zclWC_InitAttrValue(WC_NV_DESC2, WC_METER_SITEID_SIZE, zclWC_cDesc2, zclWC_Flow2Desc);
   
-  src = WC_METER_REPORT_INTERVAL;
-  zclWC_InitAttribute(WC_NV_REPORTPERIOD, sizeof(zclWC_FlowReportInterval), &src, &zclWC_FlowReportInterval);
-
   src = 0;
-  zclWC_InitAttribute(WC_NV_VALUES1, sizeof(zclWC_Flow1Value.dw.lowDW), &src, &zclWC_Flow1Value.dw.lowDW);
-  zclWC_InitAttribute(WC_NV_VALUES2, sizeof(zclWC_Flow1Value.dw.lowDW), &src, &zclWC_Flow2Value.dw.lowDW);
+  zclWC_InitAttrValue(WC_NV_VALUES1, sizeof(zclWC_Flow1Value.dw.lowDW), &src, &zclWC_Flow1Value.dw.lowDW);
+  zclWC_InitAttrValue(WC_NV_VALUES2, sizeof(zclWC_Flow1Value.dw.lowDW), &src, &zclWC_Flow2Value.dw.lowDW);
   
-  zclWC_Flow1Value.dw.lowDW = 0;
+  //zclWC_Flow1Value.dw.lowDW = 0;
   zclWC_Flow1Value.dw.hiW = 0;
-  zclWC_Flow2Value.dw.lowDW = 0;
+  //zclWC_Flow2Value.dw.lowDW = 0;
   zclWC_Flow2Value.dw.hiW = 0;
   zclWC_Flow1InstDemand = 0;
   zclWC_Flow2InstDemand = 0;
@@ -852,25 +922,41 @@ void zclWC_ResetAttributesToDefaultValues(void)
   zclWC_Flow1CurrDay = 0;
   zclWC_Flow2CurrDay = 0;
   
-  zclWC_Flow1Multiplier = WC_METER_MULTIPLIER;
-  zclWC_Flow2Multiplier = WC_METER_MULTIPLIER;
-  zclWC_Flow1Divisor = WC_METER_DIVISOR;
-  zclWC_Flow2Divisor = WC_METER_DIVISOR;
+  src = WC_METER_MULTIPLIER;
+  zclWC_InitAttrValue(WC_NV_MULTIPLIER1, sizeof(zclWC_Flow1Multiplier), &src, &zclWC_Flow1Multiplier);
+  zclWC_InitAttrValue(WC_NV_MULTIPLIER2, sizeof(zclWC_Flow2Multiplier), &src, &zclWC_Flow2Multiplier);
+  //zclWC_Flow1Multiplier = WC_METER_MULTIPLIER;
+  //zclWC_Flow2Multiplier = WC_METER_MULTIPLIER;
+  src = WC_METER_DIVISOR;
+  zclWC_InitAttrValue(WC_NV_DIVISOR1, sizeof(zclWC_Flow1Divisor), &src, &zclWC_Flow1Divisor);
+  zclWC_InitAttrValue(WC_NV_DIVISOR2, sizeof(zclWC_Flow2Divisor), &src, &zclWC_Flow2Divisor);
+  //zclWC_Flow1Divisor = WC_METER_DIVISOR;
+  //zclWC_Flow2Divisor = WC_METER_DIVISOR;
   zclWC_Flow1HoursInOperation = 0;
   zclWC_Flow2HoursInOperation = 0;
-  zclWC_Flow1Unit = ENGINEERING_UNIT_METER_M3;
-  zclWC_Flow2Unit = ENGINEERING_UNIT_METER_M3;
-  zclWC_Flow1VolumePerReport = WC_REPORT_CHANGE_FLOW;
-  zclWC_Flow2VolumePerReport = WC_REPORT_CHANGE_FLOW;
+  src = ENGINEERING_UNIT_METER_M3;
+  zclWC_InitAttrValue(WC_NV_UNIT1, sizeof(zclWC_Flow1Unit), &src, &zclWC_Flow1Unit);
+  zclWC_InitAttrValue(WC_NV_UNIT2, sizeof(zclWC_Flow2Unit), &src, &zclWC_Flow2Unit);
+  //zclWC_Flow1Unit = ENGINEERING_UNIT_METER_M3;
+  //zclWC_Flow2Unit = ENGINEERING_UNIT_METER_M3;
+  src = WC_VOLUME_PER_REPORT;
+  zclWC_InitAttrValue(WC_NV_VOLUMEREPORT1, sizeof(zclWC_Flow1VolumePerReport), &src, &zclWC_Flow1VolumePerReport);
+  zclWC_InitAttrValue(WC_NV_VOLUMEREPORT2, sizeof(zclWC_Flow2VolumePerReport), &src, &zclWC_Flow2VolumePerReport);
+  //zclWC_Flow1VolumePerReport = WC_VOLUME_PER_REPORT;
+  //zclWC_Flow2VolumePerReport = WC_VOLUME_PER_REPORT;
   zclWC_Flow1Status = 0;
   zclWC_Flow2Status = 0;
   
   zclWC_FlowUpdatePeriod = WC_METER_INSTDEMAND_UPDATEPERIOD_MAX;   // InstDemand update interval
-  zclWC_FlowReportInterval = WC_METER_REPORT_INTERVAL; // Report interal in minutes
+  src = WC_METER_REPORT_INTERVAL;
+  zclWC_InitAttrValue(WC_NV_REPORTPERIOD, sizeof(zclWC_FlowReportInterval), &src, &zclWC_FlowReportInterval);
+  //zclWC_FlowReportInterval = WC_METER_REPORT_INTERVAL; // Report interal in minutes
   
-  zclWC_BatteryVoltageRated = VDD_VOLTAGE_RATED36;
-  zclWC_BatteryVoltageThresMin = VDD_VOLTAGE_MIN;
-  zclWC_BatteryVoltageThres1 = VDD_VOLTAGE_THRES1;
+  //zclWC_BatteryVoltageRated = VDD_VOLTAGE_RATED36;
+  src = VDD_VOLTAGE_RATED36;
+  zclWC_InitAttrValue(WC_NV_VOLTAGERATED, sizeof(zclWC_BatteryVoltageRated), &src, &zclWC_BatteryVoltageRated);
+  zclWC_BatteryVoltageThresMin = VDD_VOLTAGE36_MIN;
+  zclWC_BatteryVoltageThres1 = VDD_VOLTAGE36_THRES1;
   zclWC_BatteryAlarmMask = BAT_ALARM_MASK_VOLT_2_LOW | BAT_ALARM_MASK_BATTERY_ALARM_1;
   zclWC_BatteryAlarmState = 0;
 }

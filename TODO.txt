@@ -11,7 +11,8 @@ TODO list.
 
 4. Diagnostic cluster.
    Last reboot reason.
-   Last reboot time = Time of first sync + Current time of device
+   Time since Last boot  = Current time of device - Time of first sync
+   NV write's counter
    HEAP memory statistics.
    
 +5. Initiate Comissioning procedure after reboot if device was connected to Network
@@ -25,3 +26,5 @@ TODO list.
 8. Switch debug messages to DebugTrace.h
 
 +9. Update WorkingHours attribute every Hour
+
++10. Move the attribute processing algorithms to *_data.c file.

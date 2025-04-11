@@ -81,9 +81,12 @@ extern "C"
 #define VDD3_MIN_RUN            (VDD_2_0+4)  // VDD_MIN_RUN = VDD_MIN_NV
 #define VDD3_MIN_NV             (VDD_2_0+4)  // 5% margin over minimum to survive a page erase and compaction.
 #define VDD3_MIN_GOOD           (VDD_2_0+8)  // 10% margin over minimum to survive a page erase and compaction.
+#define VDD_VOLTAGE_RATED42     42           // 0.1V unit
 #define VDD_VOLTAGE_RATED36     36           // 0.1V unit
-#define VDD_VOLTAGE_MIN         25           // 0.1V unit
-#define VDD_VOLTAGE_THRES1      27           // 0.1V unit
+#define VDD_VOLTAGE_RATED33     33           // 0.1V unit
+#define VDD_VOLTAGE_RATED30     30           // 0.1V unit
+#define VDD_VOLTAGE36_MIN         26           // 0.1V unit
+#define VDD_VOLTAGE36_THRES1      30           // 0.1V unit
 #define VDD3TOVOLTAGE(v)        (v * 11.5 * 3 / 127.0)   // Convert ADC value to Voltage 0.1V unit
   
 #define WC_METER_SITEID_SIZE              10
@@ -93,7 +96,7 @@ extern "C"
 #define WC_METER_INSTDEMAND_UPDATEPERIOD_MIN  60   // instDemand update period in seconds 60-254, 255 - disable
 #define WC_METER_INSTDEMAND_UPDATEPERIOD_MAX  255
 #define WC_REPORT_CHANGE_VOLTAGE          1     // Change values for BDB_REPORTING (0.1V unit)
-#define WC_REPORT_CHANGE_FLOW             10
+#define WC_VOLUME_PER_REPORT             10
   
 #define TIME_SYNC_DIFF          5L       // Difference between device time and gate time
   
@@ -243,10 +246,11 @@ extern UINT16 zclWC_event_loop(byte task_id, UINT16 events);
  *  Reset all writable attributes to their default values.
  */
 extern void zclWC_ResetAttributesToDefaultValues(void); //implemented in zcl_watercounter_data.c
-extern void zclWC_NVInitItems(void);
-extern uint8 zclWC_NVItemCheck(uint16 id, uint16 len);
-extern void zclWC_InitAttribute(uint16 id, uint16 len, const void *src, void *buf);
-
+extern void  zclWC_NVInitItems(void);
+extern uint8 zclWC_NVCheckItem(uint16 id, uint16 len);
+extern void  zclWC_InitAttrValue(uint16 id, uint16 len, const void *src, void *buf);
+extern void zclWC_UpdateAttrIntervalReporting(uint16 *data);
+extern void zclWC_UpdateAttrRatedVoltage(uint8 *data);
 /*********************************************************************
 *********************************************************************/
 

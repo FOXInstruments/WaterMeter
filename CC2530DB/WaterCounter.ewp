@@ -6617,4 +6617,7 @@
             <name>$ZSTACKDIR$\Projects\zstack\ZMain\TI2530DB\ZMain.c</name>
         </file>
     </group>
+    <file>
+        <name>$PROJ_DIR$\..\TODO.txt</name>
+    </file>
 </project>

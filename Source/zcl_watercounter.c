@@ -137,10 +137,6 @@ const zclReadCmd_t zclWC_ReadCmdTime = {4, {ATTRID_TIME_TIME, ATTRID_TIME_TIME_S
  */
 afAddrType_t zclWC_DstAddr;
 uint8 zclWC_LongPushCounter;
-const uint16 zclWC_ReportIntervals[] = {5, 10, 15, 20, 30, 60, 2*60, 3*60, 4*60, 6*60, 8*60, 12*60, 24*60};
-CONST uint8 zclWC_ReportIntervalsSize_1 = sizeof(zclWC_ReportIntervals) / sizeof(zclWC_ReportIntervals[0]) - 1;
-const uint8 zclWC_RatedVoltages[] = {30, 33, VDD_VOLTAGE_RATED36, 42};
-CONST uint8 zclWC_RatedVoltagesSize_1 = sizeof(zclWC_RatedVoltages) / sizeof(zclWC_RatedVoltages[0]) - 1;
 
 const zclReportCmd_t zclWC_ReportCmdBattery =
 {
@@ -397,7 +393,7 @@ void zclWC_Init(byte task_id)
 #if (BDBREPORTING_MAX_ANALOG_ATTR_SIZE < 4)
 #error BDBREPORTING_MAX_ANALOG_ATTR_SIZE less then sizeof uint32 datatype
 #endif
-  uint32 Flow = WC_REPORT_CHANGE_FLOW;
+  uint32 Flow = WC_VOLUME_PER_REPORT;
   uint8 reportChange[BDBREPORTING_MAX_ANALOG_ATTR_SIZE];
   
   osal_memset(reportChange, 0, BDBREPORTING_MAX_ANALOG_ATTR_SIZE);
@@ -1123,7 +1119,7 @@ static uint8 zclWC_ProcessInWriteRspCmd(zclIncomingMsg_t *pInMsg)
  */
 uint8 zclWC_ValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
 {
-  uint8 l, r, m, validate = TRUE;
+  uint8 validate = TRUE;
 
   if (pAttr->clusterID == ZCL_CLUSTER_ID_SE_METERING)
   {
@@ -1142,26 +1138,7 @@ uint8 zclWC_ValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
         break;
         
       case ATTRID_METER_0READINGSET_INTERVALREPORTING:
-        l = 0;
-        r = zclWC_ReportIntervalsSize_1;
-        m = 5;
-        while (l <= r)
-        {
-          m = l + (r - l) / 2;
-          if (*(uint16*)pAttrInfo->attrData < zclWC_ReportIntervals[m] - (zclWC_ReportIntervals[m] - zclWC_ReportIntervals[m - 1])/2)
-          {
-            if (m == 1) { m = 0; break; }
-            r = m - 1;
-          }
-          else if (*(uint16*)pAttrInfo->attrData > zclWC_ReportIntervals[m] + (zclWC_ReportIntervals[m + 1] - zclWC_ReportIntervals[m])/2)
-          {
-            if (m == zclWC_ReportIntervalsSize_1 - 1) { m = zclWC_ReportIntervalsSize_1; break; }
-            l = m + 1;
-          }
-          else
-            break;
-        }
-        *(uint16*)pAttrInfo->attrData = zclWC_ReportIntervals[m];
+        zclWC_UpdateAttrIntervalReporting((uint16*)pAttrInfo->attrData);
         if (*(uint16*)pAttrInfo->attrData != zclWC_FlowReportInterval)
           osal_set_event(zclWC_TaskID, WC_EVT_UPDATE);
         #ifdef MT_DEBUG_FUNC
@@ -1200,15 +1177,7 @@ uint8 zclWC_ValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
     switch (pAttrInfo->attrID)
     {
       case ATTRID_POWER_CFG_BAT_RATED_VOLTAGE:
-        *pAttrInfo->attrData = zclWC_RatedVoltages[zclWC_RatedVoltagesSize_1];
-        for (l = 0; l <= zclWC_RatedVoltagesSize_1; l++)
-        {
-          if (*pAttrInfo->attrData <= zclWC_RatedVoltages[l])
-          {
-            *pAttrInfo->attrData = zclWC_RatedVoltages[l];
-            break;
-          }
-        }
+        zclWC_UpdateAttrRatedVoltage(pAttrInfo->attrData);
         if (*pAttrInfo->attrData != zclWC_BatteryVoltageRated)
           osal_set_event(zclWC_TaskID, WC_EVT_BATTERY);
         break;
