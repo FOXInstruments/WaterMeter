@@ -57,8 +57,11 @@ extern "C"
  */
 #define WC_ENDPOINT              8
 #define WC_ENDPOINT2             (WC_ENDPOINT + 1)
-#define WC_DEBOUNCE              50
-#define WC_LONGPUSH_INTERVAL     100
+// Timeouts
+#define WC_TIMEOUT_DEBOUNCE             50
+#define WC_TIMEOUT_LONGPUSH             100
+#define WC_TIMEOUT_STOREATTR            60000
+#define WC_TIMEOUT_END_DEVICE_REJOIN    60000        // msec
 
 // Events for the sample app
 #define WC_EVT_END_DEVICE_REJOIN   0x0001        // event_flag is a 2-byte bitmap with each bit specifying an event
@@ -72,8 +75,7 @@ extern "C"
 #define WC_EVT_BATTERY             0x0040
 #define WC_EVT_TIMESYNC            0x0080
 #define WC_EVT_COMMISSION          0x0100       // Init commission if device was connected to network
-
-#define WC_END_DEVICE_REJOIN_DELAY 60000        // msec
+#define WC_EVT_STOREATTR           0x0200       // Store changed attributes into NV memory
 
 // Vdd/3 / Internal Reference X ENOB --> (Vdd / 3) / 1.15 X 127
 #define VDD3_2_0                74   // 2.0 V required to safely read/write internal flash.
@@ -167,7 +169,23 @@ extern "C"
 #define ATTRID_DIAG_5MEMUSED                    0x0005  // uint16
 #define ATTRID_DIAG_6MEMHIGHWATER               0x0006  // uint16
 #define ATTRID_DIAG_7REBOOTREASON               0x0007  // uint16
-   
+
+#define WC_STORE_DESC1             0x0001<<0
+#define WC_STORE_DESC2             0x0001<<1
+#define WC_STORE_UNIT1             0x0001<<2
+#define WC_STORE_UNIT2             0x0001<<3
+#define WC_STORE_MULTIPLIER1       0x0001<<4
+#define WC_STORE_MULTIPLIER2       0x0001<<5
+#define WC_STORE_DIVISOR1          0x0001<<6
+#define WC_STORE_DIVISOR2          0x0001<<7
+#define WC_STORE_VOLUMEREPORT1     0x0001<<8
+#define WC_STORE_VOLUMEREPORT2     0x0001<<9
+#define WC_STORE_REPORTPERIOD      0x0001<<10
+#define WC_STORE_VOLTAGERATED      0x0001<<11
+#define WC_STORE_VALUES1           0x0001<<12
+#define WC_STORE_VALUES2           0x0001<<13
+#define WC_STORE_DATES             0x0001<<14
+
 /*********************************************************************
  * MACROS
  */
@@ -263,9 +281,10 @@ extern UINT16 zclWC_event_loop(byte task_id, UINT16 events);
  *  Reset all writable attributes to their default values.
  */
 extern void zclWC_ResetAttributesToDefaultValues(void); //implemented in zcl_watercounter_data.c
-extern void  zclWC_NVInitItems(void);
+extern void zclWC_NVInitItems(void);
 extern uint8 zclWC_NVCheckItem(uint16 id, uint16 len);
-extern void  zclWC_InitAttrValue(uint16 id, uint16 len, const void *src, void *buf);
+extern void zclWC_StoreAttrToNV(uint16 *mask);
+extern void zclWC_InitAttrValue(uint16 id, uint16 len, const void *src, void *buf);
 extern void zclWC_UpdateAttrIntervalReporting(uint16 *data);
 extern void zclWC_UpdateAttrRatedVoltage(uint8 *data);
 /*********************************************************************

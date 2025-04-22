@@ -127,6 +127,7 @@ uint8 zclWC_SeqNum;
 uint8 zclWC_TimeHasSynced;             // True if time has synced
 uint16 zclWC_TimeSynchElapsedMinutes;  // Minutes elapsed since Time synchronization
 uint16 zclWC_MinutesInOperation;       // Minutes to calculate InOperation attribute
+uint16 zclWC_AttrToStore;           // Bitmap of Items to write into NV memory
 
 const zclReadCmd_t zclWC_ReadCmdTime = {4, {ATTRID_TIME_TIME, ATTRID_TIME_TIME_STATUS, ATTRID_TIME_TIME_ZONE, ATTRID_TIME_LOCAL_TIME}};
 
@@ -449,6 +450,8 @@ void zclWC_Init(byte task_id)
   zclWC_TimeHasSynced = false;
   zclWC_MinutesInOperation = 0;        // Init to calculate HoursInOperation attribute
   
+  zclWC_AttrToStore = 0; // Bitmap of Items to write into NV memory
+  
   if (zclWC_FlowUpdatePeriod != 0xFF )
     status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATEINSTDEMAND, zclWC_FlowUpdatePeriod*1000L);
   
@@ -540,6 +543,15 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
         zcl_SendReportCmd(WC_ENDPOINT, &zclWC_DstAddr, ZCL_CLUSTER_ID_GEN_POWER_CFG, &zclWC_ReportCmdBattery, ZCL_FRAME_SERVER_CLIENT_DIR, false, zclWC_SeqNum++);
     }
     return (events ^ WC_EVT_BATTERY);
+  }
+  // ------------------------------------------------------------------
+  if (events & WC_EVT_STOREATTR)
+  {
+    if (zclWC_AttrToStore != 0)
+    {
+      zclWC_StoreAttrToNV(&zclWC_AttrToStore);
+    }
+    return (events ^ WC_EVT_STOREATTR);
   }
   // ------------------------------------------------------------------
   if(events & WC_EVT_UPDATE) // Update event. To check month change
@@ -717,9 +729,9 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
       {
         HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_TOGGLE);
         if (zclWC_LongPushCounter < 50)
-          status = osal_start_timerEx(zclWC_TaskID, WC_EVT_LONGPUSH, WC_LONGPUSH_INTERVAL);
+          status = osal_start_timerEx(zclWC_TaskID, WC_EVT_LONGPUSH, WC_TIMEOUT_LONGPUSH);
         else
-          status = osal_start_timerEx(zclWC_TaskID, WC_EVT_LONGPUSH, WC_LONGPUSH_INTERVAL*5/4);        
+          status = osal_start_timerEx(zclWC_TaskID, WC_EVT_LONGPUSH, WC_TIMEOUT_LONGPUSH*5/4);        
       }
     }
     else
@@ -749,10 +761,10 @@ uint16 zclWC_event_loop(uint8 task_id, uint16 events)
  */
 static void zclWC_HandleKeys(byte shift, byte keys)
 {
-  HalLedBlink(HAL_LED_STATUS, 1, 50, WC_LONGPUSH_INTERVAL);
+  HalLedBlink(HAL_LED_STATUS, 1, 50, WC_TIMEOUT_LONGPUSH);
   if (HAL_PUSH_BUTTON()) // Button is still pressed, try to determine long press 
   {
-    osal_start_timerEx(zclWC_TaskID, WC_EVT_LONGPUSH, WC_LONGPUSH_INTERVAL);
+    osal_start_timerEx(zclWC_TaskID, WC_EVT_LONGPUSH, WC_TIMEOUT_LONGPUSH);
     zclWC_LongPushCounter = 0;
   }
 }
@@ -847,7 +859,7 @@ static void zclWC_ProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
       else
       {
         //Parent not found, attempt to rejoin again after a fixed delay
-        osal_start_timerEx(zclWC_TaskID, WC_EVT_END_DEVICE_REJOIN, WC_END_DEVICE_REJOIN_DELAY);
+        osal_start_timerEx(zclWC_TaskID, WC_EVT_END_DEVICE_REJOIN, WC_TIMEOUT_END_DEVICE_REJOIN);
         HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN2, HAL_LED_MODE_ON);
@@ -1160,11 +1172,27 @@ uint8 zclWC_ValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
         #endif
         break;
       case ATTRID_METER_3FORMATTING_UNIT:
+        if (*(uint8*)pAttrInfo->attrData != *(uint8*)pAttr->attr.dataPtr)
+        {
+          if (pAttr->attr.dataPtr == &zclWC_Flow1Unit)
+            zclWC_AttrToStore |= WC_STORE_UNIT1;
+          else
+            zclWC_AttrToStore |= WC_STORE_UNIT2;
+          osal_start_timerEx(zclWC_TaskID, WC_EVT_STOREATTR, WC_TIMEOUT_STOREATTR);
+        }
         #ifdef MT_DEBUG_FUNC
           MT_ProcessDebugString("Write.Unit");
         #endif
         break;
       case ATTRID_METER_3FORMATTING_MULTIPLIER:
+        if (*(uint24*)pAttrInfo->attrData != *(uint24*)pAttr->attr.dataPtr)
+        {
+          if (pAttr->attr.dataPtr == &zclWC_Flow1Multiplier)
+            zclWC_AttrToStore |= WC_STORE_MULTIPLIER1;
+          else
+            zclWC_AttrToStore |= WC_STORE_MULTIPLIER2;
+          osal_start_timerEx(zclWC_TaskID, WC_EVT_STOREATTR, WC_TIMEOUT_STOREATTR);
+        }
         #ifdef MT_DEBUG_FUNC
           MT_ProcessDebugString("Write.Multiplier");
         #endif
@@ -1192,11 +1220,11 @@ uint8 zclWC_ValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
 #endif // ZCL_WRITE
 
 /*********************************************************************
- * @fn      zclWC_ValidateAttrDataCB
+ * @fn      zclWC_AuthorizeCB
  *
  * @brief   Process the "Profile" Write Command Validate Attr data
  *
- * @param   Attribute to write
+ * @param   Attribute to authorize
  *
  * @return  ZCL_STATUS_SUCCESS: Operation authorized
  *          ZCL_STATUS_NOT_AUTHORIZED: Operation not authorized
@@ -1208,6 +1236,16 @@ ZStatus_t zclWC_AuthorizeCB( afAddrType_t *srcAddr, zclAttrRec_t *pAttr, uint8 o
     case ZCL_CLUSTER_ID_GEN_POWER_CFG:
       if (pAttr->attr.attrId == ATTRID_POWER_CFG_BATTERY_PERCENTAGE_REMAINING)
         zclWC_UpdateBatteryAttributes();
+      break;
+    case ZCL_CLUSTER_ID_HA_DIAGNOSTIC:
+      if (pAttr->attr.attrId == ATTRID_DIAG_3MEMALLOCATEDBLOCKS)
+        zclWC_DiagMemAllocatedBlocks = osal_heap_block_cnt();
+      else if (pAttr->attr.attrId == ATTRID_DIAG_4MEMFREEBLOCKS)
+        zclWC_DiagMemFreeBlocks = osal_heap_block_free();
+      else if (pAttr->attr.attrId == ATTRID_DIAG_5MEMUSED)
+        zclWC_DiagMemUsed = osal_heap_mem_used();
+      else if (pAttr->attr.attrId == ATTRID_DIAG_6MEMHIGHWATER)
+        zclWC_DiagMemHighWater = osal_heap_high_water();
       break;
   }    
   return ZCL_STATUS_SUCCESS;
@@ -1367,11 +1405,11 @@ HAL_ISR_FUNCTION(halPort1Isr, P1INT_VECTOR)
   
   if (P1IFG & BV(0))
   {
-    osal_start_timerEx(zclWC_TaskID, WC_EVT_IMPULSE1, WC_DEBOUNCE);
+    osal_start_timerEx(zclWC_TaskID, WC_EVT_IMPULSE1, WC_TIMEOUT_DEBOUNCE);
   }
   if (P1IFG & BV(1))
   {
-    osal_start_timerEx(zclWC_TaskID, WC_EVT_IMPULSE2, WC_DEBOUNCE);
+    osal_start_timerEx(zclWC_TaskID, WC_EVT_IMPULSE2, WC_TIMEOUT_DEBOUNCE);
   }
   P1IFG = 0;
   

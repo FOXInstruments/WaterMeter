@@ -199,7 +199,6 @@ uint16 zclWC_DiagMemHighWater;  // Maximum memory allocated
 uint16 zclWC_DiagRebootReason;
 
 uint16 zclWC_NVItemsInitStatus;
-uint16 zclWC_NVItemsToWrite;       // Bitmap of Items to write into NV memory
 
 // Identify Cluster
 uint16 zclWC_IdentifyTime = 0;
@@ -537,6 +536,8 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
       (void *)&zclWC_clusterRevision_all
     }
   },
+  // *********  Diagnostic Cluster  ********* //
+  // **************************************** //
   {
     ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
     { //39
@@ -603,7 +604,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
   },
   {
     ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
-    { //
+    { //47
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
       (void *)&zclWC_clusterRevision_all
@@ -957,6 +958,21 @@ void zclWC_UpdateAttrRatedVoltage(uint8 *data)
     zclWC_BatteryVoltageThresMin = zclWC_cRatedVoltageThresMin[zclWC_cRatedVoltagesSize_1];
   }
 }
+
+/*********************************************************************
+ * @fn      zclWC_StoreAttrToNV
+ *
+ * @brief   Store attributes to NV memory.
+ *
+ * @param   mask - bitmask attrs to store
+ *
+ * @return  none
+ */
+void zclWC_StoreAttrToNV(uint16 *mask)
+{  
+  *mask = 0;
+}
+
 /*********************************************************************
  * @fn      zclWC_ResetAttributesToDefaultValues
  *
