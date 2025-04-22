@@ -82,7 +82,9 @@
 #include "zcl_general.h"
 #include "zcl_ha.h"
 #include "zcl_watercounter.h"
+#ifdef ZCL_DIAGNOSTIC
 #include "zcl_diagnostic.h"
+#endif
 
 #include "onboard.h"
 
@@ -365,11 +367,12 @@ void zclWC_Init(byte task_id)
 
   zclWC_NVInitItems();
   zclWC_ResetAttributesToDefaultValues();
+  zclWC_DiagRebootReason = (SLEEPSTA & 0x18)>>3;  // Save reboot reason in Diagnostic cluster
   zclWC_UpdateBatteryAttributes();
   
   // Register the application's attribute list
-  zcl_registerAttrList(WC_ENDPOINT, zclWC_NumAttributes, zclWC_Attrs);
-  zcl_registerAttrList(WC_ENDPOINT2, zclWC_NumAttributes2, zclWC_Attrs2);
+  zcl_registerAttrList(WC_ENDPOINT, zclWC_cNumAttributes, zclWC_cAttrs);
+  zcl_registerAttrList(WC_ENDPOINT2, zclWC_cNumAttributes2, zclWC_cAttrs2);
   
   zcl_registerValidateAttrData(zclWC_ValidateAddrDataCB);
   zcl_registerReadWriteCB(WC_ENDPOINT, NULL, zclWC_AuthorizeCB);
@@ -870,6 +873,7 @@ static void zclWC_ProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
 static void zclWC_BasicResetCB(void)
 {
   zclWC_ResetAttributesToDefaultValues();
+  zclWC_DiagRebootReason = (SLEEPSTA & 0x18)>>3;  // Save reboot reason in Diagnostic cluster
 }
 
 /*********************************************************************

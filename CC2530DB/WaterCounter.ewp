@@ -2657,47 +2657,7 @@
                 </option>
                 <option>
                     <name>CCDefines</name>
-                    <state>DEFAULT_CHANLIST=0x07FFF800</state>
-                    <state>SECURE=1</state>
-                    <state>TC_LINKKEY_JOIN</state>
-                    <state>NV_INIT</state>
-                    <state>NV_RESTORE</state>
-                    <state>xPOWER_SAVING</state>
-                    <state>NWK_AUTO_POLL</state>
-                    <state>ZTOOL_P2</state>
-                    <state>MT_UART_DEFAULT_OVERFLOW=FALSE</state>
-                    <state>MT_TASK</state>
-                    <state>MT_APP_FUNC</state>
-                    <state>MT_SYS_FUNC</state>
-                    <state>MT_DEBUG_FUNC</state>
-                    <state>MT_ZDO_FUNC</state>
-                    <state>MT_ZDO_MGMT</state>
-                    <state>MT_APP_CNF_FUNC</state>
-                    <state>xLCD_SUPPORTED=DEBUG</state>
-                    <state>MULTICAST_ENABLED=FALSE</state>
-                    <state>HAL_LCD=FALSE</state>
-                    <state>HAL_LED3_ENABLE</state>
-                    <state>HAL_LED4_ENABLE</state>
-                    <state>HAL_LED5_ENABLE</state>
-                    <state>HAL_PUSH1_ENABLE</state>
-                    <state>LED_POLARITY=ACTIVE_LOW</state>
-                    <state>PUSH_POLARITY=ACTIVE_LOW</state>
-                    <state>ISR_KEYINTERRUPT</state>
-                    <state>ZCL_READ</state>
-                    <state>ZCL_DISCOVER</state>
-                    <state>ZCL_WRITE</state>
-                    <state>ZCL_BASIC</state>
-                    <state>ZCL_IDENTIFY</state>
-                    <state>xZCL_ON_OFF</state>
-                    <state>xZCL_GROUPS</state>
-                    <state>ZCL_REPORT</state>
-                    <state>ZCL_TIME</state>
-                    <state>ZCL_POWER_CONFIG</state>
-                    <state>ZCL_ALARMS</state>
-                    <state>BDB_REPORTING</state>
-                    <state>xDPRINTF_OSALHEAPTRACE</state>
-                    <state>OSALMEM_METRICS=TRUE</state>
-                    <state>OSAL_TOTAL_MEM</state>
+                    <state></state>
                 </option>
                 <option>
                     <name>CCPreprocFile</name>
@@ -2833,7 +2793,7 @@
                 </option>
                 <option>
                     <name>PreInclude</name>
-                    <state></state>
+                    <state>$PROJ_DIR$\predef.h</state>
                 </option>
                 <option>
                     <name>CCLibConfigHeader</name>
@@ -6617,6 +6577,9 @@
             <name>$ZSTACKDIR$\Projects\zstack\ZMain\TI2530DB\ZMain.c</name>
         </file>
     </group>
+    <file>
+        <name>$PROJ_DIR$\predef.h</name>
+    </file>
     <file>
         <name>$PROJ_DIR$\..\TODO.txt</name>
     </file>

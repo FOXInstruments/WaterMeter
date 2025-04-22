@@ -9,7 +9,7 @@ TODO list.
    
 3. Write and restore the attributes to-from NV
 
-4. Diagnostic cluster.
++-4. Diagnostic cluster.
    Last reboot reason.
    Time since Last boot  = Current time of device - Time of first sync
    NV write's counter

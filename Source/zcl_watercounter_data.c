@@ -51,7 +51,9 @@
 #include "zcl_ha.h"
 #include "zcl_poll_control.h"
 #include "zcl_electrical_measurement.h"
+#ifdef ZCL_DIAGNOSTIC
 #include "zcl_diagnostic.h"
+#endif
 #include "zcl_meter_identification.h"
 #include "zcl_appliance_identification.h"
 #include "zcl_appliance_events_alerts.h"
@@ -186,8 +188,18 @@ uint8 zclWC_LocationDescription[16];
 uint8 zclWC_PhysicalEnvironment;
 uint8 zclWC_DeviceEnable = DEVICE_ENABLED;
 
+// Diagnostic cluster
+uint16 zclWC_DiagNumOfResets;
+uint16 zclWC_DiagNVMemWrites;
+uint16 zclWC_DiagNVMemWriteFails;
+uint16 zclWC_DiagMemAllocatedBlocks;
+uint16 zclWC_DiagMemFreeBlocks;
+uint16 zclWC_DiagMemUsed;       // Used memory in bytes
+uint16 zclWC_DiagMemHighWater;  // Maximum memory allocated
+uint16 zclWC_DiagRebootReason;
+
 uint16 zclWC_NVItemsInitStatus;
-uint16 zclWC_NVItemsWriteCouter;        // Number of writes to NV memory
+uint16 zclWC_NVItemsToWrite;       // Bitmap of Items to write into NV memory
 
 // Identify Cluster
 uint16 zclWC_IdentifyTime = 0;
@@ -206,12 +218,12 @@ const uint8 zclWC_cRatedVoltageThresMin[] = {27, 27, VDD_VOLTAGE36_MIN, 26};
   // NOTE: The attributes listed in the AttrRec must be in ascending order 
   // per cluster to allow right function of the Foundation discovery commands
  
-CONST zclAttrRec_t zclWC_Attrs[] =
+CONST zclAttrRec_t zclWC_cAttrs[] =
 {
   // *** General Basic Cluster Attributes ***
   {
     ZCL_CLUSTER_ID_GEN_BASIC,
-    { // Attribute record
+    { //1
       ATTRID_BASIC_ZCL_VERSION,
       ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ,
       (void *)&zclWC_ZCLVersion
@@ -219,7 +231,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },  
   {
     ZCL_CLUSTER_ID_GEN_BASIC,             // Cluster IDs - defined in the foundation (ie. zcl.h)
-    {  // Attribute record
+    {  //2
       ATTRID_BASIC_HW_VERSION,            // Attribute ID - Found in Cluster Library header (ie. zcl_general.h)
       ZCL_DATATYPE_UINT8,                 // Data Type - found in zcl.h
       ACCESS_CONTROL_READ,                // Variable access control - found in zcl.h
@@ -228,7 +240,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_GEN_BASIC,
-    { // Attribute record
+    { //3
       ATTRID_BASIC_MANUFACTURER_NAME,
       ZCL_DATATYPE_CHAR_STR, ACCESS_CONTROL_READ,
       (void *)zclWC_ManufacturerName
@@ -236,7 +248,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_GEN_BASIC,
-    { // Attribute record
+    { //4
       ATTRID_BASIC_MODEL_ID,
       ZCL_DATATYPE_CHAR_STR, ACCESS_CONTROL_READ,
       (void *)zclWC_ModelId
@@ -244,7 +256,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_GEN_BASIC,
-    { // Attribute record
+    { //5
       ATTRID_BASIC_DATE_CODE,
       ZCL_DATATYPE_CHAR_STR, ACCESS_CONTROL_READ,
       (void *)zclWC_DateCode
@@ -252,7 +264,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_GEN_BASIC,
-    { // Attribute record
+    { //6
       ATTRID_BASIC_POWER_SOURCE,
       ZCL_DATATYPE_ENUM8, ACCESS_CONTROL_READ,
       (void *)&zclWC_PowerSource
@@ -260,7 +272,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_GEN_BASIC,
-    { // Attribute record
+    { //7
       ATTRID_BASIC_LOCATION_DESC,
       ZCL_DATATYPE_CHAR_STR, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)zclWC_LocationDescription
@@ -268,7 +280,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_GEN_BASIC,
-    { // Attribute record
+    { //8
       ATTRID_BASIC_PHYSICAL_ENV,
       ZCL_DATATYPE_ENUM8, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_PhysicalEnvironment
@@ -276,7 +288,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_GEN_BASIC,
-    { // Attribute record
+    { //9
       ATTRID_BASIC_DEVICE_ENABLED,
       ZCL_DATATYPE_BOOLEAN, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_DeviceEnable
@@ -284,7 +296,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_GEN_BASIC,
-    {  // Attribute record
+    { //10
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, ACCESS_CONTROL_READ,
       (void *)&zclWC_clusterRevision_all
@@ -295,7 +307,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   // ********************************** //
   {
     ZCL_CLUSTER_ID_GEN_POWER_CFG,
-    {
+    { //11
       ATTRID_POWER_CFG_BATTERY_VOLTAGE,
       ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ | ACCESS_REPORTABLE,
       (void *)&zclWC_BatteryVoltage
@@ -303,7 +315,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_GEN_POWER_CFG,
-    {
+    { //12
       ATTRID_POWER_CFG_BATTERY_PERCENTAGE_REMAINING,
       ZCL_DATATYPE_UINT8, ACCESS_CONTROL_AUTH_READ | ACCESS_REPORTABLE,
       (void *)&zclWC_BatteryLevel
@@ -311,7 +323,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_GEN_POWER_CFG,
-    {
+    { //13
       ATTRID_POWER_CFG_BAT_RATED_VOLTAGE,
       ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE,
       (void *)&zclWC_BatteryVoltageRated
@@ -319,7 +331,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_GEN_POWER_CFG,
-    {
+    { //14
       ATTRID_POWER_CFG_BAT_ALARM_MASK,
       ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE,
       (void *)&zclWC_BatteryAlarmMask
@@ -327,7 +339,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_GEN_POWER_CFG,
-    {
+    { //15
       ATTRID_POWER_CFG_BAT_VOLT_MIN_THRES,
       ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ,
       (void *)&zclWC_BatteryVoltageThresMin
@@ -335,7 +347,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_GEN_POWER_CFG,
-    {
+    { //16
       ATTRID_POWER_CFG_BAT_VOLT_THRES_1,
       ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ,
       (void *)&zclWC_BatteryVoltageThres1
@@ -343,7 +355,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_GEN_POWER_CFG,
-    {
+    { //17
       ATTRID_POWER_CFG_BAT_ALARM_STATE,
       ZCL_DATATYPE_BITMAP32, ACCESS_CONTROL_READ | ACCESS_REPORTABLE,
       (void *)&zclWC_BatteryAlarmState
@@ -351,7 +363,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_GEN_POWER_CFG,
-    {
+    { //18
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, ACCESS_CONTROL_READ,
       (void *)&zclWC_clusterRevision_all
@@ -361,7 +373,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   // ********************************************** //
   {
     ZCL_CLUSTER_ID_GEN_IDENTIFY,
-    { // Attribute record
+    { //19
       ATTRID_IDENTIFY_TIME,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_IdentifyTime
@@ -369,7 +381,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },  
   {
     ZCL_CLUSTER_ID_GEN_IDENTIFY,
-    {  // Attribute record
+    {  //20
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_GLOBAL),
       (void *)&zclWC_clusterRevision_all
@@ -379,7 +391,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   // ********************************** //
   {
     ZCL_CLUSTER_ID_GEN_GROUPS,
-    {  
+    { //21
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
       (void *)&zclWC_clusterRevision_all
@@ -389,7 +401,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   // ********************************** //
   {
     ZCL_CLUSTER_ID_GEN_TIME,
-    {  
+    { //22
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
       (void *)&zclWC_clusterRevision_all
@@ -399,7 +411,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   // **************************************** //
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //23
       ATTRID_METER_0READINGSET_CURRSUMDELIVERED,
       ZCL_DATATYPE_UINT48, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE | ACCESS_REPORTABLE),
       (void *)&zclWC_Flow1Value
@@ -407,7 +419,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //24
       ATTRID_METER_0READINGSET_DEFAULTUPDATEPERIOD,
       ZCL_DATATYPE_UINT8, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_FlowUpdatePeriod
@@ -415,7 +427,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //25
       ATTRID_METER_0READINGSET_INTERVALREPORTING,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_FlowReportInterval
@@ -423,7 +435,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //26
       ATTRID_METER_0READINGSET_VOLUMEPERREPORT,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_Flow1VolumePerReport
@@ -431,7 +443,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
     {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //27
       ATTRID_METER_2STATUS_STATUS,
       ZCL_DATATYPE_BITMAP8, (ACCESS_CONTROL_READ),
       (void *)&zclWC_Flow1Status
@@ -439,7 +451,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //28
       ATTRID_METER_2STATUS_REMAININGBATT,
       ZCL_DATATYPE_UINT8, (ACCESS_CONTROL_READ),
       (void *)&zclWC_BatteryLevel
@@ -447,7 +459,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //29
       ATTRID_METER_2STATUS_HOURSINOPERATION,
       ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ),
       (void *)&zclWC_Flow1HoursInOperation
@@ -455,7 +467,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //30
       ATTRID_METER_3FORMATTING_UNIT,
       ZCL_DATATYPE_ENUM8, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_Flow1Unit
@@ -463,7 +475,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //31
       ATTRID_METER_3FORMATTING_MULTIPLIER,
       ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_Flow1Multiplier
@@ -471,7 +483,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //32
       ATTRID_METER_3FORMATTING_DIVISOR,
       ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_Flow1Divisor
@@ -479,7 +491,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //33
       ATTRID_METER_3FORMATTING_METERDEVICETYPE,
       ZCL_DATATYPE_BITMAP8, (ACCESS_CONTROL_READ),
       (void *)&zclWC_DeviceType
@@ -487,7 +499,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //34
       ATTRID_METER_3FORMATTING_SITEID,
       ZCL_DATATYPE_OCTET_STR, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_Flow1Desc
@@ -495,7 +507,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //35
       ATTRID_METER_4HISTORY_INSTANTDEMAND,
       ZCL_DATATYPE_INT24, (ACCESS_CONTROL_READ | ACCESS_REPORTABLE),
       (void *)&zclWC_Flow1InstDemand
@@ -503,7 +515,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //36
       ATTRID_METER_4HISTORY_CURRDAYCONSUMPTIONDELIVER,
       ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ),
       (void *)&zclWC_Flow1CurrDay
@@ -511,7 +523,7 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //37
       ATTRID_METER_4HISTORY_PREVDAYCONSUMPTIONDELIVER,
       ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ),
       (void *)&zclWC_Flow1PrevDay
@@ -519,7 +531,79 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    {  
+    { //38
+      ATTRID_CLUSTER_REVISION,
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
+      (void *)&zclWC_clusterRevision_all
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
+    { //39
+      ATTRID_DIAG_0NUMOFRESETS,
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ),
+      (void *)&zclWC_DiagNumOfResets
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
+    { //40
+      ATTRID_DIAG_1PERSISTMEMORYWRITES,
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ),
+      (void *)&zclWC_DiagNVMemWrites
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
+    { //41
+      ATTRID_DIAG_2PERSISTMEMORYWRITEFAILS,
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ),
+      (void *)&zclWC_DiagNVMemWriteFails
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
+    { //42
+      ATTRID_DIAG_3MEMALLOCATEDBLOCKS,
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_AUTH_READ),
+      (void *)&zclWC_DiagMemAllocatedBlocks
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
+    { //43
+      ATTRID_DIAG_4MEMFREEBLOCKS,
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_AUTH_READ),
+      (void *)&zclWC_DiagMemFreeBlocks
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
+    { //44
+      ATTRID_DIAG_5MEMUSED,
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_AUTH_READ),
+      (void *)&zclWC_DiagMemUsed
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
+    { //45
+      ATTRID_DIAG_6MEMHIGHWATER,
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_AUTH_READ),
+      (void *)&zclWC_DiagMemHighWater
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
+    { //46
+      ATTRID_DIAG_7REBOOTREASON,
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ),
+      (void *)&zclWC_DiagRebootReason
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
+    { //
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
       (void *)&zclWC_clusterRevision_all
@@ -527,15 +611,15 @@ CONST zclAttrRec_t zclWC_Attrs[] =
   }
 };
 
-uint8 CONST zclWC_NumAttributes = ( sizeof(zclWC_Attrs) / sizeof(zclWC_Attrs[0]) );
+CONST uint8 zclWC_cNumAttributes = ( sizeof(zclWC_cAttrs) / sizeof(zclWC_cAttrs[0]) );
 
-CONST zclAttrRec_t zclWC_Attrs2[] =
+CONST zclAttrRec_t zclWC_cAttrs2[] =
 {
   // ********* Flow measure Cluster ********* //
   // **************************************** //
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //1
       ATTRID_METER_0READINGSET_CURRSUMDELIVERED,
       ZCL_DATATYPE_UINT48, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE | ACCESS_REPORTABLE),
       (void *)&zclWC_Flow2Value
@@ -543,7 +627,7 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //2
       ATTRID_METER_0READINGSET_DEFAULTUPDATEPERIOD,
       ZCL_DATATYPE_UINT8, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_FlowUpdatePeriod
@@ -551,7 +635,7 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //3
       ATTRID_METER_0READINGSET_INTERVALREPORTING,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_FlowReportInterval
@@ -559,7 +643,7 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //4
       ATTRID_METER_0READINGSET_VOLUMEPERREPORT,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_Flow2VolumePerReport
@@ -567,7 +651,7 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
   },
     {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //5
       ATTRID_METER_2STATUS_STATUS,
       ZCL_DATATYPE_BITMAP8, (ACCESS_CONTROL_READ),
       (void *)&zclWC_Flow2Status
@@ -575,7 +659,7 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //6
       ATTRID_METER_2STATUS_REMAININGBATT,
       ZCL_DATATYPE_UINT8, (ACCESS_CONTROL_READ),
       (void *)&zclWC_BatteryLevel
@@ -583,7 +667,7 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //7
       ATTRID_METER_2STATUS_HOURSINOPERATION,
       ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ),
       (void *)&zclWC_Flow2HoursInOperation
@@ -591,7 +675,7 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //8
       ATTRID_METER_3FORMATTING_UNIT,
       ZCL_DATATYPE_ENUM8, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_Flow2Unit
@@ -599,7 +683,7 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //9
       ATTRID_METER_3FORMATTING_MULTIPLIER,
       ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_Flow2Multiplier
@@ -607,7 +691,7 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //10
       ATTRID_METER_3FORMATTING_DIVISOR,
       ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_Flow2Divisor
@@ -615,7 +699,7 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //11
       ATTRID_METER_3FORMATTING_METERDEVICETYPE,
       ZCL_DATATYPE_BITMAP8, (ACCESS_CONTROL_READ),
       (void *)&zclWC_DeviceType
@@ -623,7 +707,7 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //12
       ATTRID_METER_3FORMATTING_SITEID,
       ZCL_DATATYPE_OCTET_STR, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zclWC_Flow2Desc
@@ -631,7 +715,7 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //13
       ATTRID_METER_4HISTORY_INSTANTDEMAND,
       ZCL_DATATYPE_INT24, (ACCESS_CONTROL_READ | ACCESS_REPORTABLE),
       (void *)&zclWC_Flow2InstDemand
@@ -639,7 +723,7 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //14
       ATTRID_METER_4HISTORY_CURRDAYCONSUMPTIONDELIVER,
       ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ),
       (void *)&zclWC_Flow2CurrDay
@@ -647,7 +731,7 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    { 
+    { //15
       ATTRID_METER_4HISTORY_PREVDAYCONSUMPTIONDELIVER,
       ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ),
       (void *)&zclWC_Flow2PrevDay
@@ -655,7 +739,7 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
   },
   {
     ZCL_CLUSTER_ID_SE_METERING,
-    {  
+    { //16
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
       (void *)&zclWC_clusterRevision_all
@@ -663,7 +747,7 @@ CONST zclAttrRec_t zclWC_Attrs2[] =
   }
 };
 
-uint8 CONST zclWC_NumAttributes2 = ( sizeof(zclWC_Attrs2) / sizeof(zclWC_Attrs2[0]) );
+CONST uint8 zclWC_cNumAttributes2 = ( sizeof(zclWC_cAttrs2) / sizeof(zclWC_cAttrs2[0]) );
 
 /*********************************************************************
  * SIMPLE DESCRIPTOR
@@ -921,6 +1005,8 @@ void zclWC_ResetAttributesToDefaultValues(void)
   zclWC_Flow2PrevDay = 0;
   zclWC_Flow1CurrDay = 0;
   zclWC_Flow2CurrDay = 0;
+  zclWC_Flow1HoursInOperation = 0;
+  zclWC_Flow2HoursInOperation = 0;
   
   src = WC_METER_MULTIPLIER;
   zclWC_InitAttrValue(WC_NV_MULTIPLIER1, sizeof(zclWC_Flow1Multiplier), &src, &zclWC_Flow1Multiplier);
@@ -932,8 +1018,6 @@ void zclWC_ResetAttributesToDefaultValues(void)
   zclWC_InitAttrValue(WC_NV_DIVISOR2, sizeof(zclWC_Flow2Divisor), &src, &zclWC_Flow2Divisor);
   //zclWC_Flow1Divisor = WC_METER_DIVISOR;
   //zclWC_Flow2Divisor = WC_METER_DIVISOR;
-  zclWC_Flow1HoursInOperation = 0;
-  zclWC_Flow2HoursInOperation = 0;
   src = ENGINEERING_UNIT_METER_M3;
   zclWC_InitAttrValue(WC_NV_UNIT1, sizeof(zclWC_Flow1Unit), &src, &zclWC_Flow1Unit);
   zclWC_InitAttrValue(WC_NV_UNIT2, sizeof(zclWC_Flow2Unit), &src, &zclWC_Flow2Unit);
@@ -959,6 +1043,15 @@ void zclWC_ResetAttributesToDefaultValues(void)
   zclWC_BatteryVoltageThres1 = VDD_VOLTAGE36_THRES1;
   zclWC_BatteryAlarmMask = BAT_ALARM_MASK_VOLT_2_LOW | BAT_ALARM_MASK_BATTERY_ALARM_1;
   zclWC_BatteryAlarmState = 0;
+  
+  zclWC_DiagNumOfResets = 0;
+  zclWC_DiagNVMemWrites = 0;
+  zclWC_DiagNVMemWriteFails = 0;
+  zclWC_DiagMemAllocatedBlocks = osal_heap_block_cnt();
+  zclWC_DiagMemFreeBlocks = osal_heap_block_free();
+  zclWC_DiagMemUsed = osal_heap_mem_used();
+  zclWC_DiagMemHighWater = osal_heap_high_water();
+  //zclWC_DiagRebootReason = 0;  
 }
 
 /****************************************************************************

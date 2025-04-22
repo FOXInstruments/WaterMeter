@@ -6077,6 +6077,9 @@
         </file>
     </group>
     <file>
+        <name>$PROJ_DIR$\predef.h</name>
+    </file>
+    <file>
         <name>$PROJ_DIR$\..\TODO.txt</name>
     </file>
 </project>

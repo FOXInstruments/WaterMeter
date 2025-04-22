@@ -158,7 +158,16 @@ extern "C"
 #define METER_2STATUS_CHECKMETER        0x01
 #define METER_2STATUS_LOWBATT           0x02
 #define METER_2STATUS_TAMPERDETECT      0x04
-  
+   
+#define ATTRID_DIAG_0NUMOFRESETS                0x0000  // uint16
+#define ATTRID_DIAG_1PERSISTMEMORYWRITES        0x0001  // uint16
+#define ATTRID_DIAG_2PERSISTMEMORYWRITEFAILS    0x0002  // uint16
+#define ATTRID_DIAG_3MEMALLOCATEDBLOCKS         0x0003  // uint16
+#define ATTRID_DIAG_4MEMFREEBLOCKS              0x0004  // uint16
+#define ATTRID_DIAG_5MEMUSED                    0x0005  // uint16
+#define ATTRID_DIAG_6MEMHIGHWATER               0x0006  // uint16
+#define ATTRID_DIAG_7REBOOTREASON               0x0007  // uint16
+   
 /*********************************************************************
  * MACROS
  */
@@ -183,8 +192,10 @@ typedef union
 extern SimpleDescriptionFormat_t zclWC_SimpleDesc;
 extern SimpleDescriptionFormat_t zclWC_SimpleDesc2;
 
-extern CONST zclAttrRec_t zclWC_Attrs[];
-extern CONST zclAttrRec_t zclWC_Attrs2[];
+extern CONST zclAttrRec_t zclWC_cAttrs[];
+extern CONST zclAttrRec_t zclWC_cAttrs2[];
+extern CONST uint8 zclWC_cNumAttributes;
+extern CONST uint8 zclWC_cNumAttributes2;
 
 extern uint8 zclWC_Flow1Desc[];
 extern uint48_t zclWC_Flow1Value;
@@ -222,11 +233,17 @@ extern uint8 zclWC_FlowUpdatePeriod;        // InstDemand update time period in 
 extern uint16 zclWC_FlowReportInterval;     // Time interval in minutes for Reporting compatability
 extern uint24 zclWC_Flow1HoursInOperation;
 extern uint24 zclWC_Flow2HoursInOperation;
+// Diagnostic cluster
+extern uint16 zclWC_DiagNumOfResets;
+extern uint16 zclWC_DiagNVMemWrites;
+extern uint16 zclWC_DiagNVMemWriteFails;
+extern uint16 zclWC_DiagMemAllocatedBlocks;
+extern uint16 zclWC_DiagMemFreeBlocks;
+extern uint16 zclWC_DiagMemUsed;       // Used memory in bytes
+extern uint16 zclWC_DiagMemHighWater;  // Maximum memory allocated
+extern uint16 zclWC_DiagRebootReason;
 
 extern uint16 zclWC_IdentifyTime;
-
-extern CONST uint8 zclWC_NumAttributes;
-extern CONST uint8 zclWC_NumAttributes2;
 
 /*********************************************************************
  * FUNCTIONS
