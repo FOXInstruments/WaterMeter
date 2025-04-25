@@ -109,9 +109,10 @@
 #define WC_NV_VOLUMEREPORT2     0x040D
 #define WC_NV_REPORTPERIOD      0x040E
 #define WC_NV_VOLTAGERATED      0x040F
-#define WC_NV_VALUES1           0x0400
-#define WC_NV_VALUES2           0x0411
-#define WC_NV_DATES             0x0412
+#define WC_NV_VALUES1           0x0410
+#define WC_NV_DATE1             0x0411
+#define WC_NV_VALUES2           0x0412
+#define WC_NV_DATE2             0x0413
 
 /*********************************************************************
  * TYPEDEFS
@@ -827,20 +828,22 @@ void zclWC_NVInitItems(void)
 {
   zclWC_NVItemsInitStatus = 0;
   
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DESC1, WC_METER_SITEID_SIZE, NULL) == NV_OPER_FAILED ? 1 : 0;
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DESC2, WC_METER_SITEID_SIZE, NULL) == NV_OPER_FAILED ? 1<<1 : 0;
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_UNIT1, sizeof(zclWC_Flow1Unit), NULL) == NV_OPER_FAILED ? 1<<2 : 0;
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_UNIT2, sizeof(zclWC_Flow2Unit), NULL) == NV_OPER_FAILED ? 1<<3 : 0;
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_MULTIPLIER1, sizeof(zclWC_Flow1Multiplier), NULL) == NV_OPER_FAILED ? 1<<4 : 0;
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_MULTIPLIER2, sizeof(zclWC_Flow2Multiplier), NULL) == NV_OPER_FAILED ? 1<<5 : 0;
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DIVISOR1, sizeof(zclWC_Flow1Divisor), NULL) == NV_OPER_FAILED ? 1<<6 : 0;
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DIVISOR2, sizeof(zclWC_Flow2Divisor), NULL) == NV_OPER_FAILED ? 1<<7 : 0;
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VOLUMEREPORT1, sizeof(zclWC_Flow1VolumePerReport), NULL) == NV_OPER_FAILED ? 1<<8 : 0;
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VOLUMEREPORT2, sizeof(zclWC_Flow2VolumePerReport), NULL) == NV_OPER_FAILED ? 1<<9 : 0;
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_REPORTPERIOD, sizeof(zclWC_FlowReportInterval), NULL) == NV_OPER_FAILED ? 1<<10 : 0;  
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VALUES1, sizeof(zclWC_Flow1Value.dw.lowDW), NULL) == NV_OPER_FAILED ? 1<<11 : 0;; 
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VALUES2, sizeof(zclWC_Flow2Value.dw.lowDW), NULL) == NV_OPER_FAILED ? 1<<12 : 0;;
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DATES, sizeof(uint32), NULL) == NV_OPER_FAILED ? 1<<13 : 0;;
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DESC1, WC_METER_SITEID_SIZE, NULL) != SUCCESS ? WC_STORE_DESC1 : 0;
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DESC2, WC_METER_SITEID_SIZE, NULL) != SUCCESS ? WC_STORE_DESC2 : 0;
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_UNIT1, sizeof(zclWC_Flow1Unit), NULL) != SUCCESS ? WC_STORE_UNIT1 : 0;
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_UNIT2, sizeof(zclWC_Flow2Unit), NULL) != SUCCESS ? WC_STORE_UNIT2 : 0;
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_MULTIPLIER1, sizeof(zclWC_Flow1Multiplier), NULL) != SUCCESS ? WC_STORE_MULTIPLIER1 : 0;
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_MULTIPLIER2, sizeof(zclWC_Flow2Multiplier), NULL) != SUCCESS ? WC_STORE_MULTIPLIER2 : 0;
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DIVISOR1, sizeof(zclWC_Flow1Divisor), NULL) != SUCCESS ? WC_STORE_DIVISOR1 : 0;
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DIVISOR2, sizeof(zclWC_Flow2Divisor), NULL) != SUCCESS ? WC_STORE_DIVISOR2 : 0;
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VOLUMEREPORT1, sizeof(zclWC_Flow1VolumePerReport), NULL) != SUCCESS ? WC_STORE_VOLUMEREPORT1 : 0;
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VOLUMEREPORT2, sizeof(zclWC_Flow2VolumePerReport), NULL) != SUCCESS ? WC_STORE_VOLUMEREPORT2 : 0;
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_REPORTPERIOD, sizeof(zclWC_FlowReportInterval), NULL) != SUCCESS ? WC_STORE_REPORTPERIOD : 0;  
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VOLTAGERATED, sizeof(zclWC_BatteryVoltageRated), NULL) != SUCCESS ? WC_STORE_VOLTAGERATED : 0;  
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VALUES1, sizeof(zclWC_Flow1Value.dw.lowDW), NULL) != SUCCESS ? WC_STORE_VALUES1 : 0;;
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DATE1, sizeof(uint32), NULL) != SUCCESS ? WC_STORE_DATE1 : 0;
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VALUES2, sizeof(zclWC_Flow2Value.dw.lowDW), NULL) != SUCCESS ? WC_STORE_VALUES2 : 0;
+  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DATE2, sizeof(uint32), NULL) != SUCCESS ? WC_STORE_DATE2 : 0;
 }
 
 /*********************************************************************
@@ -969,7 +972,92 @@ void zclWC_UpdateAttrRatedVoltage(uint8 *data)
  * @return  none
  */
 void zclWC_StoreAttrToNV(uint16 *mask)
-{  
+{
+  if (*mask & WC_STORE_DESC1)
+  {
+    if (osal_nv_write(WC_NV_DESC1, 0, WC_METER_SITEID_SIZE + 1, zclWC_Flow1Desc) == SUCCESS)
+      zclWC_DiagNVMemWrites++;
+    else
+      zclWC_DiagNVMemWriteFails++;
+  } else if (*mask & WC_STORE_DESC2)
+  {
+    if (osal_nv_write(WC_NV_DESC2, 0, WC_METER_SITEID_SIZE + 1, zclWC_Flow2Desc) == SUCCESS)
+      zclWC_DiagNVMemWrites++;
+    else
+      zclWC_DiagNVMemWriteFails++;
+  } else if (*mask & WC_STORE_UNIT1)
+  {
+    if (osal_nv_write(WC_NV_UNIT1, 0, sizeof(zclWC_Flow1Unit), &zclWC_Flow1Unit) == SUCCESS)
+      zclWC_DiagNVMemWrites++;
+    else
+      zclWC_DiagNVMemWriteFails++;
+  } else if (*mask & WC_STORE_UNIT2)
+  {
+    if (osal_nv_write(WC_NV_UNIT2, 0, sizeof(zclWC_Flow2Unit), &zclWC_Flow2Unit) == SUCCESS)
+      zclWC_DiagNVMemWrites++;
+    else
+      zclWC_DiagNVMemWriteFails++;
+  } else if (*mask & WC_STORE_DIVISOR1)
+  {
+    if (osal_nv_write(WC_NV_DIVISOR1, 0, sizeof(zclWC_Flow1Divisor), &zclWC_Flow1Divisor) == SUCCESS)
+      zclWC_DiagNVMemWrites++;
+    else
+      zclWC_DiagNVMemWriteFails++;
+  } else if (*mask & WC_STORE_DIVISOR2)
+  {
+    if (osal_nv_write(WC_NV_DIVISOR2, 0, sizeof(zclWC_Flow2Divisor), &zclWC_Flow2Divisor) == SUCCESS)
+      zclWC_DiagNVMemWrites++;
+    else
+      zclWC_DiagNVMemWriteFails++;
+  } else if (*mask & WC_STORE_MULTIPLIER1)
+  {
+    if (osal_nv_write(WC_NV_MULTIPLIER1, 0, sizeof(zclWC_Flow1Multiplier), &zclWC_Flow1Multiplier) == SUCCESS)
+      zclWC_DiagNVMemWrites++;
+    else
+      zclWC_DiagNVMemWriteFails++;
+  } else if (*mask & WC_STORE_MULTIPLIER2)
+  {
+    if (osal_nv_write(WC_NV_MULTIPLIER2, 0, sizeof(zclWC_Flow2Multiplier), &zclWC_Flow2Multiplier) == SUCCESS)
+      zclWC_DiagNVMemWrites++;
+    else
+      zclWC_DiagNVMemWriteFails++;
+  } else if (*mask & WC_STORE_VOLUMEREPORT1)
+  {
+    if (osal_nv_write(WC_NV_VOLUMEREPORT1, 0, sizeof(zclWC_Flow1VolumePerReport), &zclWC_Flow1VolumePerReport) == SUCCESS)
+      zclWC_DiagNVMemWrites++;
+    else
+      zclWC_DiagNVMemWriteFails++;
+  } else if (*mask & WC_STORE_VOLUMEREPORT2)
+  {
+    if (osal_nv_write(WC_NV_VOLUMEREPORT2, 0, sizeof(zclWC_Flow2VolumePerReport), &zclWC_Flow2VolumePerReport) == SUCCESS)
+      zclWC_DiagNVMemWrites++;
+    else
+      zclWC_DiagNVMemWriteFails++;
+  } else if (*mask & WC_STORE_REPORTPERIOD)
+  {
+    if (osal_nv_write(WC_NV_REPORTPERIOD, 0, sizeof(zclWC_FlowReportInterval), &zclWC_FlowReportInterval) == SUCCESS)
+      zclWC_DiagNVMemWrites++;
+    else
+      zclWC_DiagNVMemWriteFails++;
+  } else if (*mask & WC_STORE_VOLTAGERATED)
+  {
+    if (osal_nv_write(WC_NV_VOLTAGERATED, 0, sizeof(zclWC_BatteryVoltageRated), &zclWC_BatteryVoltageRated) == SUCCESS)
+      zclWC_DiagNVMemWrites++;
+    else
+      zclWC_DiagNVMemWriteFails++;
+  } else if (*mask & WC_STORE_VALUES1)
+  {
+    if (osal_nv_write(WC_NV_VALUES1, 0, sizeof(zclWC_Flow1Value.dw.lowDW), &zclWC_Flow1Value.dw.lowDW) == SUCCESS)
+      zclWC_DiagNVMemWrites++;
+    else
+      zclWC_DiagNVMemWriteFails++;
+  } else if (*mask & WC_STORE_VALUES2)
+  {
+    if (osal_nv_write(WC_NV_VALUES2, 0, sizeof(zclWC_Flow2Value.dw.lowDW), &zclWC_Flow2Value.dw.lowDW) == SUCCESS)
+      zclWC_DiagNVMemWrites++;
+    else
+      zclWC_DiagNVMemWriteFails++;
+  }
   *mask = 0;
 }
 

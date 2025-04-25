@@ -1167,6 +1167,10 @@ uint8 zclWC_ValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
         {
           validate = FALSE;
         }
+        else
+        {
+          
+        }
         #ifdef MT_DEBUG_FUNC
           MT_ProcessDebugString("Write.SiteID");
         #endif
@@ -1187,10 +1191,10 @@ uint8 zclWC_ValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
       case ATTRID_METER_3FORMATTING_MULTIPLIER:
         if (*(uint24*)pAttrInfo->attrData != *(uint24*)pAttr->attr.dataPtr)
         {
-          if (pAttr->attr.dataPtr == &zclWC_Flow1Multiplier)
+          if (pAttr->attr.dataPtr == &zclWC_Flow1Multiplier) // Endpoint8
             zclWC_AttrToStore |= WC_STORE_MULTIPLIER1;
           else
-            zclWC_AttrToStore |= WC_STORE_MULTIPLIER2;
+            zclWC_AttrToStore |= WC_STORE_MULTIPLIER2;  // Endpoint9
           osal_start_timerEx(zclWC_TaskID, WC_EVT_STOREATTR, WC_TIMEOUT_STOREATTR);
         }
         #ifdef MT_DEBUG_FUNC
@@ -1198,6 +1202,14 @@ uint8 zclWC_ValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
         #endif
         break;
       case ATTRID_METER_3FORMATTING_DIVISOR:
+        if (*(uint24*)pAttrInfo->attrData != *(uint24*)pAttr->attr.dataPtr) // Current and new values are diffrent
+        {
+          if (pAttr->attr.dataPtr == &zclWC_Flow1Divisor) // Endpoint8
+            zclWC_AttrToStore |= WC_STORE_DIVISOR1;
+          else
+            zclWC_AttrToStore |= WC_STORE_DIVISOR2;  // Endpoint9
+          osal_start_timerEx(zclWC_TaskID, WC_EVT_STOREATTR, WC_TIMEOUT_STOREATTR);
+        }
         #ifdef MT_DEBUG_FUNC
           MT_ProcessDebugString("Write.Divisor");
         #endif

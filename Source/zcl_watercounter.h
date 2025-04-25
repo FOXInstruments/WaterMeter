@@ -183,8 +183,9 @@ extern "C"
 #define WC_STORE_REPORTPERIOD      0x0001<<10
 #define WC_STORE_VOLTAGERATED      0x0001<<11
 #define WC_STORE_VALUES1           0x0001<<12
-#define WC_STORE_VALUES2           0x0001<<13
-#define WC_STORE_DATES             0x0001<<14
+#define WC_STORE_DATE1             0x0001<<13
+#define WC_STORE_VALUES2           0x0001<<14
+#define WC_STORE_DATE2             0x0001<<15
 
 /*********************************************************************
  * MACROS
