@@ -129,92 +129,92 @@
  */
 
 //global attributes
-const uint16 zclWC_clusterRevision_all = 0x0001; //currently all cluster implementations are according to ZCL6, which has revision #1. In the future it is possible that different clusters will have different revisions, so they will have to use separate attribute variables.
+const uint16 zapp_clusterRevision_all = 0x0001; //currently all cluster implementations are according to ZCL6, which has revision #1. In the future it is possible that different clusters will have different revisions, so they will have to use separate attribute variables.
 
 // Basic Cluster
-const uint8 zclWC_HWRevision = WC_HWVERSION;
-const uint8 zclWC_ZCLVersion = WC_ZCLVERSION;
-const uint8 zclWC_ManufacturerName[] = { 15, 'F','o','x','.','I','n','s','t','r','u','m','e','n','t','s' };
-const uint8 zclWC_ModelId[] = { 12, 'F','O','X','-','M','e','t','e','r','0','0','1',};
-const uint8 zclWC_DateCode[] = { 10, '2','0','2','4','-','0','2','-','0','2'};
+const uint8 zapp_HWRevision = WC_HWVERSION;
+const uint8 zapp_ZCLVersion = WC_ZCLVERSION;
+const uint8 zapp_ManufacturerName[] = { 15, 'F','o','x','.','I','n','s','t','r','u','m','e','n','t','s' };
+const uint8 zapp_ModelId[] = { 12, 'F','O','X','-','M','e','t','e','r','0','0','1',};
+const uint8 zapp_DateCode[] = { 10, '2','0','2','4','-','0','2','-','0','2'};
 
-const uint8 zclWC_DeviceType = 0x02;    // Water meter
-const uint8 zclWC_PowerSource = POWER_SOURCE_BATTERY;
+const uint8 zapp_DeviceType = 0x02;    // Water meter
+const uint8 zapp_PowerSource = POWER_SOURCE_BATTERY;
 
-const uint8 zclWC_cDesc1[WC_METER_SITEID_SIZE + 1] = {WC_METER_SITEID_SIZE, 'C', 'o', 'l', 'd', ' ', ' ', ' ', ' ', ' ', ' '};   // Constants to initialize default values
-const uint8 zclWC_cDesc2[WC_METER_SITEID_SIZE + 1] = {WC_METER_SITEID_SIZE, 'H', 'o', 't', ' ', ' ', ' ', ' ', ' ', ' ', ' '};
+const uint8 zapp_cDesc1[WC_METER_SITEID_SIZE + 1] = {WC_METER_SITEID_SIZE, 'C', 'o', 'l', 'd', ' ', ' ', ' ', ' ', ' ', ' '};   // Constants to initialize default values
+const uint8 zapp_cDesc2[WC_METER_SITEID_SIZE + 1] = {WC_METER_SITEID_SIZE, 'H', 'o', 't', ' ', ' ', ' ', ' ', ' ', ' ', ' '};
 
-uint8 zclWC_Flow1Desc[WC_METER_SITEID_SIZE + 1];
-uint48_t zclWC_Flow1Value;
-int24 zclWC_Flow1InstDemand;
-int24 zclWC_Flow1InstDemandPrev;
-uint24 zclWC_Flow1Multiplier;
-uint24 zclWC_Flow1Divisor;
-uint8 zclWC_Flow1Unit;
-uint16 zclWC_Flow1VolumePerReport;
-uint24 zclWC_Flow1CurrDay;
-uint24 zclWC_Flow1PrevDay;
-uint8 zclWC_Flow1Status;
+uint8 zapp_Flow1Desc[WC_METER_SITEID_SIZE + 1];
+uint48_t zapp_Flow1Value;
+int24 zapp_Flow1InstDemand;
+int24 zapp_Flow1InstDemandPrev;
+uint24 zapp_Flow1Multiplier;
+uint24 zapp_Flow1Divisor;
+uint8 zapp_Flow1Unit;
+uint16 zapp_Flow1VolumePerReport;
+uint24 zapp_Flow1CurrDay;
+uint24 zapp_Flow1PrevDay;
+uint8 zapp_Flow1Status;
 
-uint8 zclWC_Flow2Desc[WC_METER_SITEID_SIZE + 1];
-uint48_t zclWC_Flow2Value;
-int24 zclWC_Flow2InstDemand;
-int24 zclWC_Flow2InstDemandPrev;
-uint24 zclWC_Flow2Multiplier;
-uint24 zclWC_Flow2Divisor;
-uint16 zclWC_Flow2Unit;
-uint16 zclWC_Flow2VolumePerReport;
-uint24 zclWC_Flow2CurrDay;
-uint24 zclWC_Flow2PrevDay;
-uint8 zclWC_Flow2Status;
+uint8 zapp_Flow2Desc[WC_METER_SITEID_SIZE + 1];
+uint48_t zapp_Flow2Value;
+int24 zapp_Flow2InstDemand;
+int24 zapp_Flow2InstDemandPrev;
+uint24 zapp_Flow2Multiplier;
+uint24 zapp_Flow2Divisor;
+uint16 zapp_Flow2Unit;
+uint16 zapp_Flow2VolumePerReport;
+uint24 zapp_Flow2CurrDay;
+uint24 zapp_Flow2PrevDay;
+uint8 zapp_Flow2Status;
 
 // Power cluster variable
-uint8 zclWC_BatteryVoltage;            // 0.1V unit
-uint8 zclWC_BatteryVoltageRated;        // 0.1V unit, 3.6V LiFePO4
-uint8 zclWC_BatteryVoltageThresMin;    // 0.1V unit, 2.5V LiFePO4 T>0 degC
-uint8 zclWC_BatteryVoltageThres1;
-uint8 zclWC_BatteryLevel;              // 0 - 100%
-uint8 zclWC_BatteryAlarmMask;
-uint32 zclWC_BatteryAlarmState;
+uint8 zapp_BatteryVoltage;            // 0.1V unit
+uint8 zapp_BatteryVoltageRated;        // 0.1V unit, 3.6V LiFePO4
+uint8 zapp_BatteryVoltageThresMin;    // 0.1V unit, 2.5V LiFePO4 T>0 degC
+uint8 zapp_BatteryVoltageThres1;
+uint8 zapp_BatteryLevel;              // 0 - 100%
+uint8 zapp_BatteryAlarmMask;
+uint32 zapp_BatteryAlarmState;
 
 // Time cluster variables
-/* uint32 zclWC_Time;
-uint8 zclWC_TimeStatus;
-uint32 zclWC_TimeLocal; */
+/* uint32 zapp_Time;
+uint8 zapp_TimeStatus;
+uint32 zapp_TimeLocal; */
 
-uint8 zclWC_FlowUpdatePeriod;   // InstDemand update time period in seconds
-uint16 zclWC_FlowReportInterval; // Time interval in minutes
-uint24 zclWC_Flow1HoursInOperation;
-uint24 zclWC_Flow2HoursInOperation;
+uint8 zapp_FlowUpdatePeriod;   // InstDemand update time period in seconds
+uint16 zapp_FlowReportInterval; // Time interval in minutes
+uint24 zapp_Flow1HoursInOperation;
+uint24 zapp_Flow2HoursInOperation;
 
-uint8 zclWC_LocationDescription[16];
-uint8 zclWC_PhysicalEnvironment;
-uint8 zclWC_DeviceEnable = DEVICE_ENABLED;
+uint8 zapp_LocationDescription[16];
+uint8 zapp_PhysicalEnvironment;
+uint8 zapp_DeviceEnable = DEVICE_ENABLED;
 
 // Diagnostic cluster
-uint16 zclWC_DiagNumOfResets;
-uint16 zclWC_DiagNVMemWrites;
-uint16 zclWC_DiagNVMemWriteFails;
-uint16 zclWC_DiagMemAllocatedBlocks;
-uint16 zclWC_DiagMemFreeBlocks;
-uint16 zclWC_DiagMemUsed;       // Used memory in bytes
-uint16 zclWC_DiagMemHighWater;  // Maximum memory allocated
-uint16 zclWC_DiagRebootReason;
+uint16 zapp_DiagNumOfResets;
+uint16 zapp_DiagNVMemWrites;
+uint16 zapp_DiagNVMemWriteFails;
+uint16 zapp_DiagMemAllocatedBlocks;
+uint16 zapp_DiagMemFreeBlocks;
+uint16 zapp_DiagMemUsed;       // Used memory in bytes
+uint16 zapp_DiagMemHighWater;  // Maximum memory allocated
+uint16 zapp_DiagRebootReason;
 
-uint16 zclWC_NVItemsInitStatus;
-uint16 zclWC_NVItems[WC_NVQUEUE_LEN];
-uint16 zclWC_NVItemSizes[WC_NVQUEUE_LEN];
-uint16 zclWC_NVItemSources[WC_NVQUEUE_LEN];
+uint16 zapp_NVItemsInitStatus;
+uint16 zapp_NVItems[WC_NVQUEUE_LEN];
+uint16 zapp_NVItemSizes[WC_NVQUEUE_LEN];
+uint16 zapp_NVItemSources[WC_NVQUEUE_LEN];
 
 // Identify Cluster
-uint16 zclWC_IdentifyTime = 0;
+uint16 zapp_IdentifyTime = 0;
 // Constants set Attribute value limitations
-const uint16 zclWC_cReportIntervals[] = {5, 10, 15, 20, 30, 60, 2*60, 3*60, 4*60, 6*60, 8*60, 12*60, 24*60};
-CONST uint8 zclWC_cReportIntervalsSize_1 = sizeof(zclWC_cReportIntervals) / sizeof(zclWC_cReportIntervals[0]) - 1;
-const uint8 zclWC_cRatedVoltages[] = {VDD_VOLTAGE_RATED30, VDD_VOLTAGE_RATED33, VDD_VOLTAGE_RATED36, VDD_VOLTAGE_RATED42};
-CONST uint8 zclWC_cRatedVoltagesSize_1 = sizeof(zclWC_cRatedVoltages) / sizeof(zclWC_cRatedVoltages[0]) - 1;
-const uint8 zclWC_cRatedVoltageThres[] = {28, 28, VDD_VOLTAGE36_THRES1, 30};
-const uint8 zclWC_cRatedVoltageThresMin[] = {27, 27, VDD_VOLTAGE36_MIN, 26};
+const uint16 zapp_cReportIntervals[] = {5, 10, 15, 20, 30, 60, 2*60, 3*60, 4*60, 6*60, 8*60, 12*60, 24*60};
+CONST uint8 zapp_cReportIntervalsSize_1 = sizeof(zapp_cReportIntervals) / sizeof(zapp_cReportIntervals[0]) - 1;
+const uint8 zapp_cRatedVoltages[] = {VDD_VOLTAGE_RATED30, VDD_VOLTAGE_RATED33, VDD_VOLTAGE_RATED36, VDD_VOLTAGE_RATED42};
+CONST uint8 zapp_cRatedVoltagesSize_1 = sizeof(zapp_cRatedVoltages) / sizeof(zapp_cRatedVoltages[0]) - 1;
+const uint8 zapp_cRatedVoltageThres[] = {28, 28, VDD_VOLTAGE36_THRES1, 30};
+const uint8 zapp_cRatedVoltageThresMin[] = {27, 27, VDD_VOLTAGE36_MIN, 26};
 
 /*********************************************************************
  * ATTRIBUTE DEFINITIONS - Uses REAL cluster IDs
@@ -223,7 +223,7 @@ const uint8 zclWC_cRatedVoltageThresMin[] = {27, 27, VDD_VOLTAGE36_MIN, 26};
   // NOTE: The attributes listed in the AttrRec must be in ascending order 
   // per cluster to allow right function of the Foundation discovery commands
  
-CONST zclAttrRec_t zclWC_cAttrs[] =
+CONST zclAttrRec_t zapp_cAttrs[] =
 {
   // *** General Basic Cluster Attributes ***
   {
@@ -231,7 +231,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //1
       ATTRID_BASIC_ZCL_VERSION,
       ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ,
-      (void *)&zclWC_ZCLVersion
+      (void *)&zapp_ZCLVersion
     }
   },  
   {
@@ -240,7 +240,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
       ATTRID_BASIC_HW_VERSION,            // Attribute ID - Found in Cluster Library header (ie. zcl_general.h)
       ZCL_DATATYPE_UINT8,                 // Data Type - found in zcl.h
       ACCESS_CONTROL_READ,                // Variable access control - found in zcl.h
-      (void *)&zclWC_HWRevision  // Pointer to attribute variable
+      (void *)&zapp_HWRevision  // Pointer to attribute variable
     }
   },
   {
@@ -248,7 +248,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //3
       ATTRID_BASIC_MANUFACTURER_NAME,
       ZCL_DATATYPE_CHAR_STR, ACCESS_CONTROL_READ,
-      (void *)zclWC_ManufacturerName
+      (void *)zapp_ManufacturerName
     }
   },
   {
@@ -256,7 +256,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //4
       ATTRID_BASIC_MODEL_ID,
       ZCL_DATATYPE_CHAR_STR, ACCESS_CONTROL_READ,
-      (void *)zclWC_ModelId
+      (void *)zapp_ModelId
     }
   },
   {
@@ -264,7 +264,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //5
       ATTRID_BASIC_DATE_CODE,
       ZCL_DATATYPE_CHAR_STR, ACCESS_CONTROL_READ,
-      (void *)zclWC_DateCode
+      (void *)zapp_DateCode
     }
   },
   {
@@ -272,7 +272,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //6
       ATTRID_BASIC_POWER_SOURCE,
       ZCL_DATATYPE_ENUM8, ACCESS_CONTROL_READ,
-      (void *)&zclWC_PowerSource
+      (void *)&zapp_PowerSource
     }
   },
   {
@@ -280,7 +280,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //7
       ATTRID_BASIC_LOCATION_DESC,
       ZCL_DATATYPE_CHAR_STR, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)zclWC_LocationDescription
+      (void *)zapp_LocationDescription
     }
   },
   {
@@ -288,7 +288,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //8
       ATTRID_BASIC_PHYSICAL_ENV,
       ZCL_DATATYPE_ENUM8, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWC_PhysicalEnvironment
+      (void *)&zapp_PhysicalEnvironment
     }
   },
   {
@@ -296,7 +296,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //9
       ATTRID_BASIC_DEVICE_ENABLED,
       ZCL_DATATYPE_BOOLEAN, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWC_DeviceEnable
+      (void *)&zapp_DeviceEnable
     }
   },
   {
@@ -304,7 +304,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //10
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, ACCESS_CONTROL_READ,
-      (void *)&zclWC_clusterRevision_all
+      (void *)&zapp_clusterRevision_all
     }
   },
   
@@ -315,7 +315,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //11
       ATTRID_POWER_CFG_BATTERY_VOLTAGE,
       ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ | ACCESS_REPORTABLE,
-      (void *)&zclWC_BatteryVoltage
+      (void *)&zapp_BatteryVoltage
     }
   },
   {
@@ -323,7 +323,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //12
       ATTRID_POWER_CFG_BATTERY_PERCENTAGE_REMAINING,
       ZCL_DATATYPE_UINT8, ACCESS_CONTROL_AUTH_READ | ACCESS_REPORTABLE,
-      (void *)&zclWC_BatteryLevel
+      (void *)&zapp_BatteryLevel
     }
   },
   {
@@ -331,7 +331,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //13
       ATTRID_POWER_CFG_BAT_RATED_VOLTAGE,
       ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE,
-      (void *)&zclWC_BatteryVoltageRated
+      (void *)&zapp_BatteryVoltageRated
     }
   },
   {
@@ -339,7 +339,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //14
       ATTRID_POWER_CFG_BAT_ALARM_MASK,
       ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE,
-      (void *)&zclWC_BatteryAlarmMask
+      (void *)&zapp_BatteryAlarmMask
     }
   },
   {
@@ -347,7 +347,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //15
       ATTRID_POWER_CFG_BAT_VOLT_MIN_THRES,
       ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ,
-      (void *)&zclWC_BatteryVoltageThresMin
+      (void *)&zapp_BatteryVoltageThresMin
     }
   },
   {
@@ -355,7 +355,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //16
       ATTRID_POWER_CFG_BAT_VOLT_THRES_1,
       ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ,
-      (void *)&zclWC_BatteryVoltageThres1
+      (void *)&zapp_BatteryVoltageThres1
     }
   },
   {
@@ -363,7 +363,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //17
       ATTRID_POWER_CFG_BAT_ALARM_STATE,
       ZCL_DATATYPE_BITMAP32, ACCESS_CONTROL_READ | ACCESS_REPORTABLE,
-      (void *)&zclWC_BatteryAlarmState
+      (void *)&zapp_BatteryAlarmState
     }
   },
   {
@@ -371,7 +371,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //18
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, ACCESS_CONTROL_READ,
-      (void *)&zclWC_clusterRevision_all
+      (void *)&zapp_clusterRevision_all
     }
   },
   // ********* Identify Cluster Attribute ********* //
@@ -381,7 +381,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //19
       ATTRID_IDENTIFY_TIME,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWC_IdentifyTime
+      (void *)&zapp_IdentifyTime
     }
   },  
   {
@@ -389,7 +389,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     {  //20
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_GLOBAL),
-      (void *)&zclWC_clusterRevision_all
+      (void *)&zapp_clusterRevision_all
     }
   },
   // ********* Groups Cluster ********* //
@@ -399,7 +399,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //21
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
-      (void *)&zclWC_clusterRevision_all
+      (void *)&zapp_clusterRevision_all
     }
   },
   // ********* Time Cluster ********* //
@@ -409,7 +409,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //22
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
-      (void *)&zclWC_clusterRevision_all
+      (void *)&zapp_clusterRevision_all
     }
   },
   // ********* Flow measure Cluster ********* //
@@ -419,7 +419,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //23
       ATTRID_METER_0READINGSET_CURRSUMDELIVERED,
       ZCL_DATATYPE_UINT48, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE | ACCESS_REPORTABLE),
-      (void *)&zclWC_Flow1Value
+      (void *)&zapp_Flow1Value
     }
   },
   {
@@ -427,7 +427,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //24
       ATTRID_METER_0READINGSET_DEFAULTUPDATEPERIOD,
       ZCL_DATATYPE_UINT8, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWC_FlowUpdatePeriod
+      (void *)&zapp_FlowUpdatePeriod
     }
   },
   {
@@ -435,7 +435,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //25
       ATTRID_METER_0READINGSET_INTERVALREPORTING,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWC_FlowReportInterval
+      (void *)&zapp_FlowReportInterval
     }
   },
   {
@@ -443,7 +443,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //26
       ATTRID_METER_0READINGSET_VOLUMEPERREPORT,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWC_Flow1VolumePerReport
+      (void *)&zapp_Flow1VolumePerReport
     }
   },
     {
@@ -451,7 +451,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //27
       ATTRID_METER_2STATUS_STATUS,
       ZCL_DATATYPE_BITMAP8, (ACCESS_CONTROL_READ),
-      (void *)&zclWC_Flow1Status
+      (void *)&zapp_Flow1Status
     }
   },
   {
@@ -459,7 +459,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //28
       ATTRID_METER_2STATUS_REMAININGBATT,
       ZCL_DATATYPE_UINT8, (ACCESS_CONTROL_READ),
-      (void *)&zclWC_BatteryLevel
+      (void *)&zapp_BatteryLevel
     }
   },
   {
@@ -467,7 +467,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //29
       ATTRID_METER_2STATUS_HOURSINOPERATION,
       ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ),
-      (void *)&zclWC_Flow1HoursInOperation
+      (void *)&zapp_Flow1HoursInOperation
     }
   },
   {
@@ -475,7 +475,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //30
       ATTRID_METER_3FORMATTING_UNIT,
       ZCL_DATATYPE_ENUM8, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWC_Flow1Unit
+      (void *)&zapp_Flow1Unit
     }
   },
   {
@@ -483,7 +483,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //31
       ATTRID_METER_3FORMATTING_MULTIPLIER,
       ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWC_Flow1Multiplier
+      (void *)&zapp_Flow1Multiplier
     }
   },
   {
@@ -491,7 +491,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //32
       ATTRID_METER_3FORMATTING_DIVISOR,
       ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWC_Flow1Divisor
+      (void *)&zapp_Flow1Divisor
     }
   },
   {
@@ -499,7 +499,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //33
       ATTRID_METER_3FORMATTING_METERDEVICETYPE,
       ZCL_DATATYPE_BITMAP8, (ACCESS_CONTROL_READ),
-      (void *)&zclWC_DeviceType
+      (void *)&zapp_DeviceType
     }
   },
   {
@@ -507,7 +507,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //34
       ATTRID_METER_3FORMATTING_SITEID,
       ZCL_DATATYPE_OCTET_STR, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWC_Flow1Desc
+      (void *)&zapp_Flow1Desc
     }
   },
   {
@@ -515,7 +515,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //35
       ATTRID_METER_4HISTORY_INSTANTDEMAND,
       ZCL_DATATYPE_INT24, (ACCESS_CONTROL_READ | ACCESS_REPORTABLE),
-      (void *)&zclWC_Flow1InstDemand
+      (void *)&zapp_Flow1InstDemand
     }
   },
   {
@@ -523,7 +523,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //36
       ATTRID_METER_4HISTORY_CURRDAYCONSUMPTIONDELIVER,
       ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ),
-      (void *)&zclWC_Flow1CurrDay
+      (void *)&zapp_Flow1CurrDay
     }
   },
   {
@@ -531,7 +531,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //37
       ATTRID_METER_4HISTORY_PREVDAYCONSUMPTIONDELIVER,
       ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ),
-      (void *)&zclWC_Flow1PrevDay
+      (void *)&zapp_Flow1PrevDay
     }
   },
   {
@@ -539,7 +539,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //38
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
-      (void *)&zclWC_clusterRevision_all
+      (void *)&zapp_clusterRevision_all
     }
   },
   // *********  Diagnostic Cluster  ********* //
@@ -549,7 +549,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //39
       ATTRID_DIAG_0NUMOFRESETS,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ),
-      (void *)&zclWC_DiagNumOfResets
+      (void *)&zapp_DiagNumOfResets
     }
   },
   {
@@ -557,7 +557,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //40
       ATTRID_DIAG_1PERSISTMEMORYWRITES,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ),
-      (void *)&zclWC_DiagNVMemWrites
+      (void *)&zapp_DiagNVMemWrites
     }
   },
   {
@@ -565,7 +565,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //41
       ATTRID_DIAG_2PERSISTMEMORYWRITEFAILS,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ),
-      (void *)&zclWC_DiagNVMemWriteFails
+      (void *)&zapp_DiagNVMemWriteFails
     }
   },
   {
@@ -573,7 +573,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //42
       ATTRID_DIAG_3MEMALLOCATEDBLOCKS,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_AUTH_READ),
-      (void *)&zclWC_DiagMemAllocatedBlocks
+      (void *)&zapp_DiagMemAllocatedBlocks
     }
   },
   {
@@ -581,7 +581,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //43
       ATTRID_DIAG_4MEMFREEBLOCKS,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_AUTH_READ),
-      (void *)&zclWC_DiagMemFreeBlocks
+      (void *)&zapp_DiagMemFreeBlocks
     }
   },
   {
@@ -589,7 +589,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //44
       ATTRID_DIAG_5MEMUSED,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_AUTH_READ),
-      (void *)&zclWC_DiagMemUsed
+      (void *)&zapp_DiagMemUsed
     }
   },
   {
@@ -597,7 +597,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //45
       ATTRID_DIAG_6MEMHIGHWATER,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_AUTH_READ),
-      (void *)&zclWC_DiagMemHighWater
+      (void *)&zapp_DiagMemHighWater
     }
   },
   {
@@ -605,7 +605,7 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //46
       ATTRID_DIAG_7REBOOTREASON,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ),
-      (void *)&zclWC_DiagRebootReason
+      (void *)&zapp_DiagRebootReason
     }
   },
   {
@@ -613,14 +613,14 @@ CONST zclAttrRec_t zclWC_cAttrs[] =
     { //47
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
-      (void *)&zclWC_clusterRevision_all
+      (void *)&zapp_clusterRevision_all
     }
   }
 };
 
-CONST uint8 zclWC_cNumAttributes = ( sizeof(zclWC_cAttrs) / sizeof(zclWC_cAttrs[0]) );
+CONST uint8 zapp_cNumAttributes = ( sizeof(zapp_cAttrs) / sizeof(zapp_cAttrs[0]) );
 
-CONST zclAttrRec_t zclWC_cAttrs2[] =
+CONST zclAttrRec_t zapp_cAttrs2[] =
 {
   // ********* Flow measure Cluster ********* //
   // **************************************** //
@@ -629,7 +629,7 @@ CONST zclAttrRec_t zclWC_cAttrs2[] =
     { //1
       ATTRID_METER_0READINGSET_CURRSUMDELIVERED,
       ZCL_DATATYPE_UINT48, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE | ACCESS_REPORTABLE),
-      (void *)&zclWC_Flow2Value
+      (void *)&zapp_Flow2Value
     }
   },
   {
@@ -637,7 +637,7 @@ CONST zclAttrRec_t zclWC_cAttrs2[] =
     { //2
       ATTRID_METER_0READINGSET_DEFAULTUPDATEPERIOD,
       ZCL_DATATYPE_UINT8, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWC_FlowUpdatePeriod
+      (void *)&zapp_FlowUpdatePeriod
     }
   },
   {
@@ -645,7 +645,7 @@ CONST zclAttrRec_t zclWC_cAttrs2[] =
     { //3
       ATTRID_METER_0READINGSET_INTERVALREPORTING,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWC_FlowReportInterval
+      (void *)&zapp_FlowReportInterval
     }
   },
   {
@@ -653,7 +653,7 @@ CONST zclAttrRec_t zclWC_cAttrs2[] =
     { //4
       ATTRID_METER_0READINGSET_VOLUMEPERREPORT,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWC_Flow2VolumePerReport
+      (void *)&zapp_Flow2VolumePerReport
     }
   },
     {
@@ -661,7 +661,7 @@ CONST zclAttrRec_t zclWC_cAttrs2[] =
     { //5
       ATTRID_METER_2STATUS_STATUS,
       ZCL_DATATYPE_BITMAP8, (ACCESS_CONTROL_READ),
-      (void *)&zclWC_Flow2Status
+      (void *)&zapp_Flow2Status
     }
   },
   {
@@ -669,7 +669,7 @@ CONST zclAttrRec_t zclWC_cAttrs2[] =
     { //6
       ATTRID_METER_2STATUS_REMAININGBATT,
       ZCL_DATATYPE_UINT8, (ACCESS_CONTROL_READ),
-      (void *)&zclWC_BatteryLevel
+      (void *)&zapp_BatteryLevel
     }
   },
   {
@@ -677,7 +677,7 @@ CONST zclAttrRec_t zclWC_cAttrs2[] =
     { //7
       ATTRID_METER_2STATUS_HOURSINOPERATION,
       ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ),
-      (void *)&zclWC_Flow2HoursInOperation
+      (void *)&zapp_Flow2HoursInOperation
     }
   },
   {
@@ -685,7 +685,7 @@ CONST zclAttrRec_t zclWC_cAttrs2[] =
     { //8
       ATTRID_METER_3FORMATTING_UNIT,
       ZCL_DATATYPE_ENUM8, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWC_Flow2Unit
+      (void *)&zapp_Flow2Unit
     }
   },
   {
@@ -693,7 +693,7 @@ CONST zclAttrRec_t zclWC_cAttrs2[] =
     { //9
       ATTRID_METER_3FORMATTING_MULTIPLIER,
       ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWC_Flow2Multiplier
+      (void *)&zapp_Flow2Multiplier
     }
   },
   {
@@ -701,7 +701,7 @@ CONST zclAttrRec_t zclWC_cAttrs2[] =
     { //10
       ATTRID_METER_3FORMATTING_DIVISOR,
       ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWC_Flow2Divisor
+      (void *)&zapp_Flow2Divisor
     }
   },
   {
@@ -709,7 +709,7 @@ CONST zclAttrRec_t zclWC_cAttrs2[] =
     { //11
       ATTRID_METER_3FORMATTING_METERDEVICETYPE,
       ZCL_DATATYPE_BITMAP8, (ACCESS_CONTROL_READ),
-      (void *)&zclWC_DeviceType
+      (void *)&zapp_DeviceType
     }
   },
   {
@@ -717,7 +717,7 @@ CONST zclAttrRec_t zclWC_cAttrs2[] =
     { //12
       ATTRID_METER_3FORMATTING_SITEID,
       ZCL_DATATYPE_OCTET_STR, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
-      (void *)&zclWC_Flow2Desc
+      (void *)&zapp_Flow2Desc
     }
   },
   {
@@ -725,7 +725,7 @@ CONST zclAttrRec_t zclWC_cAttrs2[] =
     { //13
       ATTRID_METER_4HISTORY_INSTANTDEMAND,
       ZCL_DATATYPE_INT24, (ACCESS_CONTROL_READ | ACCESS_REPORTABLE),
-      (void *)&zclWC_Flow2InstDemand
+      (void *)&zapp_Flow2InstDemand
     }
   },
   {
@@ -733,7 +733,7 @@ CONST zclAttrRec_t zclWC_cAttrs2[] =
     { //14
       ATTRID_METER_4HISTORY_CURRDAYCONSUMPTIONDELIVER,
       ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ),
-      (void *)&zclWC_Flow2CurrDay
+      (void *)&zapp_Flow2CurrDay
     }
   },
   {
@@ -741,7 +741,7 @@ CONST zclAttrRec_t zclWC_cAttrs2[] =
     { //15
       ATTRID_METER_4HISTORY_PREVDAYCONSUMPTIONDELIVER,
       ZCL_DATATYPE_UINT24, (ACCESS_CONTROL_READ),
-      (void *)&zclWC_Flow2PrevDay
+      (void *)&zapp_Flow2PrevDay
     }
   },
   {
@@ -749,19 +749,19 @@ CONST zclAttrRec_t zclWC_cAttrs2[] =
     { //16
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
-      (void *)&zclWC_clusterRevision_all
+      (void *)&zapp_clusterRevision_all
     }
   }
 };
 
-CONST uint8 zclWC_cNumAttributes2 = ( sizeof(zclWC_cAttrs2) / sizeof(zclWC_cAttrs2[0]) );
+CONST uint8 zapp_cNumAttributes2 = ( sizeof(zapp_cAttrs2) / sizeof(zapp_cAttrs2[0]) );
 
 /*********************************************************************
  * SIMPLE DESCRIPTOR
  */
 // This is the Cluster ID List and should be filled with Application
 // specific cluster IDs.
-const cId_t zclWC_InClusterList[] =
+const cId_t zapp_InClusterList[] =
 {
   ZCL_CLUSTER_ID_GEN_BASIC,
   ZCL_CLUSTER_ID_GEN_POWER_CFG,
@@ -769,45 +769,45 @@ const cId_t zclWC_InClusterList[] =
   ZCL_CLUSTER_ID_SE_METERING
 };
 
-#define ZCLWC_MAX_INCLUSTERS    ( sizeof( zclWC_InClusterList ) / sizeof( zclWC_InClusterList[0] ))
+#define zapp_MAX_INCLUSTERS    ( sizeof( zapp_InClusterList ) / sizeof( zapp_InClusterList[0] ))
 
-const cId_t zclWC_OutClusterList[] =
+const cId_t zapp_OutClusterList[] =
 {
   ZCL_CLUSTER_ID_GEN_IDENTIFY,
   ZCL_CLUSTER_ID_GEN_GROUPS
 };
 
-#define ZCLWC_MAX_OUTCLUSTERS   ( sizeof( zclWC_OutClusterList ) / sizeof( zclWC_OutClusterList[0] ))
+#define zapp_MAX_OUTCLUSTERS   ( sizeof( zapp_OutClusterList ) / sizeof( zapp_OutClusterList[0] ))
 
-SimpleDescriptionFormat_t zclWC_SimpleDesc =
+SimpleDescriptionFormat_t zapp_SimpleDesc =
 {
   WC_ENDPOINT,                  //  int Endpoint;
   ZCL_HA_PROFILE_ID,                    //  uint16 AppProfId[2];
   ZCL_HA_DEVICEID_METER_INTERFACE,      //  uint16 AppDeviceId[2];
   WC_DEVICE_VERSION,            //  int   AppDevVer:4;
   WC_FLAGS,                     //  int   AppFlags:4;
-  ZCLWC_MAX_INCLUSTERS,         //  byte  AppNumInClusters;
-  (cId_t *)zclWC_InClusterList, //  byte *pAppInClusterList;
-  ZCLWC_MAX_OUTCLUSTERS,        //  byte  AppNumInClusters;
-  (cId_t *)zclWC_OutClusterList //  byte *pAppInClusterList;
+  zapp_MAX_INCLUSTERS,         //  byte  AppNumInClusters;
+  (cId_t *)zapp_InClusterList, //  byte *pAppInClusterList;
+  zapp_MAX_OUTCLUSTERS,        //  byte  AppNumInClusters;
+  (cId_t *)zapp_OutClusterList //  byte *pAppInClusterList;
 };
 
-const cId_t zclWC_InClusterList2[] =
+const cId_t zapp_InClusterList2[] =
 {
   ZCL_CLUSTER_ID_SE_METERING
 };
 
-#define ZCLWC_MAX_INCLUSTERS2    ( sizeof( zclWC_InClusterList2 ) / sizeof( zclWC_InClusterList2[0] ))
+#define zapp_MAX_INCLUSTERS2    ( sizeof( zapp_InClusterList2 ) / sizeof( zapp_InClusterList2[0] ))
 
-SimpleDescriptionFormat_t zclWC_SimpleDesc2 =
+SimpleDescriptionFormat_t zapp_SimpleDesc2 =
 {
   WC_ENDPOINT2,                  //  int Endpoint;
   ZCL_HA_PROFILE_ID,                    //  uint16 AppProfId[2];
   ZCL_HA_DEVICEID_METER_INTERFACE,      //  uint16 AppDeviceId[2];
   WC_DEVICE_VERSION,            //  int   AppDevVer:4;
   WC_FLAGS,                     //  int   AppFlags:4;
-  ZCLWC_MAX_INCLUSTERS2,         //  byte  AppNumInClusters;
-  (cId_t *)zclWC_InClusterList2, //  byte *pAppInClusterList;
+  zapp_MAX_INCLUSTERS2,         //  byte  AppNumInClusters;
+  (cId_t *)zapp_InClusterList2, //  byte *pAppInClusterList;
   0,                            //  byte  AppNumInClusters;
   NULL                          //  byte *pAppInClusterList;
 };
@@ -821,7 +821,7 @@ SimpleDescriptionFormat_t zclWC_SimpleDesc2 =
  */
 
 /*********************************************************************
- * @fn      zclWC_InitNVItems
+ * @fn      zapp_fNVInitItems
  *
  * @brief   Initialize items in NV for Attribute values.
  *
@@ -829,30 +829,30 @@ SimpleDescriptionFormat_t zclWC_SimpleDesc2 =
  *
  * @return  SUCCESS, FAILURE
  */
-void zclWC_NVInitItems(void)
+void zapp_fNVInitItems(void)
 {
-  zclWC_NVItemsInitStatus = 0;
+  zapp_NVItemsInitStatus = 0;
   
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DESC1, WC_METER_SITEID_SIZE, NULL) != SUCCESS ? WC_STORE_DESC1 : 0;
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DESC2, WC_METER_SITEID_SIZE, NULL) != SUCCESS ? WC_STORE_DESC2 : 0;
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_UNIT1, sizeof(zclWC_Flow1Unit), NULL) != SUCCESS ? WC_STORE_UNIT1 : 0;
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_UNIT2, sizeof(zclWC_Flow2Unit), NULL) != SUCCESS ? WC_STORE_UNIT2 : 0;
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_MULTIPLIER1, sizeof(zclWC_Flow1Multiplier), NULL) != SUCCESS ? WC_STORE_MULTIPLIER1 : 0;
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_MULTIPLIER2, sizeof(zclWC_Flow2Multiplier), NULL) != SUCCESS ? WC_STORE_MULTIPLIER2 : 0;
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DIVISOR1, sizeof(zclWC_Flow1Divisor), NULL) != SUCCESS ? WC_STORE_DIVISOR1 : 0;
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DIVISOR2, sizeof(zclWC_Flow2Divisor), NULL) != SUCCESS ? WC_STORE_DIVISOR2 : 0;
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VOLUMEREPORT1, sizeof(zclWC_Flow1VolumePerReport), NULL) != SUCCESS ? WC_STORE_VOLUMEREPORT1 : 0;
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VOLUMEREPORT2, sizeof(zclWC_Flow2VolumePerReport), NULL) != SUCCESS ? WC_STORE_VOLUMEREPORT2 : 0;
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_REPORTPERIOD, sizeof(zclWC_FlowReportInterval), NULL) != SUCCESS ? WC_STORE_REPORTPERIOD : 0;  
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VOLTAGERATED, sizeof(zclWC_BatteryVoltageRated), NULL) != SUCCESS ? WC_STORE_VOLTAGERATED : 0;  
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VALUES1, sizeof(zclWC_Flow1Value.dw.lowDW), NULL) != SUCCESS ? WC_STORE_VALUES1 : 0;;
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DATE1, sizeof(uint32), NULL) != SUCCESS ? WC_STORE_DATE1 : 0;
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VALUES2, sizeof(zclWC_Flow2Value.dw.lowDW), NULL) != SUCCESS ? WC_STORE_VALUES2 : 0;
-  zclWC_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DATE2, sizeof(uint32), NULL) != SUCCESS ? WC_STORE_DATE2 : 0;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DESC1, WC_METER_SITEID_SIZE, NULL) != SUCCESS ? WC_STORE_DESC1 : 0;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DESC2, WC_METER_SITEID_SIZE, NULL) != SUCCESS ? WC_STORE_DESC2 : 0;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_UNIT1, sizeof(zapp_Flow1Unit), NULL) != SUCCESS ? WC_STORE_UNIT1 : 0;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_UNIT2, sizeof(zapp_Flow2Unit), NULL) != SUCCESS ? WC_STORE_UNIT2 : 0;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_MULTIPLIER1, sizeof(zapp_Flow1Multiplier), NULL) != SUCCESS ? WC_STORE_MULTIPLIER1 : 0;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_MULTIPLIER2, sizeof(zapp_Flow2Multiplier), NULL) != SUCCESS ? WC_STORE_MULTIPLIER2 : 0;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DIVISOR1, sizeof(zapp_Flow1Divisor), NULL) != SUCCESS ? WC_STORE_DIVISOR1 : 0;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DIVISOR2, sizeof(zapp_Flow2Divisor), NULL) != SUCCESS ? WC_STORE_DIVISOR2 : 0;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VOLUMEREPORT1, sizeof(zapp_Flow1VolumePerReport), NULL) != SUCCESS ? WC_STORE_VOLUMEREPORT1 : 0;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VOLUMEREPORT2, sizeof(zapp_Flow2VolumePerReport), NULL) != SUCCESS ? WC_STORE_VOLUMEREPORT2 : 0;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_REPORTPERIOD, sizeof(zapp_FlowReportInterval), NULL) != SUCCESS ? WC_STORE_REPORTPERIOD : 0;  
+  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VOLTAGERATED, sizeof(zapp_BatteryVoltageRated), NULL) != SUCCESS ? WC_STORE_VOLTAGERATED : 0;  
+  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VALUES1, sizeof(zapp_Flow1Value.dw.lowDW), NULL) != SUCCESS ? WC_STORE_VALUES1 : 0;;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DATE1, sizeof(uint32), NULL) != SUCCESS ? WC_STORE_DATE1 : 0;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VALUES2, sizeof(zapp_Flow2Value.dw.lowDW), NULL) != SUCCESS ? WC_STORE_VALUES2 : 0;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DATE2, sizeof(uint32), NULL) != SUCCESS ? WC_STORE_DATE2 : 0;
 }
 
 /*********************************************************************
- * @fn      zclWC_CheckNVItem
+ * @fn      zapp_fNVCheckItem
  *
  * @brief   Check NV item whether it was stored in NV memory.
  *
@@ -860,14 +860,14 @@ void zclWC_NVInitItems(void)
  *
  * @return  SUCCESS, FAILURE
  */
-uint8 zclWC_NVCheckItem(uint16 id, uint16 len)
+uint8 zapp_fNVCheckItem(uint16 id, uint16 len)
 {
   uint32 buf;
   
   if (len > 4)
     len = 4;
   
-  if ((zclWC_NVItemsInitStatus & (1 << (id - WC_NV_DESC1))) == 0)
+  if ((zapp_NVItemsInitStatus & (1 << (id - WC_NV_DESC1))) == 0)
   {
     if (osal_nv_read(id, 0, len, &buf) == SUCCESS)
     {
@@ -882,7 +882,7 @@ uint8 zclWC_NVCheckItem(uint16 id, uint16 len)
 }
 
 /*********************************************************************
- * @fn      zclWC_InitAttrValue
+ * @fn      zapp_fInitAttrValue
  *
  * @brief   Init attribute from NV stored item or Default value.
  *
@@ -890,9 +890,9 @@ uint8 zclWC_NVCheckItem(uint16 id, uint16 len)
  *
  * @return  none
  */
-void zclWC_InitAttrValue(uint16 id, uint16 len, const void *src, void *buf)
+void zapp_fInitAttrValue(uint16 id, uint16 len, const void *src, void *buf)
 {
-  if (zclWC_NVCheckItem(id, len) == SUCCESS)
+  if (zapp_fNVCheckItem(id, len) == SUCCESS)
   {
     if (osal_nv_read(id, 0, len, buf) == SUCCESS)
       return;
@@ -902,7 +902,7 @@ void zclWC_InitAttrValue(uint16 id, uint16 len, const void *src, void *buf)
 }
 
 /*********************************************************************
- * @fn      zclWC_UpdateAttrIntervalReporting
+ * @fn      zapp_fUpdateAttrIntervalReporting
  *
  * @brief   Update value according to array of valid values
  *
@@ -910,34 +910,34 @@ void zclWC_InitAttrValue(uint16 id, uint16 len, const void *src, void *buf)
  *
  * @return  valid value
  */
-void zclWC_UpdateAttrIntervalReporting(uint16 *data)
+void zapp_fUpdateAttrIntervalReporting(uint16 *data)
 {
   uint8 l, r, m;
 
   l = 0;
-  r = zclWC_cReportIntervalsSize_1;
+  r = zapp_cReportIntervalsSize_1;
   m = 5;
   while (l <= r)
   {
     m = l + (r - l) / 2;
-    if (*data < zclWC_cReportIntervals[m] - (zclWC_cReportIntervals[m] - zclWC_cReportIntervals[m - 1])/2)
+    if (*data < zapp_cReportIntervals[m] - (zapp_cReportIntervals[m] - zapp_cReportIntervals[m - 1])/2)
     {
       if (m == 1) { m = 0; break; }
       r = m - 1;
     }
-    else if (*data > zclWC_cReportIntervals[m] + (zclWC_cReportIntervals[m + 1] - zclWC_cReportIntervals[m])/2)
+    else if (*data > zapp_cReportIntervals[m] + (zapp_cReportIntervals[m + 1] - zapp_cReportIntervals[m])/2)
     {
-      if (m == zclWC_cReportIntervalsSize_1 - 1) { m = zclWC_cReportIntervalsSize_1; break; }
+      if (m == zapp_cReportIntervalsSize_1 - 1) { m = zapp_cReportIntervalsSize_1; break; }
       l = m + 1;
     }
     else
       break;
   }
-  *data = zclWC_cReportIntervals[m];
+  *data = zapp_cReportIntervals[m];
 }
 
 /*********************************************************************
- * @fn      zclWC_UpdateAttrRatedVaoltage
+ * @fn      zapp_fUpdateAttrRatedVoltage
  *
  * @brief   Update value according to array of valid values
  *
@@ -945,30 +945,30 @@ void zclWC_UpdateAttrIntervalReporting(uint16 *data)
  *
  * @return  valid value
  */
-void zclWC_UpdateAttrRatedVoltage(uint8 *data)
+void zapp_fUpdateAttrRatedVoltage(uint8 *data)
 {
   uint8 i;
   
-  for (i = 0; i <= zclWC_cRatedVoltagesSize_1; i++)
+  for (i = 0; i <= zapp_cRatedVoltagesSize_1; i++)
   {
-    if (*data <= zclWC_cRatedVoltages[i])
+    if (*data <= zapp_cRatedVoltages[i])
     {
-      *data = zclWC_cRatedVoltages[i];
-      zclWC_BatteryVoltageThres1 = zclWC_cRatedVoltageThres[i];
-      zclWC_BatteryVoltageThresMin = zclWC_cRatedVoltageThresMin[i];
+      *data = zapp_cRatedVoltages[i];
+      zapp_BatteryVoltageThres1 = zapp_cRatedVoltageThres[i];
+      zapp_BatteryVoltageThresMin = zapp_cRatedVoltageThresMin[i];
       break;
     }
   }
-  if (i > zclWC_cRatedVoltagesSize_1)
+  if (i > zapp_cRatedVoltagesSize_1)
   {
-    *data = zclWC_cRatedVoltages[zclWC_cRatedVoltagesSize_1];
-    zclWC_BatteryVoltageThres1 = zclWC_cRatedVoltageThres[zclWC_cRatedVoltagesSize_1];
-    zclWC_BatteryVoltageThresMin = zclWC_cRatedVoltageThresMin[zclWC_cRatedVoltagesSize_1];
+    *data = zapp_cRatedVoltages[zapp_cRatedVoltagesSize_1];
+    zapp_BatteryVoltageThres1 = zapp_cRatedVoltageThres[zapp_cRatedVoltagesSize_1];
+    zapp_BatteryVoltageThresMin = zapp_cRatedVoltageThresMin[zapp_cRatedVoltagesSize_1];
   }
 }
 
 /*********************************************************************
- * @fn      zclWC_StoreAttrToNV
+ * @fn      zapp_fStoreAttrToNV
  *
  * @brief   Store attributes to NV memory.
  *
@@ -976,98 +976,98 @@ void zclWC_UpdateAttrRatedVoltage(uint8 *data)
  *
  * @return  none
  */
-void zclWC_StoreAttrToNV(uint16 *mask)
+void zapp_fStoreAttrToNV(uint16 *mask)
 {
   if (*mask & WC_STORE_DESC1)
   {
-    if (osal_nv_write(WC_NV_DESC1, 0, WC_METER_SITEID_SIZE + 1, zclWC_Flow1Desc) == SUCCESS)
-      zclWC_DiagNVMemWrites++;
+    if (osal_nv_write(WC_NV_DESC1, 0, WC_METER_SITEID_SIZE + 1, zapp_Flow1Desc) == SUCCESS)
+      zapp_DiagNVMemWrites++;
     else
-      zclWC_DiagNVMemWriteFails++;
+      zapp_DiagNVMemWriteFails++;
   } else if (*mask & WC_STORE_DESC2)
   {
-    if (osal_nv_write(WC_NV_DESC2, 0, WC_METER_SITEID_SIZE + 1, zclWC_Flow2Desc) == SUCCESS)
-      zclWC_DiagNVMemWrites++;
+    if (osal_nv_write(WC_NV_DESC2, 0, WC_METER_SITEID_SIZE + 1, zapp_Flow2Desc) == SUCCESS)
+      zapp_DiagNVMemWrites++;
     else
-      zclWC_DiagNVMemWriteFails++;
+      zapp_DiagNVMemWriteFails++;
   } else if (*mask & WC_STORE_UNIT1)
   {
-    if (osal_nv_write(WC_NV_UNIT1, 0, sizeof(zclWC_Flow1Unit), &zclWC_Flow1Unit) == SUCCESS)
-      zclWC_DiagNVMemWrites++;
+    if (osal_nv_write(WC_NV_UNIT1, 0, sizeof(zapp_Flow1Unit), &zapp_Flow1Unit) == SUCCESS)
+      zapp_DiagNVMemWrites++;
     else
-      zclWC_DiagNVMemWriteFails++;
+      zapp_DiagNVMemWriteFails++;
   } else if (*mask & WC_STORE_UNIT2)
   {
-    if (osal_nv_write(WC_NV_UNIT2, 0, sizeof(zclWC_Flow2Unit), &zclWC_Flow2Unit) == SUCCESS)
-      zclWC_DiagNVMemWrites++;
+    if (osal_nv_write(WC_NV_UNIT2, 0, sizeof(zapp_Flow2Unit), &zapp_Flow2Unit) == SUCCESS)
+      zapp_DiagNVMemWrites++;
     else
-      zclWC_DiagNVMemWriteFails++;
+      zapp_DiagNVMemWriteFails++;
   } else if (*mask & WC_STORE_DIVISOR1)
   {
-    if (osal_nv_write(WC_NV_DIVISOR1, 0, sizeof(zclWC_Flow1Divisor), &zclWC_Flow1Divisor) == SUCCESS)
-      zclWC_DiagNVMemWrites++;
+    if (osal_nv_write(WC_NV_DIVISOR1, 0, sizeof(zapp_Flow1Divisor), &zapp_Flow1Divisor) == SUCCESS)
+      zapp_DiagNVMemWrites++;
     else
-      zclWC_DiagNVMemWriteFails++;
+      zapp_DiagNVMemWriteFails++;
   } else if (*mask & WC_STORE_DIVISOR2)
   {
-    if (osal_nv_write(WC_NV_DIVISOR2, 0, sizeof(zclWC_Flow2Divisor), &zclWC_Flow2Divisor) == SUCCESS)
-      zclWC_DiagNVMemWrites++;
+    if (osal_nv_write(WC_NV_DIVISOR2, 0, sizeof(zapp_Flow2Divisor), &zapp_Flow2Divisor) == SUCCESS)
+      zapp_DiagNVMemWrites++;
     else
-      zclWC_DiagNVMemWriteFails++;
+      zapp_DiagNVMemWriteFails++;
   } else if (*mask & WC_STORE_MULTIPLIER1)
   {
-    if (osal_nv_write(WC_NV_MULTIPLIER1, 0, sizeof(zclWC_Flow1Multiplier), &zclWC_Flow1Multiplier) == SUCCESS)
-      zclWC_DiagNVMemWrites++;
+    if (osal_nv_write(WC_NV_MULTIPLIER1, 0, sizeof(zapp_Flow1Multiplier), &zapp_Flow1Multiplier) == SUCCESS)
+      zapp_DiagNVMemWrites++;
     else
-      zclWC_DiagNVMemWriteFails++;
+      zapp_DiagNVMemWriteFails++;
   } else if (*mask & WC_STORE_MULTIPLIER2)
   {
-    if (osal_nv_write(WC_NV_MULTIPLIER2, 0, sizeof(zclWC_Flow2Multiplier), &zclWC_Flow2Multiplier) == SUCCESS)
-      zclWC_DiagNVMemWrites++;
+    if (osal_nv_write(WC_NV_MULTIPLIER2, 0, sizeof(zapp_Flow2Multiplier), &zapp_Flow2Multiplier) == SUCCESS)
+      zapp_DiagNVMemWrites++;
     else
-      zclWC_DiagNVMemWriteFails++;
+      zapp_DiagNVMemWriteFails++;
   } else if (*mask & WC_STORE_VOLUMEREPORT1)
   {
-    if (osal_nv_write(WC_NV_VOLUMEREPORT1, 0, sizeof(zclWC_Flow1VolumePerReport), &zclWC_Flow1VolumePerReport) == SUCCESS)
-      zclWC_DiagNVMemWrites++;
+    if (osal_nv_write(WC_NV_VOLUMEREPORT1, 0, sizeof(zapp_Flow1VolumePerReport), &zapp_Flow1VolumePerReport) == SUCCESS)
+      zapp_DiagNVMemWrites++;
     else
-      zclWC_DiagNVMemWriteFails++;
+      zapp_DiagNVMemWriteFails++;
   } else if (*mask & WC_STORE_VOLUMEREPORT2)
   {
-    if (osal_nv_write(WC_NV_VOLUMEREPORT2, 0, sizeof(zclWC_Flow2VolumePerReport), &zclWC_Flow2VolumePerReport) == SUCCESS)
-      zclWC_DiagNVMemWrites++;
+    if (osal_nv_write(WC_NV_VOLUMEREPORT2, 0, sizeof(zapp_Flow2VolumePerReport), &zapp_Flow2VolumePerReport) == SUCCESS)
+      zapp_DiagNVMemWrites++;
     else
-      zclWC_DiagNVMemWriteFails++;
+      zapp_DiagNVMemWriteFails++;
   } else if (*mask & WC_STORE_REPORTPERIOD)
   {
-    if (osal_nv_write(WC_NV_REPORTPERIOD, 0, sizeof(zclWC_FlowReportInterval), &zclWC_FlowReportInterval) == SUCCESS)
-      zclWC_DiagNVMemWrites++;
+    if (osal_nv_write(WC_NV_REPORTPERIOD, 0, sizeof(zapp_FlowReportInterval), &zapp_FlowReportInterval) == SUCCESS)
+      zapp_DiagNVMemWrites++;
     else
-      zclWC_DiagNVMemWriteFails++;
+      zapp_DiagNVMemWriteFails++;
   } else if (*mask & WC_STORE_VOLTAGERATED)
   {
-    if (osal_nv_write(WC_NV_VOLTAGERATED, 0, sizeof(zclWC_BatteryVoltageRated), &zclWC_BatteryVoltageRated) == SUCCESS)
-      zclWC_DiagNVMemWrites++;
+    if (osal_nv_write(WC_NV_VOLTAGERATED, 0, sizeof(zapp_BatteryVoltageRated), &zapp_BatteryVoltageRated) == SUCCESS)
+      zapp_DiagNVMemWrites++;
     else
-      zclWC_DiagNVMemWriteFails++;
+      zapp_DiagNVMemWriteFails++;
   } else if (*mask & WC_STORE_VALUES1)
   {
-    if (osal_nv_write(WC_NV_VALUES1, 0, sizeof(zclWC_Flow1Value.dw.lowDW), &zclWC_Flow1Value.dw.lowDW) == SUCCESS)
-      zclWC_DiagNVMemWrites++;
+    if (osal_nv_write(WC_NV_VALUES1, 0, sizeof(zapp_Flow1Value.dw.lowDW), &zapp_Flow1Value.dw.lowDW) == SUCCESS)
+      zapp_DiagNVMemWrites++;
     else
-      zclWC_DiagNVMemWriteFails++;
+      zapp_DiagNVMemWriteFails++;
   } else if (*mask & WC_STORE_VALUES2)
   {
-    if (osal_nv_write(WC_NV_VALUES2, 0, sizeof(zclWC_Flow2Value.dw.lowDW), &zclWC_Flow2Value.dw.lowDW) == SUCCESS)
-      zclWC_DiagNVMemWrites++;
+    if (osal_nv_write(WC_NV_VALUES2, 0, sizeof(zapp_Flow2Value.dw.lowDW), &zapp_Flow2Value.dw.lowDW) == SUCCESS)
+      zapp_DiagNVMemWrites++;
     else
-      zclWC_DiagNVMemWriteFails++;
+      zapp_DiagNVMemWriteFails++;
   }
   *mask = 0;
 }
 
 /*********************************************************************
- * @fn      zclWC_ResetAttributesToDefaultValues
+ * @fn      zapp_fResetAttributesToDefaultValues
  *
  * @brief   Reset all writable attributes to their default values.
  *
@@ -1075,96 +1075,96 @@ void zclWC_StoreAttrToNV(uint16 *mask)
  *
  * @return  none
  */
-void zclWC_ResetAttributesToDefaultValues(void)
+void zapp_fResetAttributesToDefaultValues(void)
 {
   int i;
   uint32 src;
  // uint8 result;
   
-  zclWC_LocationDescription[0] = 15;
+  zapp_LocationDescription[0] = 15;
   for (i = 1; i <= 15; i++)
   {
-    zclWC_LocationDescription[i] = ' ';
+    zapp_LocationDescription[i] = ' ';
   }
   
-  zclWC_PhysicalEnvironment = DEFAULT_PHYSICAL_ENVIRONMENT;
-  zclWC_DeviceEnable = DEFAULT_DEVICE_ENABLE_STATE;
+  zapp_PhysicalEnvironment = DEFAULT_PHYSICAL_ENVIRONMENT;
+  zapp_DeviceEnable = DEFAULT_DEVICE_ENABLE_STATE;
   
-  zclWC_IdentifyTime = DEFAULT_IDENTIFY_TIME;
+  zapp_IdentifyTime = DEFAULT_IDENTIFY_TIME;
   
-  //osal_memcpy(zclWC_Flow1Desc, zclWC_cDesc1, WC_METER_SITEID_SIZE + 1);
-  //osal_memcpy(zclWC_Flow2Desc, zclWC_cDesc2, WC_METER_SITEID_SIZE + 1);
+  //osal_memcpy(zapp_Flow1Desc, zapp_cDesc1, WC_METER_SITEID_SIZE + 1);
+  //osal_memcpy(zapp_Flow2Desc, zapp_cDesc2, WC_METER_SITEID_SIZE + 1);
   
-  zclWC_InitAttrValue(WC_NV_DESC1, WC_METER_SITEID_SIZE, zclWC_cDesc1, zclWC_Flow1Desc);
-  zclWC_InitAttrValue(WC_NV_DESC2, WC_METER_SITEID_SIZE, zclWC_cDesc2, zclWC_Flow2Desc);
+  zapp_fInitAttrValue(WC_NV_DESC1, WC_METER_SITEID_SIZE, zapp_cDesc1, zapp_Flow1Desc);
+  zapp_fInitAttrValue(WC_NV_DESC2, WC_METER_SITEID_SIZE, zapp_cDesc2, zapp_Flow2Desc);
   
   src = 0;
-  zclWC_InitAttrValue(WC_NV_VALUES1, sizeof(zclWC_Flow1Value.dw.lowDW), &src, &zclWC_Flow1Value.dw.lowDW);
-  zclWC_InitAttrValue(WC_NV_VALUES2, sizeof(zclWC_Flow1Value.dw.lowDW), &src, &zclWC_Flow2Value.dw.lowDW);
+  zapp_fInitAttrValue(WC_NV_VALUES1, sizeof(zapp_Flow1Value.dw.lowDW), &src, &zapp_Flow1Value.dw.lowDW);
+  zapp_fInitAttrValue(WC_NV_VALUES2, sizeof(zapp_Flow1Value.dw.lowDW), &src, &zapp_Flow2Value.dw.lowDW);
   
-  //zclWC_Flow1Value.dw.lowDW = 0;
-  zclWC_Flow1Value.dw.hiW = 0;
-  //zclWC_Flow2Value.dw.lowDW = 0;
-  zclWC_Flow2Value.dw.hiW = 0;
-  zclWC_Flow1InstDemand = 0;
-  zclWC_Flow2InstDemand = 0;
-  zclWC_Flow1InstDemandPrev = 0;
-  zclWC_Flow2InstDemandPrev = 0;
-  zclWC_Flow1PrevDay = 0;
-  zclWC_Flow2PrevDay = 0;
-  zclWC_Flow1CurrDay = 0;
-  zclWC_Flow2CurrDay = 0;
-  zclWC_Flow1HoursInOperation = 0;
-  zclWC_Flow2HoursInOperation = 0;
+  //zapp_Flow1Value.dw.lowDW = 0;
+  zapp_Flow1Value.dw.hiW = 0;
+  //zapp_Flow2Value.dw.lowDW = 0;
+  zapp_Flow2Value.dw.hiW = 0;
+  zapp_Flow1InstDemand = 0;
+  zapp_Flow2InstDemand = 0;
+  zapp_Flow1InstDemandPrev = 0;
+  zapp_Flow2InstDemandPrev = 0;
+  zapp_Flow1PrevDay = 0;
+  zapp_Flow2PrevDay = 0;
+  zapp_Flow1CurrDay = 0;
+  zapp_Flow2CurrDay = 0;
+  zapp_Flow1HoursInOperation = 0;
+  zapp_Flow2HoursInOperation = 0;
   
   src = WC_METER_MULTIPLIER;
-  zclWC_InitAttrValue(WC_NV_MULTIPLIER1, sizeof(zclWC_Flow1Multiplier), &src, &zclWC_Flow1Multiplier);
-  zclWC_InitAttrValue(WC_NV_MULTIPLIER2, sizeof(zclWC_Flow2Multiplier), &src, &zclWC_Flow2Multiplier);
-  //zclWC_Flow1Multiplier = WC_METER_MULTIPLIER;
-  //zclWC_Flow2Multiplier = WC_METER_MULTIPLIER;
+  zapp_fInitAttrValue(WC_NV_MULTIPLIER1, sizeof(zapp_Flow1Multiplier), &src, &zapp_Flow1Multiplier);
+  zapp_fInitAttrValue(WC_NV_MULTIPLIER2, sizeof(zapp_Flow2Multiplier), &src, &zapp_Flow2Multiplier);
+  //zapp_Flow1Multiplier = WC_METER_MULTIPLIER;
+  //zapp_Flow2Multiplier = WC_METER_MULTIPLIER;
   src = WC_METER_DIVISOR;
-  zclWC_InitAttrValue(WC_NV_DIVISOR1, sizeof(zclWC_Flow1Divisor), &src, &zclWC_Flow1Divisor);
-  zclWC_InitAttrValue(WC_NV_DIVISOR2, sizeof(zclWC_Flow2Divisor), &src, &zclWC_Flow2Divisor);
-  //zclWC_Flow1Divisor = WC_METER_DIVISOR;
-  //zclWC_Flow2Divisor = WC_METER_DIVISOR;
+  zapp_fInitAttrValue(WC_NV_DIVISOR1, sizeof(zapp_Flow1Divisor), &src, &zapp_Flow1Divisor);
+  zapp_fInitAttrValue(WC_NV_DIVISOR2, sizeof(zapp_Flow2Divisor), &src, &zapp_Flow2Divisor);
+  //zapp_Flow1Divisor = WC_METER_DIVISOR;
+  //zapp_Flow2Divisor = WC_METER_DIVISOR;
   src = ENGINEERING_UNIT_METER_M3;
-  zclWC_InitAttrValue(WC_NV_UNIT1, sizeof(zclWC_Flow1Unit), &src, &zclWC_Flow1Unit);
-  zclWC_InitAttrValue(WC_NV_UNIT2, sizeof(zclWC_Flow2Unit), &src, &zclWC_Flow2Unit);
-  //zclWC_Flow1Unit = ENGINEERING_UNIT_METER_M3;
-  //zclWC_Flow2Unit = ENGINEERING_UNIT_METER_M3;
+  zapp_fInitAttrValue(WC_NV_UNIT1, sizeof(zapp_Flow1Unit), &src, &zapp_Flow1Unit);
+  zapp_fInitAttrValue(WC_NV_UNIT2, sizeof(zapp_Flow2Unit), &src, &zapp_Flow2Unit);
+  //zapp_Flow1Unit = ENGINEERING_UNIT_METER_M3;
+  //zapp_Flow2Unit = ENGINEERING_UNIT_METER_M3;
   src = WC_VOLUME_PER_REPORT;
-  zclWC_InitAttrValue(WC_NV_VOLUMEREPORT1, sizeof(zclWC_Flow1VolumePerReport), &src, &zclWC_Flow1VolumePerReport);
-  zclWC_InitAttrValue(WC_NV_VOLUMEREPORT2, sizeof(zclWC_Flow2VolumePerReport), &src, &zclWC_Flow2VolumePerReport);
-  //zclWC_Flow1VolumePerReport = WC_VOLUME_PER_REPORT;
-  //zclWC_Flow2VolumePerReport = WC_VOLUME_PER_REPORT;
-  zclWC_Flow1Status = 0;
-  zclWC_Flow2Status = 0;
+  zapp_fInitAttrValue(WC_NV_VOLUMEREPORT1, sizeof(zapp_Flow1VolumePerReport), &src, &zapp_Flow1VolumePerReport);
+  zapp_fInitAttrValue(WC_NV_VOLUMEREPORT2, sizeof(zapp_Flow2VolumePerReport), &src, &zapp_Flow2VolumePerReport);
+  //zapp_Flow1VolumePerReport = WC_VOLUME_PER_REPORT;
+  //zapp_Flow2VolumePerReport = WC_VOLUME_PER_REPORT;
+  zapp_Flow1Status = 0;
+  zapp_Flow2Status = 0;
   
-  zclWC_FlowUpdatePeriod = WC_METER_INSTDEMAND_UPDATEPERIOD_MAX;   // InstDemand update interval
+  zapp_FlowUpdatePeriod = WC_METER_INSTDEMAND_UPDATEPERIOD_MAX;   // InstDemand update interval
   src = WC_METER_REPORT_INTERVAL;
-  zclWC_InitAttrValue(WC_NV_REPORTPERIOD, sizeof(zclWC_FlowReportInterval), &src, &zclWC_FlowReportInterval);
-  //zclWC_FlowReportInterval = WC_METER_REPORT_INTERVAL; // Report interal in minutes
+  zapp_fInitAttrValue(WC_NV_REPORTPERIOD, sizeof(zapp_FlowReportInterval), &src, &zapp_FlowReportInterval);
+  //zapp_FlowReportInterval = WC_METER_REPORT_INTERVAL; // Report interal in minutes
   
-  //zclWC_BatteryVoltageRated = VDD_VOLTAGE_RATED36;
+  //zapp_BatteryVoltageRated = VDD_VOLTAGE_RATED36;
   src = VDD_VOLTAGE_RATED36;
-  zclWC_InitAttrValue(WC_NV_VOLTAGERATED, sizeof(zclWC_BatteryVoltageRated), &src, &zclWC_BatteryVoltageRated);
-  zclWC_BatteryVoltageThresMin = VDD_VOLTAGE36_MIN;
-  zclWC_BatteryVoltageThres1 = VDD_VOLTAGE36_THRES1;
-  zclWC_BatteryAlarmMask = BAT_ALARM_MASK_VOLT_2_LOW | BAT_ALARM_MASK_BATTERY_ALARM_1;
-  zclWC_BatteryAlarmState = 0;
+  zapp_fInitAttrValue(WC_NV_VOLTAGERATED, sizeof(zapp_BatteryVoltageRated), &src, &zapp_BatteryVoltageRated);
+  zapp_BatteryVoltageThresMin = VDD_VOLTAGE36_MIN;
+  zapp_BatteryVoltageThres1 = VDD_VOLTAGE36_THRES1;
+  zapp_BatteryAlarmMask = BAT_ALARM_MASK_VOLT_2_LOW | BAT_ALARM_MASK_BATTERY_ALARM_1;
+  zapp_BatteryAlarmState = 0;
   
-  zclWC_DiagNumOfResets = 0;
-  zclWC_DiagNVMemWrites = 0;
-  zclWC_DiagNVMemWriteFails = 0;
-  zclWC_DiagMemAllocatedBlocks = osal_heap_block_cnt();
-  zclWC_DiagMemFreeBlocks = osal_heap_block_free();
-  zclWC_DiagMemUsed = osal_heap_mem_used();
-  zclWC_DiagMemHighWater = osal_heap_high_water();
-  //zclWC_DiagRebootReason = 0;  
+  zapp_DiagNumOfResets = 0;
+  zapp_DiagNVMemWrites = 0;
+  zapp_DiagNVMemWriteFails = 0;
+  zapp_DiagMemAllocatedBlocks = osal_heap_block_cnt();
+  zapp_DiagMemFreeBlocks = osal_heap_block_free();
+  zapp_DiagMemUsed = osal_heap_mem_used();
+  zapp_DiagMemHighWater = osal_heap_high_water();
+  //zapp_DiagRebootReason = 0;  
   
-  osal_memset(zclWC_NVItems, 0x00, sizeof(zclWC_NVItems[0]) * WC_NVQUEUE_LEN);
-  osal_memset(zclWC_NVItemSizes, 0x00, sizeof(zclWC_NVItemSizes[0]) * WC_NVQUEUE_LEN);
-  osal_memset(zclWC_NVItemSources, 0x00, sizeof(zclWC_NVItemSources[0]) * WC_NVQUEUE_LEN);
+  osal_memset(zapp_NVItems, 0x00, sizeof(zapp_NVItems[0]) * WC_NVQUEUE_LEN);
+  osal_memset(zapp_NVItemSizes, 0x00, sizeof(zapp_NVItemSizes[0]) * WC_NVQUEUE_LEN);
+  osal_memset(zapp_NVItemSources, 0x00, sizeof(zapp_NVItemSources[0]) * WC_NVQUEUE_LEN);
 }
 
 /****************************************************************************

@@ -120,7 +120,7 @@ const pTaskEventHandlerFn tasksArr[] = {
   #endif
   zcl_event_loop,
   bdb_event_loop,
-  zclWC_event_loop,
+  zapp_event_loop,
 #if (defined OTA_CLIENT) && (OTA_CLIENT == TRUE)
   zclOTA_event_loop
 #endif
@@ -180,7 +180,7 @@ void osalInitTasks( void )
   #endif
   zcl_Init( taskID++ );
   bdb_Init( taskID++ );
-  zclWC_Init( taskID++ );
+  zapp_Init( taskID++ );
 #if (defined OTA_CLIENT) && (OTA_CLIENT == TRUE)
   zclOTA_Init( taskID );
 #endif

@@ -208,61 +208,61 @@ typedef union
 /*********************************************************************
  * VARIABLES
  */
-extern SimpleDescriptionFormat_t zclWC_SimpleDesc;
-extern SimpleDescriptionFormat_t zclWC_SimpleDesc2;
+extern SimpleDescriptionFormat_t zapp_SimpleDesc;
+extern SimpleDescriptionFormat_t zapp_SimpleDesc2;
 
-extern CONST zclAttrRec_t zclWC_cAttrs[];
-extern CONST zclAttrRec_t zclWC_cAttrs2[];
-extern CONST uint8 zclWC_cNumAttributes;
-extern CONST uint8 zclWC_cNumAttributes2;
+extern CONST zclAttrRec_t zapp_cAttrs[];
+extern CONST zclAttrRec_t zapp_cAttrs2[];
+extern CONST uint8 zapp_cNumAttributes;
+extern CONST uint8 zapp_cNumAttributes2;
 
-extern uint8 zclWC_Flow1Desc[];
-extern uint48_t zclWC_Flow1Value;
-extern int24 zclWC_Flow1InstDemand;
-extern int24 zclWC_Flow1InstDemandPrev;
-extern uint24 zclWC_Flow1Multiplier;
-extern uint24 zclWC_Flow1Divisor;
-extern uint8 zclWC_Flow1Unit;
-extern uint16 zclWC_Flow1VolumePerReport;
-extern uint24 zclWC_Flow1CurrDay;
-extern uint24 zclWC_Flow1PrevDay;
-extern uint8 zclWC_Flow1Status;
+extern uint8 zapp_Flow1Desc[];
+extern uint48_t zapp_Flow1Value;
+extern int24 zapp_Flow1InstDemand;
+extern int24 zapp_Flow1InstDemandPrev;
+extern uint24 zapp_Flow1Multiplier;
+extern uint24 zapp_Flow1Divisor;
+extern uint8 zapp_Flow1Unit;
+extern uint16 zapp_Flow1VolumePerReport;
+extern uint24 zapp_Flow1CurrDay;
+extern uint24 zapp_Flow1PrevDay;
+extern uint8 zapp_Flow1Status;
 
-extern uint8 zclWC_Flow2Desc[];
-extern uint48_t zclWC_Flow2Value;
-extern int24 zclWC_Flow2InstDemand;
-extern int24 zclWC_Flow2InstDemandPrev;
-extern uint24 zclWC_Flow2Multiplier;
-extern uint24 zclWC_Flow2Divisor;
-extern uint16 zclWC_Flow2Unit;
-extern uint16 zclWC_Flow2VolumePerReport;
-extern uint24 zclWC_Flow2CurrDay;
-extern uint24 zclWC_Flow2PrevDay;
-extern uint8 zclWC_Flow2Status;
+extern uint8 zapp_Flow2Desc[];
+extern uint48_t zapp_Flow2Value;
+extern int24 zapp_Flow2InstDemand;
+extern int24 zapp_Flow2InstDemandPrev;
+extern uint24 zapp_Flow2Multiplier;
+extern uint24 zapp_Flow2Divisor;
+extern uint16 zapp_Flow2Unit;
+extern uint16 zapp_Flow2VolumePerReport;
+extern uint24 zapp_Flow2CurrDay;
+extern uint24 zapp_Flow2PrevDay;
+extern uint8 zapp_Flow2Status;
 
-extern uint8 zclWC_BatteryVoltage;             // 0.1V unit
-extern uint8 zclWC_BatteryVoltageRated;        // 0.1V unit, 3.6V LiFePO4
-extern uint8 zclWC_BatteryVoltageThresMin;     // 0.1V unit, 2.5V LiFePO4 T>0 degC
-extern uint8 zclWC_BatteryVoltageThres1;
-extern uint8 zclWC_BatteryLevel;               // 0 - 100%
-extern uint8 zclWC_BatteryAlarmMask;
-extern uint32 zclWC_BatteryAlarmState;
+extern uint8 zapp_BatteryVoltage;             // 0.1V unit
+extern uint8 zapp_BatteryVoltageRated;        // 0.1V unit, 3.6V LiFePO4
+extern uint8 zapp_BatteryVoltageThresMin;     // 0.1V unit, 2.5V LiFePO4 T>0 degC
+extern uint8 zapp_BatteryVoltageThres1;
+extern uint8 zapp_BatteryLevel;               // 0 - 100%
+extern uint8 zapp_BatteryAlarmMask;
+extern uint32 zapp_BatteryAlarmState;
 
-extern uint8 zclWC_FlowUpdatePeriod;        // InstDemand update time period in seconds
-extern uint16 zclWC_FlowReportInterval;     // Time interval in minutes for Reporting compatability
-extern uint24 zclWC_Flow1HoursInOperation;
-extern uint24 zclWC_Flow2HoursInOperation;
+extern uint8 zapp_FlowUpdatePeriod;        // InstDemand update time period in seconds
+extern uint16 zapp_FlowReportInterval;     // Time interval in minutes for Reporting compatability
+extern uint24 zapp_Flow1HoursInOperation;
+extern uint24 zapp_Flow2HoursInOperation;
 // Diagnostic cluster
-extern uint16 zclWC_DiagNumOfResets;
-extern uint16 zclWC_DiagNVMemWrites;
-extern uint16 zclWC_DiagNVMemWriteFails;
-extern uint16 zclWC_DiagMemAllocatedBlocks;
-extern uint16 zclWC_DiagMemFreeBlocks;
-extern uint16 zclWC_DiagMemUsed;       // Used memory in bytes
-extern uint16 zclWC_DiagMemHighWater;  // Maximum memory allocated
-extern uint16 zclWC_DiagRebootReason;
+extern uint16 zapp_DiagNumOfResets;
+extern uint16 zapp_DiagNVMemWrites;
+extern uint16 zapp_DiagNVMemWriteFails;
+extern uint16 zapp_DiagMemAllocatedBlocks;
+extern uint16 zapp_DiagMemFreeBlocks;
+extern uint16 zapp_DiagMemUsed;       // Used memory in bytes
+extern uint16 zapp_DiagMemHighWater;  // Maximum memory allocated
+extern uint16 zapp_DiagRebootReason;
 
-extern uint16 zclWC_IdentifyTime;
+extern uint16 zapp_IdentifyTime;
 
 /*********************************************************************
  * FUNCTIONS
@@ -271,23 +271,23 @@ extern uint16 zclWC_IdentifyTime;
  /*
   * Initialization for the task
   */
-extern void zclWC_Init(byte task_id);
+extern void zapp_Init(byte task_id);
 
 /*
  *  Event Process for the task
  */
-extern UINT16 zclWC_event_loop(byte task_id, UINT16 events);
+extern UINT16 zapp_event_loop(byte task_id, UINT16 events);
 
 /*
  *  Reset all writable attributes to their default values.
  */
-extern void zclWC_ResetAttributesToDefaultValues(void); //implemented in zcl_watercounter_data.c
-extern void zclWC_NVInitItems(void);
-extern uint8 zclWC_NVCheckItem(uint16 id, uint16 len);
-extern void zclWC_StoreAttrToNV(uint16 *mask);
-extern void zclWC_InitAttrValue(uint16 id, uint16 len, const void *src, void *buf);
-extern void zclWC_UpdateAttrIntervalReporting(uint16 *data);
-extern void zclWC_UpdateAttrRatedVoltage(uint8 *data);
+extern void zapp_fResetAttributesToDefaultValues(void); //implemented in zcl_watercounter_data.c
+extern void zapp_fNVInitItems(void);
+extern uint8 zapp_fNVCheckItem(uint16 id, uint16 len);
+extern void zapp_fStoreAttrToNV(uint16 *mask);
+extern void zapp_fInitAttrValue(uint16 id, uint16 len, const void *src, void *buf);
+extern void zapp_fUpdateAttrIntervalReporting(uint16 *data);
+extern void zapp_fUpdateAttrRatedVoltage(uint8 *data);
 /*********************************************************************
 *********************************************************************/
 
