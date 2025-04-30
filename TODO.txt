@@ -8,11 +8,15 @@ TODO list.
    Using AthorizeAccess flag of atributes.
    
 3. Write and restore the attributes to-from NV
+  Queue 10 items length
+  NV item ID, Data len, Pointer to Data
+  function NVItemQueueAdd. If item is already in queue than it doesnt add an item to queue
 
 +-4. Diagnostic cluster.
    Last reboot reason.
    Time since Last boot  = Current time of device - Time of first sync
-   NV write's counter
+   NV items write counter
+   NV items write status word
    HEAP memory statistics.
    
 +5. Initiate Comissioning procedure after reboot if device was connected to Network
@@ -28,3 +32,7 @@ TODO list.
 +9. Update WorkingHours attribute every Hour
 
 +10. Move the attribute processing algorithms to *_data.c file.
+
+11. Reporting
+  update function CfgReporting. It must add attributes into reporting list
+  and send CfgReortingRsp

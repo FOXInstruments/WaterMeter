@@ -114,6 +114,8 @@
 #define WC_NV_VALUES2           0x0412
 #define WC_NV_DATE2             0x0413
 
+#define WC_NVQUEUE_LEN          10
+
 /*********************************************************************
  * TYPEDEFS
  */
@@ -200,6 +202,9 @@ uint16 zclWC_DiagMemHighWater;  // Maximum memory allocated
 uint16 zclWC_DiagRebootReason;
 
 uint16 zclWC_NVItemsInitStatus;
+uint16 zclWC_NVItems[WC_NVQUEUE_LEN];
+uint16 zclWC_NVItemSizes[WC_NVQUEUE_LEN];
+uint16 zclWC_NVItemSources[WC_NVQUEUE_LEN];
 
 // Identify Cluster
 uint16 zclWC_IdentifyTime = 0;
@@ -1156,6 +1161,10 @@ void zclWC_ResetAttributesToDefaultValues(void)
   zclWC_DiagMemUsed = osal_heap_mem_used();
   zclWC_DiagMemHighWater = osal_heap_high_water();
   //zclWC_DiagRebootReason = 0;  
+  
+  osal_memset(zclWC_NVItems, 0x00, sizeof(zclWC_NVItems[0]) * WC_NVQUEUE_LEN);
+  osal_memset(zclWC_NVItemSizes, 0x00, sizeof(zclWC_NVItemSizes[0]) * WC_NVQUEUE_LEN);
+  osal_memset(zclWC_NVItemSources, 0x00, sizeof(zclWC_NVItemSources[0]) * WC_NVQUEUE_LEN);
 }
 
 /****************************************************************************

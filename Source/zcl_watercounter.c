@@ -455,14 +455,14 @@ void zclWC_Init(byte task_id)
   if (zclWC_FlowUpdatePeriod != 0xFF )
     status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATEINSTDEMAND, zclWC_FlowUpdatePeriod*1000L);
   
+  HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_ON); // to show NoNetwork state
+  HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
+  HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
+  
   status = 0;
   osal_nv_read(ZCD_NV_BDBNODEISONANETWORK, 0, sizeof(bdbAttributes.bdbNodeIsOnANetwork), &status);
   if ((status == true) && (status != 0xFF))  // Connect to network after reboot if device was commissioned OnNetwork
     bdb_StartCommissioning(BDB_COMMISSIONING_MODE_INITIATOR_TL | BDB_COMMISSIONING_MODE_NWK_STEERING /*| BDB_COMMISSIONING_MODE_FINDING_BINDING*/);
-  
-  HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_ON); // to show NoNetwork state
-  HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
-  HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
   
   //status = osal_start_timerEx(zclWC_TaskID, WC_EVT_UPDATE, 10000);
   status = osal_set_event(zclWC_TaskID, WC_EVT_UPDATE);
@@ -1175,6 +1175,7 @@ uint8 zclWC_ValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
           MT_ProcessDebugString("Write.SiteID");
         #endif
         break;
+        
       case ATTRID_METER_3FORMATTING_UNIT:
         if (*(uint8*)pAttrInfo->attrData != *(uint8*)pAttr->attr.dataPtr)
         {
@@ -1188,6 +1189,7 @@ uint8 zclWC_ValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
           MT_ProcessDebugString("Write.Unit");
         #endif
         break;
+        
       case ATTRID_METER_3FORMATTING_MULTIPLIER:
         if (*(uint24*)pAttrInfo->attrData != *(uint24*)pAttr->attr.dataPtr)
         {
@@ -1201,6 +1203,7 @@ uint8 zclWC_ValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
           MT_ProcessDebugString("Write.Multiplier");
         #endif
         break;
+        
       case ATTRID_METER_3FORMATTING_DIVISOR:
         if (*(uint24*)pAttrInfo->attrData != *(uint24*)pAttr->attr.dataPtr) // Current and new values are diffrent
         {
