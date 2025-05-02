@@ -1194,9 +1194,9 @@ uint8 zapp_fValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
         if (*(uint8*)pAttrInfo->attrData != *(uint8*)pAttr->attr.dataPtr)
         {
           if (pAttr->attr.dataPtr == &zapp_Flow1Unit)
-            zapp_AttrToStore |= WC_STORE_UNIT1;
+            zapp_AttrToStore |= WC_STOREID_UNIT1;
           else
-            zapp_AttrToStore |= WC_STORE_UNIT2;
+            zapp_AttrToStore |= WC_STOREID_UNIT2;
           osal_start_timerEx(zapp_TaskID, WC_EVT_STOREATTR, WC_TIMEOUT_STOREATTR);
         }
         #ifdef MT_DEBUG_FUNC
@@ -1208,9 +1208,9 @@ uint8 zapp_fValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
         if (*(uint24*)pAttrInfo->attrData != *(uint24*)pAttr->attr.dataPtr)
         {
           if (pAttr->attr.dataPtr == &zapp_Flow1Multiplier) // Endpoint8
-            zapp_AttrToStore |= WC_STORE_MULTIPLIER1;
+            zapp_AttrToStore |= WC_STOREID_MULTIPLIER1;
           else
-            zapp_AttrToStore |= WC_STORE_MULTIPLIER2;  // Endpoint9
+            zapp_AttrToStore |= WC_STOREID_MULTIPLIER2;  // Endpoint9
           osal_start_timerEx(zapp_TaskID, WC_EVT_STOREATTR, WC_TIMEOUT_STOREATTR);
         }
         #ifdef MT_DEBUG_FUNC
@@ -1222,9 +1222,9 @@ uint8 zapp_fValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
         if (*(uint24*)pAttrInfo->attrData != *(uint24*)pAttr->attr.dataPtr) // Current and new values are diffrent
         {
           if (pAttr->attr.dataPtr == &zapp_Flow1Divisor) // Endpoint8
-            zapp_AttrToStore |= WC_STORE_DIVISOR1;
+            zapp_AttrToStore |= WC_STOREID_DIVISOR1;
           else
-            zapp_AttrToStore |= WC_STORE_DIVISOR2;  // Endpoint9
+            zapp_AttrToStore |= WC_STOREID_DIVISOR2;  // Endpoint9
           osal_start_timerEx(zapp_TaskID, WC_EVT_STOREATTR, WC_TIMEOUT_STOREATTR);
         }
         #ifdef MT_DEBUG_FUNC

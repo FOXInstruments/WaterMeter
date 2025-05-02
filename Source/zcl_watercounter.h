@@ -170,23 +170,6 @@ extern "C"
 #define ATTRID_DIAG_6MEMHIGHWATER               0x0006  // uint16
 #define ATTRID_DIAG_7REBOOTREASON               0x0007  // uint16
 
-#define WC_STORE_DESC1             0x0001<<0
-#define WC_STORE_DESC2             0x0001<<1
-#define WC_STORE_UNIT1             0x0001<<2
-#define WC_STORE_UNIT2             0x0001<<3
-#define WC_STORE_MULTIPLIER1       0x0001<<4
-#define WC_STORE_MULTIPLIER2       0x0001<<5
-#define WC_STORE_DIVISOR1          0x0001<<6
-#define WC_STORE_DIVISOR2          0x0001<<7
-#define WC_STORE_VOLUMEREPORT1     0x0001<<8
-#define WC_STORE_VOLUMEREPORT2     0x0001<<9
-#define WC_STORE_REPORTPERIOD      0x0001<<10
-#define WC_STORE_VOLTAGERATED      0x0001<<11
-#define WC_STORE_VALUES1           0x0001<<12
-#define WC_STORE_DATE1             0x0001<<13
-#define WC_STORE_VALUES2           0x0001<<14
-#define WC_STORE_DATE2             0x0001<<15
-
 /*********************************************************************
  * MACROS
  */
@@ -195,6 +178,26 @@ extern "C"
 /*********************************************************************
  * TYPEDEFS
  */
+enum
+{
+  WC_STOREID_DESC1,
+  WC_STOREID_DESC2,
+  WC_STOREID_UNIT1,
+  WC_STOREID_UNIT2,
+  WC_STOREID_MULTIPLIER1,
+  WC_STOREID_MULTIPLIER2,
+  WC_STOREID_DIVISOR1,
+  WC_STOREID_DIVISOR2,
+  WC_STOREID_VOLUMEREPORT1,
+  WC_STOREID_VOLUMEREPORT2,
+  WC_STOREID_REPORTPERIOD,
+  WC_STOREID_VOLTAGERATED,
+  WC_STOREID_VALUES1,
+  WC_STOREID_DATE1,
+  WC_STOREID_VALUES2,
+  WC_STOREID_DATE2,
+};
+
 typedef union
 {
   uint8       array[5];
@@ -284,6 +287,7 @@ extern UINT16 zapp_event_loop(byte task_id, UINT16 events);
 extern void zapp_fResetAttributesToDefaultValues(void); //implemented in zcl_watercounter_data.c
 extern void zapp_fNVInitItems(void);
 extern uint8 zapp_fNVCheckItem(uint16 id, uint16 len);
+extern Status_t zapp_fStoreQueueAdd(uint8 idx, uint8 size, void *src);
 extern void zapp_fStoreAttrToNV(uint16 *mask);
 extern void zapp_fInitAttrValue(uint16 id, uint16 len, const void *src, void *buf);
 extern void zapp_fUpdateAttrIntervalReporting(uint16 *data);

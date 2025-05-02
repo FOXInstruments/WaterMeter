@@ -33,6 +33,7 @@ TODO list.
 
 +10. Move the attribute processing algorithms to *_data.c file.
 
-11. Reporting
++11. Reporting
   update function CfgReporting. It must add attributes into reporting list
-  and send CfgReortingRsp
+  and send CfgReortingRsp.
+  It is realized by adding #define ZCL_REPORT_DESTINATION_DEVICE
