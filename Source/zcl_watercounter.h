@@ -55,27 +55,27 @@ extern "C"
 /*********************************************************************
  * CONSTANTS
  */
-#define WC_ENDPOINT              8
-#define WC_ENDPOINT2             (WC_ENDPOINT + 1)
+#define ZAPP_ENDPOINT              8
+#define ZAPP_ENDPOINT2             (ZAPP_ENDPOINT + 1)
 // Timeouts
-#define WC_TIMEOUT_DEBOUNCE             50
-#define WC_TIMEOUT_LONGPUSH             100
-#define WC_TIMEOUT_STOREATTR            60000
-#define WC_TIMEOUT_END_DEVICE_REJOIN    60000        // msec
+#define ZAPP_TIMEOUT_DEBOUNCE             50
+#define ZAPP_TIMEOUT_LONGPUSH             100
+#define ZAPP_TIMEOUT_STOREATTR            60000
+#define ZAPP_TIMEOUT_END_DEVICE_REJOIN    60000        // msec
 
 // Events for the sample app
-#define WC_EVT_END_DEVICE_REJOIN   0x0001        // event_flag is a 2-byte bitmap with each bit specifying an event
+#define ZAPP_EVT_END_DEVICE_REJOIN   0x0001        // event_flag is a 2-byte bitmap with each bit specifying an event
 
 // Events
-#define WC_EVT_IMPULSE1            0x0002
-#define WC_EVT_IMPULSE2            0x0004  
-#define WC_EVT_UPDATE              0x0008
-#define WC_EVT_LONGPUSH            0x0010
-#define WC_EVT_UPDATEINSTDEMAND    0x0020       // InstanteniousDemand update event
-#define WC_EVT_BATTERY             0x0040
-#define WC_EVT_TIMESYNC            0x0080
-#define WC_EVT_COMMISSION          0x0100       // Init commission if device was connected to network
-#define WC_EVT_STOREATTR           0x0200       // Store changed attributes into NV memory
+#define ZAPP_EVT_IMPULSE1            0x0002
+#define ZAPP_EVT_IMPULSE2            0x0004  
+#define ZAPP_EVT_UPDATE              0x0008
+#define ZAPP_EVT_LONGPUSH            0x0010
+#define ZAPP_EVT_UPDATEINSTDEMAND    0x0020       // InstanteniousDemand update event
+#define ZAPP_EVT_BATTERY             0x0040
+#define ZAPP_EVT_TIMESYNC            0x0080
+#define ZAPP_EVT_COMMISSION          0x0100       // Init commission if device was connected to network
+#define ZAPP_EVT_STOREATTR           0x0200       // Store changed attributes into NV memory
 
 // Vdd/3 / Internal Reference X ENOB --> (Vdd / 3) / 1.15 X 127
 #define VDD3_2_0                74   // 2.0 V required to safely read/write internal flash.
@@ -91,14 +91,14 @@ extern "C"
 #define VDD_VOLTAGE36_THRES1      30           // 0.1V unit
 #define VDD3TOVOLTAGE(v)        (v * 11.5 * 3 / 127.0)   // Convert ADC value to Voltage 0.1V unit
   
-#define WC_METER_SITEID_SIZE              10
-#define WC_METER_MULTIPLIER               10    // Weight of one count
-#define WC_METER_DIVISOR                  1000  // Divider to calculate flow rate
-#define WC_METER_REPORT_INTERVAL          60    // Reporting interval in minutes
-#define WC_METER_INSTDEMAND_UPDATEPERIOD_MIN  60   // instDemand update period in seconds 60-254, 255 - disable
-#define WC_METER_INSTDEMAND_UPDATEPERIOD_MAX  255
-#define WC_REPORT_CHANGE_VOLTAGE          1     // Change values for BDB_REPORTING (0.1V unit)
-#define WC_VOLUME_PER_REPORT             10
+#define ZAPP_METER_SITEID_SIZE              10
+#define ZAPP_METER_MULTIPLIER               10    // Weight of one count
+#define ZAPP_METER_DIVISOR                  1000  // Divider to calculate flow rate
+#define ZAPP_METER_REPORT_INTERVAL          60    // Reporting interval in minutes
+#define ZAPP_METER_INSTDEMAND_UPDATEPERIOD_MIN  60   // instDemand update period in seconds 60-254, 255 - disable
+#define ZAPP_METER_INSTDEMAND_UPDATEPERIOD_MAX  255
+#define ZAPP_REPORT_CHANGE_VOLTAGE          1     // Change values for BDB_REPORTING (0.1V unit)
+#define ZAPP_VOLUME_PER_REPORT             10
   
 #define TIME_SYNC_DIFF          5L       // Difference between device time and gate time
   
@@ -164,11 +164,12 @@ extern "C"
 #define ATTRID_DIAG_0NUMOFRESETS                0x0000  // uint16
 #define ATTRID_DIAG_1PERSISTMEMORYWRITES        0x0001  // uint16
 #define ATTRID_DIAG_2PERSISTMEMORYWRITEFAILS    0x0002  // uint16
-#define ATTRID_DIAG_3MEMALLOCATEDBLOCKS         0x0003  // uint16
-#define ATTRID_DIAG_4MEMFREEBLOCKS              0x0004  // uint16
-#define ATTRID_DIAG_5MEMUSED                    0x0005  // uint16
-#define ATTRID_DIAG_6MEMHIGHWATER               0x0006  // uint16
-#define ATTRID_DIAG_7REBOOTREASON               0x0007  // uint16
+#define ATTRID_DIAG_3PERSISTMEMORYFAILITEMS     0x0003  // uint16
+#define ATTRID_DIAG_4MEMALLOCATEDBLOCKS         0x0004  // uint16
+#define ATTRID_DIAG_5MEMFREEBLOCKS              0x0005  // uint16
+#define ATTRID_DIAG_6MEMUSED                    0x0006  // uint16
+#define ATTRID_DIAG_7MEMHIGHWATER               0x0007  // uint16
+#define ATTRID_DIAG_8REBOOTREASON               0x0008  // uint16
 
 /*********************************************************************
  * MACROS
@@ -180,22 +181,22 @@ extern "C"
  */
 enum
 {
-  WC_STOREID_DESC1,
-  WC_STOREID_DESC2,
-  WC_STOREID_UNIT1,
-  WC_STOREID_UNIT2,
-  WC_STOREID_MULTIPLIER1,
-  WC_STOREID_MULTIPLIER2,
-  WC_STOREID_DIVISOR1,
-  WC_STOREID_DIVISOR2,
-  WC_STOREID_VOLUMEREPORT1,
-  WC_STOREID_VOLUMEREPORT2,
-  WC_STOREID_REPORTPERIOD,
-  WC_STOREID_VOLTAGERATED,
-  WC_STOREID_VALUES1,
-  WC_STOREID_DATE1,
-  WC_STOREID_VALUES2,
-  WC_STOREID_DATE2,
+  ZAPP_STOREID_DESC1,
+  ZAPP_STOREID_DESC2,
+  ZAPP_STOREID_UNIT1,
+  ZAPP_STOREID_UNIT2,
+  ZAPP_STOREID_MULTIPLIER1,
+  ZAPP_STOREID_MULTIPLIER2,
+  ZAPP_STOREID_DIVISOR1,
+  ZAPP_STOREID_DIVISOR2,
+  ZAPP_STOREID_VOLUMEREPORT1,
+  ZAPP_STOREID_VOLUMEREPORT2,
+  ZAPP_STOREID_REPORTPERIOD,
+  ZAPP_STOREID_VOLTAGERATED,
+  ZAPP_STOREID_VALUES1,
+  ZAPP_STOREID_DATE1,
+  ZAPP_STOREID_VALUES2,
+  ZAPP_STOREID_DATE2,
 };
 
 typedef union
@@ -259,6 +260,7 @@ extern uint24 zapp_Flow2HoursInOperation;
 extern uint16 zapp_DiagNumOfResets;
 extern uint16 zapp_DiagNVMemWrites;
 extern uint16 zapp_DiagNVMemWriteFails;
+extern uint32 zapp_DiagNVMemFailItems;
 extern uint16 zapp_DiagMemAllocatedBlocks;
 extern uint16 zapp_DiagMemFreeBlocks;
 extern uint16 zapp_DiagMemUsed;       // Used memory in bytes

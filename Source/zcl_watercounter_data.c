@@ -68,11 +68,11 @@
  * CONSTANTS
  */
 
-#define WC_DEVICE_VERSION     1
-#define WC_FLAGS              0
+#define ZAPP_DEVICE_VERSION     1
+#define ZAPP_FLAGS              0
 
-#define WC_HWVERSION          0
-#define WC_ZCLVERSION         0
+#define ZAPP_HWVERSION          0
+#define ZAPP_ZCLVERSION         0
 
 #define DEFAULT_PHYSICAL_ENVIRONMENT 0
 #define DEFAULT_DEVICE_ENABLE_STATE DEVICE_ENABLED
@@ -97,24 +97,26 @@
 #define ENGINEERING_UNIT_TIME_DAY      70
 
 // 0x0401 - 0x0FFF application NV ids
-#define WC_NV_DESC1             0x0404
-#define WC_NV_DESC2             0x0405
-#define WC_NV_UNIT1             0x0406
-#define WC_NV_UNIT2             0x0407
-#define WC_NV_MULTIPLIER1       0x0408
-#define WC_NV_MULTIPLIER2       0x0409
-#define WC_NV_DIVISOR1          0x040A
-#define WC_NV_DIVISOR2          0x040B
-#define WC_NV_VOLUMEREPORT1     0x040C
-#define WC_NV_VOLUMEREPORT2     0x040D
-#define WC_NV_REPORTPERIOD      0x040E
-#define WC_NV_VOLTAGERATED      0x040F
-#define WC_NV_VALUES1           0x0410
-#define WC_NV_DATE1             0x0411
-#define WC_NV_VALUES2           0x0412
-#define WC_NV_DATE2             0x0413
+#define ZAPP_NV_DESC1             0x0404
+#define ZAPP_NV_DESC2             0x0405
+#define ZAPP_NV_UNIT1             0x0406
+#define ZAPP_NV_UNIT2             0x0407
+#define ZAPP_NV_MULTIPLIER1       0x0408
+#define ZAPP_NV_MULTIPLIER2       0x0409
+#define ZAPP_NV_DIVISOR1          0x040A
+#define ZAPP_NV_DIVISOR2          0x040B
+#define ZAPP_NV_VOLUMEREPORT1     0x040C
+#define ZAPP_NV_VOLUMEREPORT2     0x040D
+#define ZAPP_NV_REPORTPERIOD      0x040E
+#define ZAPP_NV_VOLTAGERATED      0x040F
+#define ZAPP_NV_VALUES1           0x0410
+#define ZAPP_NV_DATE1             0x0411
+#define ZAPP_NV_VALUES2           0x0412
+#define ZAPP_NV_DATE2             0x0413
 
-#define WC_STOREQUEUE_LEN          10
+#define ZAPP_NV_FIRST             (ZAPP_NV_DESC1 - 1)
+
+#define ZAPP_STOREQUEUE_LEN          10
 
 /*********************************************************************
  * TYPEDEFS
@@ -132,8 +134,8 @@
 const uint16 zapp_clusterRevision_all = 0x0001; //currently all cluster implementations are according to ZCL6, which has revision #1. In the future it is possible that different clusters will have different revisions, so they will have to use separate attribute variables.
 
 // Basic Cluster
-const uint8 zapp_HWRevision = WC_HWVERSION;
-const uint8 zapp_ZCLVersion = WC_ZCLVERSION;
+const uint8 zapp_HWRevision = ZAPP_HWVERSION;
+const uint8 zapp_ZCLVersion = ZAPP_ZCLVERSION;
 const uint8 zapp_ManufacturerName[] = { 15, 'F','o','x','.','I','n','s','t','r','u','m','e','n','t','s' };
 const uint8 zapp_ModelId[] = { 12, 'F','O','X','-','M','e','t','e','r','0','0','1',};
 const uint8 zapp_DateCode[] = { 10, '2','0','2','4','-','0','2','-','0','2'};
@@ -141,10 +143,10 @@ const uint8 zapp_DateCode[] = { 10, '2','0','2','4','-','0','2','-','0','2'};
 const uint8 zapp_DeviceType = 0x02;    // Water meter
 const uint8 zapp_PowerSource = POWER_SOURCE_BATTERY;
 
-const uint8 zapp_cDesc1[WC_METER_SITEID_SIZE + 1] = {WC_METER_SITEID_SIZE, 'C', 'o', 'l', 'd', ' ', ' ', ' ', ' ', ' ', ' '};   // Constants to initialize default values
-const uint8 zapp_cDesc2[WC_METER_SITEID_SIZE + 1] = {WC_METER_SITEID_SIZE, 'H', 'o', 't', ' ', ' ', ' ', ' ', ' ', ' ', ' '};
+const uint8 zapp_cDesc1[ZAPP_METER_SITEID_SIZE + 1] = {ZAPP_METER_SITEID_SIZE, 'C', 'o', 'l', 'd', ' ', ' ', ' ', ' ', ' ', ' '};   // Constants to initialize default values
+const uint8 zapp_cDesc2[ZAPP_METER_SITEID_SIZE + 1] = {ZAPP_METER_SITEID_SIZE, 'H', 'o', 't', ' ', ' ', ' ', ' ', ' ', ' ', ' '};
 
-uint8 zapp_Flow1Desc[WC_METER_SITEID_SIZE + 1];
+uint8 zapp_Flow1Desc[ZAPP_METER_SITEID_SIZE + 1];
 uint48_t zapp_Flow1Value;
 int24 zapp_Flow1InstDemand;
 int24 zapp_Flow1InstDemandPrev;
@@ -156,7 +158,7 @@ uint24 zapp_Flow1CurrDay;
 uint24 zapp_Flow1PrevDay;
 uint8 zapp_Flow1Status;
 
-uint8 zapp_Flow2Desc[WC_METER_SITEID_SIZE + 1];
+uint8 zapp_Flow2Desc[ZAPP_METER_SITEID_SIZE + 1];
 uint48_t zapp_Flow2Value;
 int24 zapp_Flow2InstDemand;
 int24 zapp_Flow2InstDemandPrev;
@@ -195,6 +197,7 @@ uint8 zapp_DeviceEnable = DEVICE_ENABLED;
 uint16 zapp_DiagNumOfResets;
 uint16 zapp_DiagNVMemWrites;
 uint16 zapp_DiagNVMemWriteFails;
+uint32 zapp_DiagNVMemFailItems;
 uint16 zapp_DiagMemAllocatedBlocks;
 uint16 zapp_DiagMemFreeBlocks;
 uint16 zapp_DiagMemUsed;       // Used memory in bytes
@@ -202,9 +205,9 @@ uint16 zapp_DiagMemHighWater;  // Maximum memory allocated
 uint16 zapp_DiagRebootReason;
 
 uint16 zapp_NVItemsInitStatus;
-uint8 zapp_StoreQueueItems[WC_STOREQUEUE_LEN];
-uint8 zapp_StoreQueueSizes[WC_STOREQUEUE_LEN];
-void* zapp_StoreQueueSources[WC_STOREQUEUE_LEN];
+uint8 zapp_StoreQueueItems[ZAPP_STOREQUEUE_LEN];
+uint8 zapp_StoreQueueSizes[ZAPP_STOREQUEUE_LEN];
+void* zapp_StoreQueueSources[ZAPP_STOREQUEUE_LEN];
 
 // Identify Cluster
 uint16 zapp_IdentifyTime = 0;
@@ -571,46 +574,54 @@ CONST zclAttrRec_t zapp_cAttrs[] =
   {
     ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
     { //42
-      ATTRID_DIAG_3MEMALLOCATEDBLOCKS,
+      ATTRID_DIAG_3PERSISTMEMORYFAILITEMS,
+      ZCL_DATATYPE_UINT32, (ACCESS_CONTROL_READ),
+      (void *)&zapp_DiagNVMemFailItems
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
+    { //43
+      ATTRID_DIAG_4MEMALLOCATEDBLOCKS,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_AUTH_READ),
       (void *)&zapp_DiagMemAllocatedBlocks
     }
   },
   {
     ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
-    { //43
-      ATTRID_DIAG_4MEMFREEBLOCKS,
+    { //44
+      ATTRID_DIAG_5MEMFREEBLOCKS,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_AUTH_READ),
       (void *)&zapp_DiagMemFreeBlocks
     }
   },
   {
     ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
-    { //44
-      ATTRID_DIAG_5MEMUSED,
+    { //45
+      ATTRID_DIAG_6MEMUSED,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_AUTH_READ),
       (void *)&zapp_DiagMemUsed
     }
   },
   {
     ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
-    { //45
-      ATTRID_DIAG_6MEMHIGHWATER,
+    { //46
+      ATTRID_DIAG_7MEMHIGHWATER,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_AUTH_READ),
       (void *)&zapp_DiagMemHighWater
     }
   },
   {
     ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
-    { //46
-      ATTRID_DIAG_7REBOOTREASON,
+    { //47
+      ATTRID_DIAG_8REBOOTREASON,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ),
       (void *)&zapp_DiagRebootReason
     }
   },
   {
     ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
-    { //47
+    { //48
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
       (void *)&zapp_clusterRevision_all
@@ -781,11 +792,11 @@ const cId_t zapp_OutClusterList[] =
 
 SimpleDescriptionFormat_t zapp_SimpleDesc =
 {
-  WC_ENDPOINT,                  //  int Endpoint;
+  ZAPP_ENDPOINT,                  //  int Endpoint;
   ZCL_HA_PROFILE_ID,                    //  uint16 AppProfId[2];
   ZCL_HA_DEVICEID_METER_INTERFACE,      //  uint16 AppDeviceId[2];
-  WC_DEVICE_VERSION,            //  int   AppDevVer:4;
-  WC_FLAGS,                     //  int   AppFlags:4;
+  ZAPP_DEVICE_VERSION,            //  int   AppDevVer:4;
+  ZAPP_FLAGS,                     //  int   AppFlags:4;
   zapp_MAX_INCLUSTERS,         //  byte  AppNumInClusters;
   (cId_t *)zapp_InClusterList, //  byte *pAppInClusterList;
   zapp_MAX_OUTCLUSTERS,        //  byte  AppNumInClusters;
@@ -801,11 +812,11 @@ const cId_t zapp_InClusterList2[] =
 
 SimpleDescriptionFormat_t zapp_SimpleDesc2 =
 {
-  WC_ENDPOINT2,                  //  int Endpoint;
+  ZAPP_ENDPOINT2,                  //  int Endpoint;
   ZCL_HA_PROFILE_ID,                    //  uint16 AppProfId[2];
   ZCL_HA_DEVICEID_METER_INTERFACE,      //  uint16 AppDeviceId[2];
-  WC_DEVICE_VERSION,            //  int   AppDevVer:4;
-  WC_FLAGS,                     //  int   AppFlags:4;
+  ZAPP_DEVICE_VERSION,            //  int   AppDevVer:4;
+  ZAPP_FLAGS,                     //  int   AppFlags:4;
   zapp_MAX_INCLUSTERS2,         //  byte  AppNumInClusters;
   (cId_t *)zapp_InClusterList2, //  byte *pAppInClusterList;
   0,                            //  byte  AppNumInClusters;
@@ -833,22 +844,22 @@ void zapp_fNVInitItems(void)
 {
   zapp_NVItemsInitStatus = 0;
   
-  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DESC1, WC_METER_SITEID_SIZE, NULL) != SUCCESS ? 1<<WC_STOREID_DESC1 : 0;
-  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DESC2, WC_METER_SITEID_SIZE, NULL) != SUCCESS ? 1<<WC_STOREID_DESC2 : 0;
-  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_UNIT1, sizeof(zapp_Flow1Unit), NULL) != SUCCESS ? 1<<WC_STOREID_UNIT1 : 0;
-  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_UNIT2, sizeof(zapp_Flow2Unit), NULL) != SUCCESS ? 1<<WC_STOREID_UNIT2 : 0;
-  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_MULTIPLIER1, sizeof(zapp_Flow1Multiplier), NULL) != SUCCESS ? 1<<WC_STOREID_MULTIPLIER1 : 0;
-  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_MULTIPLIER2, sizeof(zapp_Flow2Multiplier), NULL) != SUCCESS ? 1<<WC_STOREID_MULTIPLIER2 : 0;
-  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DIVISOR1, sizeof(zapp_Flow1Divisor), NULL) != SUCCESS ? 1<<WC_STOREID_DIVISOR1 : 0;
-  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DIVISOR2, sizeof(zapp_Flow2Divisor), NULL) != SUCCESS ? 1<<WC_STOREID_DIVISOR2 : 0;
-  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VOLUMEREPORT1, sizeof(zapp_Flow1VolumePerReport), NULL) != SUCCESS ? 1<<WC_STOREID_VOLUMEREPORT1 : 0;
-  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VOLUMEREPORT2, sizeof(zapp_Flow2VolumePerReport), NULL) != SUCCESS ? 1<<WC_STOREID_VOLUMEREPORT2 : 0;
-  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_REPORTPERIOD, sizeof(zapp_FlowReportInterval), NULL) != SUCCESS ? 1<<WC_STOREID_REPORTPERIOD : 0;  
-  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VOLTAGERATED, sizeof(zapp_BatteryVoltageRated), NULL) != SUCCESS ? 1<<WC_STOREID_VOLTAGERATED : 0;  
-  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VALUES1, sizeof(zapp_Flow1Value.dw.lowDW), NULL) != SUCCESS ? 1<<WC_STOREID_VALUES1 : 0;;
-  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DATE1, sizeof(uint32), NULL) != SUCCESS ? 1<<WC_STOREID_DATE1 : 0;
-  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_VALUES2, sizeof(zapp_Flow2Value.dw.lowDW), NULL) != SUCCESS ? 1<<WC_STOREID_VALUES2 : 0;
-  zapp_NVItemsInitStatus |= osal_nv_item_init(WC_NV_DATE2, sizeof(uint32), NULL) != SUCCESS ? 1<<WC_STOREID_DATE2 : 0;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(ZAPP_NV_DESC1, ZAPP_METER_SITEID_SIZE, NULL) != SUCCESS ? 1<<ZAPP_STOREID_DESC1 : 0;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(ZAPP_NV_DESC2, ZAPP_METER_SITEID_SIZE, NULL) != SUCCESS ? 1<<ZAPP_STOREID_DESC2 : 0;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(ZAPP_NV_UNIT1, sizeof(zapp_Flow1Unit), NULL) != SUCCESS ? 1<<ZAPP_STOREID_UNIT1 : 0;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(ZAPP_NV_UNIT2, sizeof(zapp_Flow2Unit), NULL) != SUCCESS ? 1<<ZAPP_STOREID_UNIT2 : 0;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(ZAPP_NV_MULTIPLIER1, sizeof(zapp_Flow1Multiplier), NULL) != SUCCESS ? 1<<ZAPP_STOREID_MULTIPLIER1 : 0;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(ZAPP_NV_MULTIPLIER2, sizeof(zapp_Flow2Multiplier), NULL) != SUCCESS ? 1<<ZAPP_STOREID_MULTIPLIER2 : 0;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(ZAPP_NV_DIVISOR1, sizeof(zapp_Flow1Divisor), NULL) != SUCCESS ? 1<<ZAPP_STOREID_DIVISOR1 : 0;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(ZAPP_NV_DIVISOR2, sizeof(zapp_Flow2Divisor), NULL) != SUCCESS ? 1<<ZAPP_STOREID_DIVISOR2 : 0;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(ZAPP_NV_VOLUMEREPORT1, sizeof(zapp_Flow1VolumePerReport), NULL) != SUCCESS ? 1<<ZAPP_STOREID_VOLUMEREPORT1 : 0;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(ZAPP_NV_VOLUMEREPORT2, sizeof(zapp_Flow2VolumePerReport), NULL) != SUCCESS ? 1<<ZAPP_STOREID_VOLUMEREPORT2 : 0;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(ZAPP_NV_REPORTPERIOD, sizeof(zapp_FlowReportInterval), NULL) != SUCCESS ? 1<<ZAPP_STOREID_REPORTPERIOD : 0;  
+  zapp_NVItemsInitStatus |= osal_nv_item_init(ZAPP_NV_VOLTAGERATED, sizeof(zapp_BatteryVoltageRated), NULL) != SUCCESS ? 1<<ZAPP_STOREID_VOLTAGERATED : 0;  
+  zapp_NVItemsInitStatus |= osal_nv_item_init(ZAPP_NV_VALUES1, sizeof(zapp_Flow1Value.dw.lowDW), NULL) != SUCCESS ? 1<<ZAPP_STOREID_VALUES1 : 0;;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(ZAPP_NV_DATE1, sizeof(uint32), NULL) != SUCCESS ? 1<<ZAPP_STOREID_DATE1 : 0;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(ZAPP_NV_VALUES2, sizeof(zapp_Flow2Value.dw.lowDW), NULL) != SUCCESS ? 1<<ZAPP_STOREID_VALUES2 : 0;
+  zapp_NVItemsInitStatus |= osal_nv_item_init(ZAPP_NV_DATE2, sizeof(uint32), NULL) != SUCCESS ? 1<<ZAPP_STOREID_DATE2 : 0;
 }
 
 /*********************************************************************
@@ -867,7 +878,7 @@ uint8 zapp_fNVCheckItem(uint16 id, uint16 len)
   if (len > 4)
     len = 4;
   
-  if ((zapp_NVItemsInitStatus & (1 << (id - WC_NV_DESC1))) == 0)
+  if ((zapp_NVItemsInitStatus & (1 << (id - ZAPP_NV_DESC1))) == 0)
   {
     if (osal_nv_read(id, 0, len, &buf) == SUCCESS)
     {
@@ -982,7 +993,7 @@ Status_t zapp_fStoreQueueAdd(uint8 idx, uint8 size, void *src)
   
   idx++;
   
-  for (i = 0; i < WC_STOREQUEUE_LEN; i++)
+  for (i = 0; i < ZAPP_STOREQUEUE_LEN; i++)
   {
     if (zapp_StoreQueueItems[i] == idx) break;
     if (zapp_StoreQueueItems[i] == 0)
@@ -993,9 +1004,9 @@ Status_t zapp_fStoreQueueAdd(uint8 idx, uint8 size, void *src)
       break;
     }
   }
-  if (i == WC_STOREQUEUE_LEN) return 1;
+  if (i == ZAPP_STOREQUEUE_LEN) return FAILURE;
   
-  return 0;
+  return SUCCESS;
 }
 
 /*********************************************************************
@@ -1009,92 +1020,24 @@ Status_t zapp_fStoreQueueAdd(uint8 idx, uint8 size, void *src)
  */
 void zapp_fStoreAttrToNV(uint16 *mask)
 {
-  if (*mask & WC_STOREID_DESC1)
+  uint8 i;
+  
+  for (i = 0; i < ZAPP_STOREQUEUE_LEN; i++)
   {
-    if (osal_nv_write(WC_NV_DESC1, 0, WC_METER_SITEID_SIZE + 1, zapp_Flow1Desc) == SUCCESS)
-      zapp_DiagNVMemWrites++;
+    if (zapp_StoreQueueItems[i] != 0)
+    {
+      if (osal_nv_write(ZAPP_NV_FIRST + zapp_StoreQueueItems[i], 0, zapp_StoreQueueSizes[i], zapp_StoreQueueSources[i]) == SUCCESS)
+        zapp_DiagNVMemWrites++;
+      else
+        zapp_DiagNVMemWriteFails++;
+      
+      zapp_StoreQueueItems[i] = 0;
+      zapp_StoreQueueSizes[i] = 0;
+      zapp_StoreQueueSources[i] = 0;      
+    }
     else
-      zapp_DiagNVMemWriteFails++;
-  } else if (*mask & WC_STOREID_DESC2)
-  {
-    if (osal_nv_write(WC_NV_DESC2, 0, WC_METER_SITEID_SIZE + 1, zapp_Flow2Desc) == SUCCESS)
-      zapp_DiagNVMemWrites++;
-    else
-      zapp_DiagNVMemWriteFails++;
-  } else if (*mask & WC_STOREID_UNIT1)
-  {
-    if (osal_nv_write(WC_NV_UNIT1, 0, sizeof(zapp_Flow1Unit), &zapp_Flow1Unit) == SUCCESS)
-      zapp_DiagNVMemWrites++;
-    else
-      zapp_DiagNVMemWriteFails++;
-  } else if (*mask & WC_STOREID_UNIT2)
-  {
-    if (osal_nv_write(WC_NV_UNIT2, 0, sizeof(zapp_Flow2Unit), &zapp_Flow2Unit) == SUCCESS)
-      zapp_DiagNVMemWrites++;
-    else
-      zapp_DiagNVMemWriteFails++;
-  } else if (*mask & WC_STOREID_DIVISOR1)
-  {
-    if (osal_nv_write(WC_NV_DIVISOR1, 0, sizeof(zapp_Flow1Divisor), &zapp_Flow1Divisor) == SUCCESS)
-      zapp_DiagNVMemWrites++;
-    else
-      zapp_DiagNVMemWriteFails++;
-  } else if (*mask & WC_STOREID_DIVISOR2)
-  {
-    if (osal_nv_write(WC_NV_DIVISOR2, 0, sizeof(zapp_Flow2Divisor), &zapp_Flow2Divisor) == SUCCESS)
-      zapp_DiagNVMemWrites++;
-    else
-      zapp_DiagNVMemWriteFails++;
-  } else if (*mask & WC_STOREID_MULTIPLIER1)
-  {
-    if (osal_nv_write(WC_NV_MULTIPLIER1, 0, sizeof(zapp_Flow1Multiplier), &zapp_Flow1Multiplier) == SUCCESS)
-      zapp_DiagNVMemWrites++;
-    else
-      zapp_DiagNVMemWriteFails++;
-  } else if (*mask & WC_STOREID_MULTIPLIER2)
-  {
-    if (osal_nv_write(WC_NV_MULTIPLIER2, 0, sizeof(zapp_Flow2Multiplier), &zapp_Flow2Multiplier) == SUCCESS)
-      zapp_DiagNVMemWrites++;
-    else
-      zapp_DiagNVMemWriteFails++;
-  } else if (*mask & WC_STOREID_VOLUMEREPORT1)
-  {
-    if (osal_nv_write(WC_NV_VOLUMEREPORT1, 0, sizeof(zapp_Flow1VolumePerReport), &zapp_Flow1VolumePerReport) == SUCCESS)
-      zapp_DiagNVMemWrites++;
-    else
-      zapp_DiagNVMemWriteFails++;
-  } else if (*mask & WC_STOREID_VOLUMEREPORT2)
-  {
-    if (osal_nv_write(WC_NV_VOLUMEREPORT2, 0, sizeof(zapp_Flow2VolumePerReport), &zapp_Flow2VolumePerReport) == SUCCESS)
-      zapp_DiagNVMemWrites++;
-    else
-      zapp_DiagNVMemWriteFails++;
-  } else if (*mask & WC_STOREID_REPORTPERIOD)
-  {
-    if (osal_nv_write(WC_NV_REPORTPERIOD, 0, sizeof(zapp_FlowReportInterval), &zapp_FlowReportInterval) == SUCCESS)
-      zapp_DiagNVMemWrites++;
-    else
-      zapp_DiagNVMemWriteFails++;
-  } else if (*mask & WC_STOREID_VOLTAGERATED)
-  {
-    if (osal_nv_write(WC_NV_VOLTAGERATED, 0, sizeof(zapp_BatteryVoltageRated), &zapp_BatteryVoltageRated) == SUCCESS)
-      zapp_DiagNVMemWrites++;
-    else
-      zapp_DiagNVMemWriteFails++;
-  } else if (*mask & WC_STOREID_VALUES1)
-  {
-    if (osal_nv_write(WC_NV_VALUES1, 0, sizeof(zapp_Flow1Value.dw.lowDW), &zapp_Flow1Value.dw.lowDW) == SUCCESS)
-      zapp_DiagNVMemWrites++;
-    else
-      zapp_DiagNVMemWriteFails++;
-  } else if (*mask & WC_STOREID_VALUES2)
-  {
-    if (osal_nv_write(WC_NV_VALUES2, 0, sizeof(zapp_Flow2Value.dw.lowDW), &zapp_Flow2Value.dw.lowDW) == SUCCESS)
-      zapp_DiagNVMemWrites++;
-    else
-      zapp_DiagNVMemWriteFails++;
+      break;
   }
-  *mask = 0;
 }
 
 /*********************************************************************
@@ -1123,15 +1066,15 @@ void zapp_fResetAttributesToDefaultValues(void)
   
   zapp_IdentifyTime = DEFAULT_IDENTIFY_TIME;
   
-  //osal_memcpy(zapp_Flow1Desc, zapp_cDesc1, WC_METER_SITEID_SIZE + 1);
-  //osal_memcpy(zapp_Flow2Desc, zapp_cDesc2, WC_METER_SITEID_SIZE + 1);
+  //osal_memcpy(zapp_Flow1Desc, zapp_cDesc1, ZAPP_METER_SITEID_SIZE + 1);
+  //osal_memcpy(zapp_Flow2Desc, zapp_cDesc2, ZAPP_METER_SITEID_SIZE + 1);
   
-  zapp_fInitAttrValue(WC_NV_DESC1, WC_METER_SITEID_SIZE, zapp_cDesc1, zapp_Flow1Desc);
-  zapp_fInitAttrValue(WC_NV_DESC2, WC_METER_SITEID_SIZE, zapp_cDesc2, zapp_Flow2Desc);
+  zapp_fInitAttrValue(ZAPP_NV_DESC1, ZAPP_METER_SITEID_SIZE, zapp_cDesc1, zapp_Flow1Desc);
+  zapp_fInitAttrValue(ZAPP_NV_DESC2, ZAPP_METER_SITEID_SIZE, zapp_cDesc2, zapp_Flow2Desc);
   
   src = 0;
-  zapp_fInitAttrValue(WC_NV_VALUES1, sizeof(zapp_Flow1Value.dw.lowDW), &src, &zapp_Flow1Value.dw.lowDW);
-  zapp_fInitAttrValue(WC_NV_VALUES2, sizeof(zapp_Flow1Value.dw.lowDW), &src, &zapp_Flow2Value.dw.lowDW);
+  zapp_fInitAttrValue(ZAPP_NV_VALUES1, sizeof(zapp_Flow1Value.dw.lowDW), &src, &zapp_Flow1Value.dw.lowDW);
+  zapp_fInitAttrValue(ZAPP_NV_VALUES2, sizeof(zapp_Flow1Value.dw.lowDW), &src, &zapp_Flow2Value.dw.lowDW);
   
   //zapp_Flow1Value.dw.lowDW = 0;
   zapp_Flow1Value.dw.hiW = 0;
@@ -1148,37 +1091,37 @@ void zapp_fResetAttributesToDefaultValues(void)
   zapp_Flow1HoursInOperation = 0;
   zapp_Flow2HoursInOperation = 0;
   
-  src = WC_METER_MULTIPLIER;
-  zapp_fInitAttrValue(WC_NV_MULTIPLIER1, sizeof(zapp_Flow1Multiplier), &src, &zapp_Flow1Multiplier);
-  zapp_fInitAttrValue(WC_NV_MULTIPLIER2, sizeof(zapp_Flow2Multiplier), &src, &zapp_Flow2Multiplier);
-  //zapp_Flow1Multiplier = WC_METER_MULTIPLIER;
-  //zapp_Flow2Multiplier = WC_METER_MULTIPLIER;
-  src = WC_METER_DIVISOR;
-  zapp_fInitAttrValue(WC_NV_DIVISOR1, sizeof(zapp_Flow1Divisor), &src, &zapp_Flow1Divisor);
-  zapp_fInitAttrValue(WC_NV_DIVISOR2, sizeof(zapp_Flow2Divisor), &src, &zapp_Flow2Divisor);
-  //zapp_Flow1Divisor = WC_METER_DIVISOR;
-  //zapp_Flow2Divisor = WC_METER_DIVISOR;
+  src = ZAPP_METER_MULTIPLIER;
+  zapp_fInitAttrValue(ZAPP_NV_MULTIPLIER1, sizeof(zapp_Flow1Multiplier), &src, &zapp_Flow1Multiplier);
+  zapp_fInitAttrValue(ZAPP_NV_MULTIPLIER2, sizeof(zapp_Flow2Multiplier), &src, &zapp_Flow2Multiplier);
+  //zapp_Flow1Multiplier = ZAPP_METER_MULTIPLIER;
+  //zapp_Flow2Multiplier = ZAPP_METER_MULTIPLIER;
+  src = ZAPP_METER_DIVISOR;
+  zapp_fInitAttrValue(ZAPP_NV_DIVISOR1, sizeof(zapp_Flow1Divisor), &src, &zapp_Flow1Divisor);
+  zapp_fInitAttrValue(ZAPP_NV_DIVISOR2, sizeof(zapp_Flow2Divisor), &src, &zapp_Flow2Divisor);
+  //zapp_Flow1Divisor = ZAPP_METER_DIVISOR;
+  //zapp_Flow2Divisor = ZAPP_METER_DIVISOR;
   src = ENGINEERING_UNIT_METER_M3;
-  zapp_fInitAttrValue(WC_NV_UNIT1, sizeof(zapp_Flow1Unit), &src, &zapp_Flow1Unit);
-  zapp_fInitAttrValue(WC_NV_UNIT2, sizeof(zapp_Flow2Unit), &src, &zapp_Flow2Unit);
+  zapp_fInitAttrValue(ZAPP_NV_UNIT1, sizeof(zapp_Flow1Unit), &src, &zapp_Flow1Unit);
+  zapp_fInitAttrValue(ZAPP_NV_UNIT2, sizeof(zapp_Flow2Unit), &src, &zapp_Flow2Unit);
   //zapp_Flow1Unit = ENGINEERING_UNIT_METER_M3;
   //zapp_Flow2Unit = ENGINEERING_UNIT_METER_M3;
-  src = WC_VOLUME_PER_REPORT;
-  zapp_fInitAttrValue(WC_NV_VOLUMEREPORT1, sizeof(zapp_Flow1VolumePerReport), &src, &zapp_Flow1VolumePerReport);
-  zapp_fInitAttrValue(WC_NV_VOLUMEREPORT2, sizeof(zapp_Flow2VolumePerReport), &src, &zapp_Flow2VolumePerReport);
-  //zapp_Flow1VolumePerReport = WC_VOLUME_PER_REPORT;
-  //zapp_Flow2VolumePerReport = WC_VOLUME_PER_REPORT;
+  src = ZAPP_VOLUME_PER_REPORT;
+  zapp_fInitAttrValue(ZAPP_NV_VOLUMEREPORT1, sizeof(zapp_Flow1VolumePerReport), &src, &zapp_Flow1VolumePerReport);
+  zapp_fInitAttrValue(ZAPP_NV_VOLUMEREPORT2, sizeof(zapp_Flow2VolumePerReport), &src, &zapp_Flow2VolumePerReport);
+  //zapp_Flow1VolumePerReport = ZAPP_VOLUME_PER_REPORT;
+  //zapp_Flow2VolumePerReport = ZAPP_VOLUME_PER_REPORT;
   zapp_Flow1Status = 0;
   zapp_Flow2Status = 0;
   
-  zapp_FlowUpdatePeriod = WC_METER_INSTDEMAND_UPDATEPERIOD_MAX;   // InstDemand update interval
-  src = WC_METER_REPORT_INTERVAL;
-  zapp_fInitAttrValue(WC_NV_REPORTPERIOD, sizeof(zapp_FlowReportInterval), &src, &zapp_FlowReportInterval);
-  //zapp_FlowReportInterval = WC_METER_REPORT_INTERVAL; // Report interal in minutes
+  zapp_FlowUpdatePeriod = ZAPP_METER_INSTDEMAND_UPDATEPERIOD_MAX;   // InstDemand update interval
+  src = ZAPP_METER_REPORT_INTERVAL;
+  zapp_fInitAttrValue(ZAPP_NV_REPORTPERIOD, sizeof(zapp_FlowReportInterval), &src, &zapp_FlowReportInterval);
+  //zapp_FlowReportInterval = ZAPP_METER_REPORT_INTERVAL; // Report interal in minutes
   
   //zapp_BatteryVoltageRated = VDD_VOLTAGE_RATED36;
   src = VDD_VOLTAGE_RATED36;
-  zapp_fInitAttrValue(WC_NV_VOLTAGERATED, sizeof(zapp_BatteryVoltageRated), &src, &zapp_BatteryVoltageRated);
+  zapp_fInitAttrValue(ZAPP_NV_VOLTAGERATED, sizeof(zapp_BatteryVoltageRated), &src, &zapp_BatteryVoltageRated);
   zapp_BatteryVoltageThresMin = VDD_VOLTAGE36_MIN;
   zapp_BatteryVoltageThres1 = VDD_VOLTAGE36_THRES1;
   zapp_BatteryAlarmMask = BAT_ALARM_MASK_VOLT_2_LOW | BAT_ALARM_MASK_BATTERY_ALARM_1;
@@ -1193,9 +1136,9 @@ void zapp_fResetAttributesToDefaultValues(void)
   zapp_DiagMemHighWater = osal_heap_high_water();
   //zapp_DiagRebootReason = 0;  
   
-  osal_memset(zapp_StoreQueueItems, 0x00, sizeof(zapp_StoreQueueItems[0]) * WC_STOREQUEUE_LEN);
-  osal_memset(zapp_StoreQueueSizes, 0x00, sizeof(zapp_StoreQueueSizes[0]) * WC_STOREQUEUE_LEN);
-  osal_memset(zapp_StoreQueueSources, 0x00, sizeof(zapp_StoreQueueSources[0]) * WC_STOREQUEUE_LEN);
+  osal_memset(zapp_StoreQueueItems, 0x00, sizeof(zapp_StoreQueueItems[0]) * ZAPP_STOREQUEUE_LEN);
+  osal_memset(zapp_StoreQueueSizes, 0x00, sizeof(zapp_StoreQueueSizes[0]) * ZAPP_STOREQUEUE_LEN);
+  osal_memset(zapp_StoreQueueSources, 0x00, sizeof(zapp_StoreQueueSources[0]) * ZAPP_STOREQUEUE_LEN);
 }
 
 /****************************************************************************

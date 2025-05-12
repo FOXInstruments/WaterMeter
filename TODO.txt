@@ -37,3 +37,6 @@ TODO list.
   update function CfgReporting. It must add attributes into reporting list
   and send CfgReortingRsp.
   It is realized by adding #define ZCL_REPORT_DESTINATION_DEVICE
+  
++12. "CONST" code memory constant allocation
+     "const" XDATA flash memory constant allocation
