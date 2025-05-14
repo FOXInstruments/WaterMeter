@@ -181,8 +181,8 @@ extern "C"
  */
 enum
 {
-  ZAPP_STOREID_DESC1,
-  ZAPP_STOREID_DESC2,
+  ZAPP_STOREID_SITEID1,
+  ZAPP_STOREID_SITEID2,
   ZAPP_STOREID_UNIT1,
   ZAPP_STOREID_UNIT2,
   ZAPP_STOREID_MULTIPLIER1,
@@ -220,7 +220,7 @@ extern CONST zclAttrRec_t zapp_cAttrs2[];
 extern CONST uint8 zapp_cNumAttributes;
 extern CONST uint8 zapp_cNumAttributes2;
 
-extern uint8 zapp_Flow1Desc[];
+extern uint8 zapp_Flow1SiteId[];
 extern uint48_t zapp_Flow1Value;
 extern int24 zapp_Flow1InstDemand;
 extern int24 zapp_Flow1InstDemandPrev;
@@ -232,7 +232,7 @@ extern uint24 zapp_Flow1CurrDay;
 extern uint24 zapp_Flow1PrevDay;
 extern uint8 zapp_Flow1Status;
 
-extern uint8 zapp_Flow2Desc[];
+extern uint8 zapp_Flow2SiteId[];
 extern uint48_t zapp_Flow2Value;
 extern int24 zapp_Flow2InstDemand;
 extern int24 zapp_Flow2InstDemandPrev;
@@ -253,7 +253,7 @@ extern uint8 zapp_BatteryAlarmMask;
 extern uint32 zapp_BatteryAlarmState;
 
 extern uint8 zapp_FlowUpdatePeriod;        // InstDemand update time period in seconds
-extern uint16 zapp_FlowReportInterval;     // Time interval in minutes for Reporting compatability
+extern uint16 zapp_FlowIntervalReporting;     // Time interval in minutes for Reporting compatability
 extern uint24 zapp_Flow1HoursInOperation;
 extern uint24 zapp_Flow2HoursInOperation;
 // Diagnostic cluster
@@ -290,7 +290,7 @@ extern void zapp_fResetAttributesToDefaultValues(void); //implemented in zcl_wat
 extern void zapp_fNVInitItems(void);
 extern uint8 zapp_fNVCheckItem(uint16 id, uint16 len);
 extern Status_t zapp_fStoreQueueAdd(uint8 idx, uint8 size, void *src);
-extern void zapp_fStoreAttrToNV(uint16 *mask);
+extern uint32 zapp_fStoreAttrToNV(void);
 extern void zapp_fInitAttrValue(uint16 id, uint16 len, const void *src, void *buf);
 extern void zapp_fUpdateAttrIntervalReporting(uint16 *data);
 extern void zapp_fUpdateAttrRatedVoltage(uint8 *data);

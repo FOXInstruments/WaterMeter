@@ -127,7 +127,6 @@ uint8 zapp_SeqNum;
 uint8 zapp_TimeHasSynced;             // True if time has synced
 uint16 zapp_TimeSynchElapsedMinutes;  // Minutes elapsed since Time synchronization
 uint16 zapp_MinutesInOperation;       // Minutes to calculate InOperation attribute
-uint16 zapp_AttrToStore;           // Bitmap of Items to write into NV memory
 
 const zclReadCmd_t zapp_ReadCmdTime = {4, {ATTRID_TIME_TIME, ATTRID_TIME_TIME_STATUS, ATTRID_TIME_TIME_ZONE, ATTRID_TIME_LOCAL_TIME}};
 
@@ -403,12 +402,12 @@ void zapp_Init(byte task_id)
   osal_memset(reportChange, 0, BDBREPORTING_MAX_ANALOG_ATTR_SIZE);
   reportChange[0] = ZAPP_REPORT_CHANGE_VOLTAGE;
   status = bdb_RepAddAttrCfgRecordDefaultToList(ZAPP_ENDPOINT, ZCL_CLUSTER_ID_GEN_POWER_CFG, ATTRID_POWER_CFG_BATTERY_VOLTAGE, \
-                                       zapp_FlowReportInterval*60, zapp_FlowReportInterval*60*6, reportChange);
+                                       zapp_FlowIntervalReporting*60, zapp_FlowIntervalReporting*60*6, reportChange);
   
   osal_memset(reportChange, 0, BDBREPORTING_MAX_ANALOG_ATTR_SIZE);
   osal_memcpy(reportChange, (void*)&Flow, sizeof(uint32));
   status = bdb_RepAddAttrCfgRecordDefaultToList(ZAPP_ENDPOINT, ZCL_CLUSTER_ID_SE_METERING, ATTRID_METER_0READINGSET_CURRSUMDELIVERED, \
-                                       zapp_FlowReportInterval*60, zapp_FlowReportInterval*60*6, reportChange);
+                                       zapp_FlowIntervalReporting*60, zapp_FlowIntervalReporting*60*6, reportChange);
 #endif
 */  
 #ifdef ZCL_DIAGNOSTIC
@@ -449,8 +448,6 @@ void zapp_Init(byte task_id)
   zapp_TimeSynchElapsedMinutes = 0;   // Initialize counter for time synchronization
   zapp_TimeHasSynced = false;
   zapp_MinutesInOperation = 0;        // Init to calculate HoursInOperation attribute
-  
-  zapp_AttrToStore = 0; // Bitmap of Items to write into NV memory
   
   if (zapp_FlowUpdatePeriod != 0xFF )
     status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATEINSTDEMAND, zapp_FlowUpdatePeriod*1000L);
@@ -550,10 +547,13 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
   // ------------------------------------------------------------------
   if (events & ZAPP_EVT_STOREATTR)
   {
-    if (zapp_AttrToStore != 0)
-    {
-      zapp_fStoreAttrToNV(&zapp_AttrToStore);
+    uint32 mask = zapp_fStoreAttrToNV();
+    
+    if (mask != 0)
+    { // Send error message to coordinator
+      //zclGeneral_SendAlarm();
     }
+    
     return (events ^ ZAPP_EVT_STOREATTR);
   }
   // ------------------------------------------------------------------
@@ -609,7 +609,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
     }
 
     uint16 timeRemain = (23 - time.hour)*60 + (59 - time.minutes);
-    if (timeRemain <= zapp_FlowReportInterval)
+    if (timeRemain <= zapp_FlowIntervalReporting)
     {
       status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE, (timeRemain*60 + (60 - time.seconds))*1000L);
       zapp_TimeSynchElapsedMinutes += timeRemain;
@@ -617,10 +617,10 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
     }
     else
     {
-      if (zapp_FlowReportInterval < 60)
+      if (zapp_FlowIntervalReporting < 60)
       {        
         timeRemain = (59 - time.minutes);
-        if (timeRemain <= zapp_FlowReportInterval)
+        if (timeRemain <= zapp_FlowIntervalReporting)
         {
           status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE, (timeRemain*60 + (60 - time.seconds))*1000L);
           zapp_TimeSynchElapsedMinutes += timeRemain;
@@ -628,16 +628,16 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
         }
         else
         {
-          status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE, (zapp_FlowReportInterval*60 + (60 - time.seconds))*1000L);          
-          zapp_TimeSynchElapsedMinutes += zapp_FlowReportInterval;
-          zapp_MinutesInOperation += zapp_FlowReportInterval;
+          status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE, (zapp_FlowIntervalReporting*60 + (60 - time.seconds))*1000L);          
+          zapp_TimeSynchElapsedMinutes += zapp_FlowIntervalReporting;
+          zapp_MinutesInOperation += zapp_FlowIntervalReporting;
         }
       }
       else
       {          
-        status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE, ((zapp_FlowReportInterval - 60)*60 + (59 - time.minutes)*60 + (60 - time.seconds))*1000L);                  
-        zapp_TimeSynchElapsedMinutes += zapp_FlowReportInterval;
-        zapp_MinutesInOperation += zapp_FlowReportInterval;
+        status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE, ((zapp_FlowIntervalReporting - 60)*60 + (59 - time.minutes)*60 + (60 - time.seconds))*1000L);                  
+        zapp_TimeSynchElapsedMinutes += zapp_FlowIntervalReporting;
+        zapp_MinutesInOperation += zapp_FlowIntervalReporting;
       }
     }
     if (zapp_TimeSynchElapsedMinutes > 32768) zapp_TimeSynchElapsedMinutes = 24*60; // if HourCounter was 255, time sync was not completed more than 255 hours
@@ -1151,6 +1151,7 @@ static uint8 zapp_fProcessInWriteRspCmd(zclIncomingMsg_t *pInMsg)
 uint8 zapp_fValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
 {
   uint8 validate = TRUE;
+  Status_t status = FAILURE;
 
   if (pAttr->clusterID == ZCL_CLUSTER_ID_SE_METERING)
   {
@@ -1170,7 +1171,9 @@ uint8 zapp_fValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
         
       case ATTRID_METER_0READINGSET_INTERVALREPORTING:
         zapp_fUpdateAttrIntervalReporting((uint16*)pAttrInfo->attrData);
-        if (*(uint16*)pAttrInfo->attrData < zapp_FlowReportInterval) // If interval is decriced than update 
+        if (*(uint16*)pAttrInfo->attrData != zapp_FlowIntervalReporting)
+          status = zapp_fStoreQueueAdd(ZAPP_STOREID_REPORTPERIOD, sizeof(zapp_FlowIntervalReporting), &zapp_FlowIntervalReporting);
+        if (*(uint16*)pAttrInfo->attrData < zapp_FlowIntervalReporting) // If new interval is lower than previous interval
           osal_set_event(zapp_TaskID, ZAPP_EVT_UPDATE);
         #ifdef MT_DEBUG_FUNC
           MT_ProcessDebugString("Write.IntervalReporting");
@@ -1178,12 +1181,19 @@ uint8 zapp_fValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
         break;
         
       case ATTRID_METER_3FORMATTING_SITEID:
-        if (*pAttrInfo->attrData > ZAPP_METER_SITEID_SIZE)
+        if (pAttrInfo->attrData[0] != ZAPP_METER_SITEID_SIZE)
         {
           validate = FALSE;
         }
         else
         {
+          if (!osal_memcmp(pAttr->attr.dataPtr, pAttrInfo->attrData, ZAPP_METER_SITEID_SIZE)) // False - different
+          {
+            if (pAttr->attr.dataPtr == zapp_Flow1SiteId)
+              status = zapp_fStoreQueueAdd(ZAPP_STOREID_SITEID1, ZAPP_METER_SITEID_SIZE + 1, zapp_Flow1SiteId);
+            else
+              status = zapp_fStoreQueueAdd(ZAPP_STOREID_SITEID2, ZAPP_METER_SITEID_SIZE + 1, zapp_Flow2SiteId);
+          }
         }
         #ifdef MT_DEBUG_FUNC
           MT_ProcessDebugString("Write.SiteID");
@@ -1194,10 +1204,9 @@ uint8 zapp_fValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
         if (*(uint8*)pAttrInfo->attrData != *(uint8*)pAttr->attr.dataPtr)
         {
           if (pAttr->attr.dataPtr == &zapp_Flow1Unit)
-            zapp_AttrToStore |= ZAPP_STOREID_UNIT1;
+            status = zapp_fStoreQueueAdd(ZAPP_STOREID_UNIT1, sizeof(zapp_Flow1Unit), &zapp_Flow1Unit);
           else
-            zapp_AttrToStore |= ZAPP_STOREID_UNIT2;
-          osal_start_timerEx(zapp_TaskID, ZAPP_EVT_STOREATTR, ZAPP_TIMEOUT_STOREATTR);
+            status = zapp_fStoreQueueAdd(ZAPP_STOREID_UNIT2, sizeof(zapp_Flow2Unit), &zapp_Flow2Unit);
         }
         #ifdef MT_DEBUG_FUNC
           MT_ProcessDebugString("Write.Unit");
@@ -1208,10 +1217,9 @@ uint8 zapp_fValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
         if (*(uint24*)pAttrInfo->attrData != *(uint24*)pAttr->attr.dataPtr)
         {
           if (pAttr->attr.dataPtr == &zapp_Flow1Multiplier) // Endpoint8
-            zapp_AttrToStore |= ZAPP_STOREID_MULTIPLIER1;
+            status = zapp_fStoreQueueAdd(ZAPP_STOREID_MULTIPLIER1, sizeof(zapp_Flow1Multiplier), &zapp_Flow1Multiplier);
           else
-            zapp_AttrToStore |= ZAPP_STOREID_MULTIPLIER2;  // Endpoint9
-          osal_start_timerEx(zapp_TaskID, ZAPP_EVT_STOREATTR, ZAPP_TIMEOUT_STOREATTR);
+            status = zapp_fStoreQueueAdd(ZAPP_STOREID_MULTIPLIER2, sizeof(zapp_Flow2Multiplier), &zapp_Flow2Multiplier);
         }
         #ifdef MT_DEBUG_FUNC
           MT_ProcessDebugString("Write.Multiplier");
@@ -1222,10 +1230,9 @@ uint8 zapp_fValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
         if (*(uint24*)pAttrInfo->attrData != *(uint24*)pAttr->attr.dataPtr) // Current and new values are diffrent
         {
           if (pAttr->attr.dataPtr == &zapp_Flow1Divisor) // Endpoint8
-            zapp_AttrToStore |= ZAPP_STOREID_DIVISOR1;
+            status = zapp_fStoreQueueAdd(ZAPP_STOREID_DIVISOR1, sizeof(zapp_Flow1Divisor), &zapp_Flow1Divisor);
           else
-            zapp_AttrToStore |= ZAPP_STOREID_DIVISOR2;  // Endpoint9
-          osal_start_timerEx(zapp_TaskID, ZAPP_EVT_STOREATTR, ZAPP_TIMEOUT_STOREATTR);
+            status = zapp_fStoreQueueAdd(ZAPP_STOREID_DIVISOR2, sizeof(zapp_Flow2Divisor), &zapp_Flow2Divisor);
         }
         #ifdef MT_DEBUG_FUNC
           MT_ProcessDebugString("Write.Divisor");
@@ -1240,10 +1247,17 @@ uint8 zapp_fValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
       case ATTRID_POWER_CFG_BAT_RATED_VOLTAGE:
         zapp_fUpdateAttrRatedVoltage(pAttrInfo->attrData);
         if (*pAttrInfo->attrData != zapp_BatteryVoltageRated)
+        {
+          status = zapp_fStoreQueueAdd(ZAPP_STOREID_VOLTAGERATED, sizeof(zapp_BatteryVoltageRated), &zapp_BatteryVoltageRated);          
           osal_set_event(zapp_TaskID, ZAPP_EVT_BATTERY);
+        }
         break;
     }
   }
+  
+  if (status == SUCCESS)
+    osal_start_timerEx(zapp_TaskID, ZAPP_EVT_STOREATTR, ZAPP_TIMEOUT_STOREATTR);
+  
   return validate;
 }
 #endif // ZCL_WRITE
