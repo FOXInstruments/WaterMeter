@@ -40,3 +40,7 @@ TODO list.
   
 +12. "CONST" code memory constant allocation
      "const" XDATA flash memory constant allocation
+     
++13. OSAL_Timers.c
+  Added function uint32 osal_GetSystemClockSec()
+  which return time elapsed since last boot in seconds

@@ -170,6 +170,7 @@ extern "C"
 #define ATTRID_DIAG_6MEMUSED                    0x0006  // uint16
 #define ATTRID_DIAG_7MEMHIGHWATER               0x0007  // uint16
 #define ATTRID_DIAG_8REBOOTREASON               0x0008  // uint16
+#define ATTRID_DIAG_9SYSTEMUPTIME               0x0009  // uint32
 
 /*********************************************************************
  * MACROS

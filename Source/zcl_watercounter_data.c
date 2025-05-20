@@ -204,6 +204,7 @@ uint16 zapp_DiagMemFreeBlocks;
 uint16 zapp_DiagMemUsed;       // Used memory in bytes
 uint16 zapp_DiagMemHighWater;  // Maximum memory allocated
 uint16 zapp_DiagRebootReason;
+uint32 zapp_DiagSystemUpTime;
 
 uint8 zapp_StoreQueueItems[ZAPP_STOREQUEUE_LEN];
 uint8 zapp_StoreQueueSizes[ZAPP_STOREQUEUE_LEN];
@@ -622,6 +623,14 @@ CONST zclAttrRec_t zapp_cAttrs[] =
   {
     ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
     { //48
+      ATTRID_DIAG_9SYSTEMUPTIME,
+      ZCL_DATATYPE_UINT32, (ACCESS_CONTROL_AUTH_READ),
+      (void *)&zapp_DiagSystemUpTime
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
+    { //49
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
       (void *)&zapp_clusterRevision_all

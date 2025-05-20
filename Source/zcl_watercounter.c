@@ -230,6 +230,28 @@ const zclReportCmd_t zapp_ReportCmdEveryHour2 =
   },
 };
 
+const zclReportCmd_t ?zapp_ReportCmdDiag =
+{
+  3,
+  {
+    {
+      ATTRID_DIAG_1PERSISTMEMORYWRITES,
+      ZCL_DATATYPE_UINT16,
+      (void *)&zapp_DiagNVMemWrites
+    },
+    {
+      ATTRID_METER_4HISTORY_CURRDAYCONSUMPTIONDELIVER,
+      ZCL_DATATYPE_UINT24,
+      (void*)&zapp_Flow2CurrDay
+    },
+    {
+      ATTRID_METER_4HISTORY_PREVDAYCONSUMPTIONDELIVER,
+      ZCL_DATATYPE_UINT24,
+      (void*)&zapp_Flow2PrevDay
+    },
+  },
+};
+
 // Endpoint to allow SYS_APP_MSGs
 static endPointDesc_t waterCounter_TestEp =
 {
@@ -457,8 +479,8 @@ void zapp_Init(byte task_id)
   HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
   
   status = 0;
-  osal_nv_read(ZCD_NV_BDBNODEISONANETWORK, 0, sizeof(bdbAttributes.bdbNodeIsOnANetwork), &status);
-  if ((status == true) && (status != 0xFF))  // Connect to network after reboot if device was commissioned OnNetwork
+  if (osal_nv_read(ZCD_NV_BDBNODEISONANETWORK, 0, sizeof(bdbAttributes.bdbNodeIsOnANetwork), &status) == SUCCESS &&
+      (status == true) && (status != 0xFF))  // Connect to network after reboot if device was commissioned OnNetwork
     bdb_StartCommissioning(BDB_COMMISSIONING_MODE_INITIATOR_TL | BDB_COMMISSIONING_MODE_NWK_STEERING /*| BDB_COMMISSIONING_MODE_FINDING_BINDING*/);
   
   //status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE, 10000);
@@ -567,6 +589,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
     // Battery voltage check
     zapp_fUpdateBatteryAttributes();
     // Calculate HoursInOperation attribute
+    osal_GetSystemClockSec();
     zapp_Flow1HoursInOperation += zapp_MinutesInOperation / 60;
     zapp_MinutesInOperation = zapp_MinutesInOperation % 60;
     zapp_Flow2HoursInOperation = zapp_Flow1HoursInOperation;
@@ -640,7 +663,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
         zapp_MinutesInOperation += zapp_FlowIntervalReporting;
       }
     }
-    if (zapp_TimeSynchElapsedMinutes > 32768) zapp_TimeSynchElapsedMinutes = 24*60; // if HourCounter was 255, time sync was not completed more than 255 hours
+    if (zapp_TimeSynchElapsedMinutes > 0x7FFF) zapp_TimeSynchElapsedMinutes = 24*60; // if HourCounter was 255, time sync was not completed more than 255 hours
     
     //status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_EVERYHOUR, /*(3600L - time.minutes*60 - time.seconds)*/ 120000L);
     
@@ -809,13 +832,13 @@ static void zapp_fProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
         {
           uint32 timeout;
           // Timer's remain time substracts from InOperation time
-          timeout = osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_UPDATE);
-          timeout = timeout / (60*1000L);
-          if (zapp_MinutesInOperation < (uint24)timeout)
+          timeout = osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_UPDATE) / (60*1000L);
+          if (zapp_MinutesInOperation < timeout)
             zapp_MinutesInOperation = 0;
           else
             zapp_MinutesInOperation -= timeout;
           
+          osal_stop_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE);
           osal_set_event(zapp_TaskID, ZAPP_EVT_UPDATE);
         }
       }
@@ -1265,7 +1288,7 @@ uint8 zapp_fValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
 /*********************************************************************
  * @fn      zapp_fAuthorizeCB
  *
- * @brief   Process the "Profile" Write Command Validate Attr data
+ * @brief   Process the "Profile" Read/Write Command Authorize Attr data
  *
  * @param   Attribute to authorize
  *
