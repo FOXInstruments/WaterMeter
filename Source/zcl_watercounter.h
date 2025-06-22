@@ -169,7 +169,7 @@ extern "C"
 #define ATTRID_DIAG_5MEMFREEBLOCKS              0x0005  // uint16
 #define ATTRID_DIAG_6MEMUSED                    0x0006  // uint16
 #define ATTRID_DIAG_7MEMHIGHWATER               0x0007  // uint16
-#define ATTRID_DIAG_8REBOOTREASON               0x0008  // uint16
+#define ATTRID_DIAG_8CPUSTATUS                  0x0008  // uint16
 #define ATTRID_DIAG_9SYSTEMUPTIME               0x0009  // uint32
 
 /*********************************************************************
@@ -266,7 +266,8 @@ extern uint16 zapp_DiagMemAllocatedBlocks;
 extern uint16 zapp_DiagMemFreeBlocks;
 extern uint16 zapp_DiagMemUsed;       // Used memory in bytes
 extern uint16 zapp_DiagMemHighWater;  // Maximum memory allocated
-extern uint16 zapp_DiagRebootReason;
+extern uint16 zapp_DiagCPUStatus;     // CPU status - Clock, Power mode, Boot reason
+extern uint32 zapp_DiagSystemUpTime;  // System up time in seconds
 
 extern uint16 zapp_IdentifyTime;
 

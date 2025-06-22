@@ -230,24 +230,59 @@ const zclReportCmd_t zapp_ReportCmdEveryHour2 =
   },
 };
 
-const zclReportCmd_t ?zapp_ReportCmdDiag =
+const zclReportCmd_t zapp_ReportCmdDiag =
 {
-  3,
+  10,
   {
-    {
+    { //1
+      ATTRID_DIAG_0NUMOFRESETS,
+      ZCL_DATATYPE_UINT16,
+      (void *)&zapp_DiagNumOfResets
+    },
+    { //2
       ATTRID_DIAG_1PERSISTMEMORYWRITES,
       ZCL_DATATYPE_UINT16,
       (void *)&zapp_DiagNVMemWrites
     },
-    {
-      ATTRID_METER_4HISTORY_CURRDAYCONSUMPTIONDELIVER,
-      ZCL_DATATYPE_UINT24,
-      (void*)&zapp_Flow2CurrDay
+    { //3
+      ATTRID_DIAG_2PERSISTMEMORYWRITEFAILS,
+      ZCL_DATATYPE_UINT16,
+      (void *)&zapp_DiagNVMemWriteFails
     },
-    {
-      ATTRID_METER_4HISTORY_PREVDAYCONSUMPTIONDELIVER,
-      ZCL_DATATYPE_UINT24,
-      (void*)&zapp_Flow2PrevDay
+    { //4
+      ATTRID_DIAG_3PERSISTMEMORYFAILITEMS,
+      ZCL_DATATYPE_UINT32,
+      (void *)&zapp_DiagNVMemFailItems
+    },
+    { //5
+      ATTRID_DIAG_4MEMALLOCATEDBLOCKS,
+      ZCL_DATATYPE_UINT16,
+      (void *)&zapp_DiagMemAllocatedBlocks
+    },
+    { //6
+      ATTRID_DIAG_5MEMFREEBLOCKS,
+      ZCL_DATATYPE_UINT16,
+      (void *)&zapp_DiagMemFreeBlocks
+    },
+    { //7
+      ATTRID_DIAG_6MEMUSED,
+      ZCL_DATATYPE_UINT16,
+      (void *)&zapp_DiagMemUsed
+    },
+    { //8
+      ATTRID_DIAG_7MEMHIGHWATER,
+      ZCL_DATATYPE_UINT16,
+      (void *)&zapp_DiagMemHighWater
+    },
+    { //9
+      ATTRID_DIAG_8CPUSTATUS,
+      ZCL_DATATYPE_UINT16,
+      (void *)&zapp_DiagCPUStatus
+    },
+    { //10
+      ATTRID_DIAG_9SYSTEMUPTIME,
+      ZCL_DATATYPE_UINT32,
+      (void *)&zapp_DiagSystemUpTime
     },
   },
 };
@@ -388,8 +423,9 @@ void zapp_Init(byte task_id)
   zclGeneral_RegisterCmdCallbacks(ZAPP_ENDPOINT, &zapp_CmdCallbacks);
 
   zapp_fNVInitItems();
-  zapp_fResetAttributesToDefaultValues();
-  zapp_DiagRebootReason = (SLEEPSTA & 0x18)>>3;  // Save reboot reason in Diagnostic cluster
+  //zapp_fResetAttributesToDefaultValues();
+  zapp_fBasicResetCB();
+  //zapp_DiagCPUStatus = (SLEEPSTA & 0x18)>>3;  // Save CPU status in Diagnostic cluster
   zapp_fUpdateBatteryAttributes();
   
   // Register the application's attribute list
@@ -911,7 +947,9 @@ static void zapp_fProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
 static void zapp_fBasicResetCB(void)
 {
   zapp_fResetAttributesToDefaultValues();
-  zapp_DiagRebootReason = (SLEEPSTA & 0x18)>>3;  // Save reboot reason in Diagnostic cluster
+  zapp_DiagCPUStatus = (SLEEPSTA & 0x18)>>3;
+  zapp_DiagCPUStatus |= (SLEEPCMD & 0x03)<<2;
+  zapp_DiagCPUStatus |= CLKCONSTA<<4;  // Save CPU Status in Diagnostic cluster
 }
 
 /*********************************************************************
@@ -1312,6 +1350,12 @@ ZStatus_t zapp_fAuthorizeCB( afAddrType_t *srcAddr, zclAttrRec_t *pAttr, uint8 o
         zapp_DiagMemUsed = osal_heap_mem_used();
       else if (pAttr->attr.attrId == ATTRID_DIAG_7MEMHIGHWATER)
         zapp_DiagMemHighWater = osal_heap_high_water();
+      else if (pAttr->attr.attrId == ATTRID_DIAG_8CPUSTATUS)
+      {
+        zapp_DiagCPUStatus = (SLEEPSTA & 0x18)>>3;
+        zapp_DiagCPUStatus |= (SLEEPCMD & 0x03)<<2;
+        zapp_DiagCPUStatus |= CLKCONSTA<<4;  // Save CPU Status in Diagnostic cluster
+      }
       break;
   }    
   return ZCL_STATUS_SUCCESS;

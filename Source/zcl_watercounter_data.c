@@ -203,8 +203,8 @@ uint16 zapp_DiagMemAllocatedBlocks;
 uint16 zapp_DiagMemFreeBlocks;
 uint16 zapp_DiagMemUsed;       // Used memory in bytes
 uint16 zapp_DiagMemHighWater;  // Maximum memory allocated
-uint16 zapp_DiagRebootReason;
-uint32 zapp_DiagSystemUpTime;
+uint16 zapp_DiagCPUStatus;     // CPU status - Clock, Power mode, Boot reason
+uint32 zapp_DiagSystemUpTime;  // System up time in seconds
 
 uint8 zapp_StoreQueueItems[ZAPP_STOREQUEUE_LEN];
 uint8 zapp_StoreQueueSizes[ZAPP_STOREQUEUE_LEN];
@@ -615,9 +615,9 @@ CONST zclAttrRec_t zapp_cAttrs[] =
   {
     ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
     { //47
-      ATTRID_DIAG_8REBOOTREASON,
-      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ),
-      (void *)&zapp_DiagRebootReason
+      ATTRID_DIAG_8CPUSTATUS,
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_AUTH_READ),
+      (void *)&zapp_DiagCPUStatus
     }
   },
   {
@@ -1152,7 +1152,6 @@ void zapp_fResetAttributesToDefaultValues(void)
   zapp_DiagMemFreeBlocks = osal_heap_block_free();
   zapp_DiagMemUsed = osal_heap_mem_used();
   zapp_DiagMemHighWater = osal_heap_high_water();
-  //zapp_DiagRebootReason = 0;  
   
   osal_memset(zapp_StoreQueueItems, 0x00, sizeof(zapp_StoreQueueItems[0]) * ZAPP_STOREQUEUE_LEN);
   osal_memset(zapp_StoreQueueSizes, 0x00, sizeof(zapp_StoreQueueSizes[0]) * ZAPP_STOREQUEUE_LEN);
