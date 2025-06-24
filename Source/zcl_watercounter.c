@@ -111,8 +111,13 @@
    
 #define HAL_LED_STATUS  HAL_LED_3
 #define HAL_LED_IN1     HAL_LED_4
-#define HAL_LED_IN2     HAL_LED_5   
+#define HAL_LED_IN2     HAL_LED_5
 
+// Get CPU Status for Diagnostic cluster
+#define GET_CPU_STATUS(x) \
+            x = (SLEEPSTA & 0x18)>>3;  \
+            x |= (SLEEPCMD & 0x03)<<2; \
+            x |= CLKCONSTA<<4;
 /*********************************************************************
  * TYPEDEFS
  */
@@ -126,7 +131,6 @@ uint8 zapp_SeqNum;
 
 uint8 zapp_TimeHasSynced;             // True if time has synced
 uint16 zapp_TimeSynchElapsedMinutes;  // Minutes elapsed since Time synchronization
-uint16 zapp_MinutesInOperation;       // Minutes to calculate InOperation attribute
 
 const zclReadCmd_t zapp_ReadCmdTime = {4, {ATTRID_TIME_TIME, ATTRID_TIME_TIME_STATUS, ATTRID_TIME_TIME_ZONE, ATTRID_TIME_LOCAL_TIME}};
 
@@ -505,7 +509,6 @@ void zapp_Init(byte task_id)
   
   zapp_TimeSynchElapsedMinutes = 0;   // Initialize counter for time synchronization
   zapp_TimeHasSynced = false;
-  zapp_MinutesInOperation = 0;        // Init to calculate HoursInOperation attribute
   
   if (zapp_FlowUpdatePeriod != 0xFF )
     status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATEINSTDEMAND, zapp_FlowUpdatePeriod*1000L);
@@ -625,9 +628,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
     // Battery voltage check
     zapp_fUpdateBatteryAttributes();
     // Calculate HoursInOperation attribute
-    osal_GetSystemClockSec();
-    zapp_Flow1HoursInOperation += zapp_MinutesInOperation / 60;
-    zapp_MinutesInOperation = zapp_MinutesInOperation % 60;
+    zapp_Flow1HoursInOperation = osal_GetSystemClockSec() / (60*60);
     zapp_Flow2HoursInOperation = zapp_Flow1HoursInOperation;
     // Every 24 hours attribute update
     if (time.hour == 0 && time.minutes <= 1)
@@ -672,7 +673,6 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
     {
       status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE, (timeRemain*60 + (60 - time.seconds))*1000L);
       zapp_TimeSynchElapsedMinutes += timeRemain;
-      zapp_MinutesInOperation += timeRemain;
     }
     else
     {
@@ -683,20 +683,17 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
         {
           status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE, (timeRemain*60 + (60 - time.seconds))*1000L);
           zapp_TimeSynchElapsedMinutes += timeRemain;
-          zapp_MinutesInOperation += timeRemain;
         }
         else
         {
           status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE, (zapp_FlowIntervalReporting*60 + (60 - time.seconds))*1000L);          
           zapp_TimeSynchElapsedMinutes += zapp_FlowIntervalReporting;
-          zapp_MinutesInOperation += zapp_FlowIntervalReporting;
         }
       }
       else
       {          
         status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE, ((zapp_FlowIntervalReporting - 60)*60 + (59 - time.minutes)*60 + (60 - time.seconds))*1000L);                  
         zapp_TimeSynchElapsedMinutes += zapp_FlowIntervalReporting;
-        zapp_MinutesInOperation += zapp_FlowIntervalReporting;
       }
     }
     if (zapp_TimeSynchElapsedMinutes > 0x7FFF) zapp_TimeSynchElapsedMinutes = 24*60; // if HourCounter was 255, time sync was not completed more than 255 hours
@@ -866,14 +863,6 @@ static void zapp_fProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
         
         if (zapp_TimeHasSynced == false)
         {
-          uint32 timeout;
-          // Timer's remain time substracts from InOperation time
-          timeout = osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_UPDATE) / (60*1000L);
-          if (zapp_MinutesInOperation < timeout)
-            zapp_MinutesInOperation = 0;
-          else
-            zapp_MinutesInOperation -= timeout;
-          
           osal_stop_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE);
           osal_set_event(zapp_TaskID, ZAPP_EVT_UPDATE);
         }
@@ -947,9 +936,7 @@ static void zapp_fProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
 static void zapp_fBasicResetCB(void)
 {
   zapp_fResetAttributesToDefaultValues();
-  zapp_DiagCPUStatus = (SLEEPSTA & 0x18)>>3;
-  zapp_DiagCPUStatus |= (SLEEPCMD & 0x03)<<2;
-  zapp_DiagCPUStatus |= CLKCONSTA<<4;  // Save CPU Status in Diagnostic cluster
+  GET_CPU_STATUS(zapp_DiagCPUStatus);
 }
 
 /*********************************************************************
@@ -1352,10 +1339,10 @@ ZStatus_t zapp_fAuthorizeCB( afAddrType_t *srcAddr, zclAttrRec_t *pAttr, uint8 o
         zapp_DiagMemHighWater = osal_heap_high_water();
       else if (pAttr->attr.attrId == ATTRID_DIAG_8CPUSTATUS)
       {
-        zapp_DiagCPUStatus = (SLEEPSTA & 0x18)>>3;
-        zapp_DiagCPUStatus |= (SLEEPCMD & 0x03)<<2;
-        zapp_DiagCPUStatus |= CLKCONSTA<<4;  // Save CPU Status in Diagnostic cluster
+        GET_CPU_STATUS(zapp_DiagCPUStatus);
       }
+      else if (pAttr->attr.attrId == ATTRID_DIAG_9SYSTEMUPTIME)
+        zapp_DiagSystemUpTime = osal_GetSystemClockSec();
       break;
   }    
   return ZCL_STATUS_SUCCESS;

@@ -171,7 +171,7 @@ extern "C"
 #define ATTRID_DIAG_7MEMHIGHWATER               0x0007  // uint16
 #define ATTRID_DIAG_8CPUSTATUS                  0x0008  // uint16
 #define ATTRID_DIAG_9SYSTEMUPTIME               0x0009  // uint32
-
+#define ATTRID_DIAG_10REPORT                    0x000A  // unit8
 /*********************************************************************
  * MACROS
  */
@@ -268,6 +268,7 @@ extern uint16 zapp_DiagMemUsed;       // Used memory in bytes
 extern uint16 zapp_DiagMemHighWater;  // Maximum memory allocated
 extern uint16 zapp_DiagCPUStatus;     // CPU status - Clock, Power mode, Boot reason
 extern uint32 zapp_DiagSystemUpTime;  // System up time in seconds
+extern uint8 zapp_DiagReport; // Send Diag data every meter update period
 
 extern uint16 zapp_IdentifyTime;
 

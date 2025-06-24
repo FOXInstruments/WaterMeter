@@ -205,6 +205,7 @@ uint16 zapp_DiagMemUsed;       // Used memory in bytes
 uint16 zapp_DiagMemHighWater;  // Maximum memory allocated
 uint16 zapp_DiagCPUStatus;     // CPU status - Clock, Power mode, Boot reason
 uint32 zapp_DiagSystemUpTime;  // System up time in seconds
+uint8 zapp_DiagReport;         // Send Diag data every meter update period
 
 uint8 zapp_StoreQueueItems[ZAPP_STOREQUEUE_LEN];
 uint8 zapp_StoreQueueSizes[ZAPP_STOREQUEUE_LEN];
@@ -631,6 +632,14 @@ CONST zclAttrRec_t zapp_cAttrs[] =
   {
     ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
     { //49
+      ATTRID_DIAG_10REPORT,
+      ZCL_DATATYPE_UINT8, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
+      (void *)&zapp_DiagReport
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
+    { //50
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
       (void *)&zapp_clusterRevision_all
@@ -1152,6 +1161,8 @@ void zapp_fResetAttributesToDefaultValues(void)
   zapp_DiagMemFreeBlocks = osal_heap_block_free();
   zapp_DiagMemUsed = osal_heap_mem_used();
   zapp_DiagMemHighWater = osal_heap_high_water();
+  zapp_DiagSystemUpTime = osal_GetSystemClockSec();
+  zapp_DiagReport = 0;
   
   osal_memset(zapp_StoreQueueItems, 0x00, sizeof(zapp_StoreQueueItems[0]) * ZAPP_STOREQUEUE_LEN);
   osal_memset(zapp_StoreQueueSizes, 0x00, sizeof(zapp_StoreQueueSizes[0]) * ZAPP_STOREQUEUE_LEN);
