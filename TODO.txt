@@ -1,51 +1,51 @@
 TODO list.
 
-+1. Time syncronization.
++  Time syncronization.
    After commissioning initiates TimeSync if it has not done yet or time elapsed from last sync more then 24 hours
    
 
-+2. When the device recives the read Battery attributes it has to update the values before sends response.
++  When the device recives the read Battery attributes it has to update the values before sends response.
    Using AthorizeAccess flag of atributes.
    
-3. Write and restore the attributes to-from NV
++ Initiate Comissioning procedure after reboot if device was connected to Network
+
++  Long press button (5 seconds) to initiate Comissioning or to deactivate it.
+   Status LED blinks slowly after 5 sec it starts to blink rapidply and if release the button than Status LED sets ON and Comissioning procedure is activated
+   
++  Long press button (10 seconds) to reset device to the Factory New State.
+   Status LED blinks rapidly and after 10 seconds all LEDs set ON that indicates that Reset to FN is initiated.
+
++  Update WorkingHours attribute every Hour
+   update to function osal_GetSystemClockSec
+
++  Move the attribute processing algorithms to *_data.c file.
+
++ Reporting
+  update function CfgReporting. It must add attributes into reporting list
+  and send CfgReortingRsp.
+  It is realized by adding #define ZCL_REPORT_DESTINATION_DEVICE
+  
++ "CONST" code memory constant allocation
+  "const" XDATA flash memory constant allocation
+     
++ OSAL_Timers.c
+  Added function uint32 osal_GetSystemClockSec()
+  which return time elapsed since last boot in seconds
+   
+- Write and restore the attributes to-from NV
   Queue 10 items length
   NV item ID, Data len, Pointer to Data
   function NVItemQueueAdd. If item is already in queue than it doesnt add an item to queue
 
-+-4. Diagnostic cluster.
++ Diagnostic cluster.
    +Last reboot reason.
    +Time since Last boot  = Current time of device - Time of first sync
    +NV items write counter
    +NV items write status word
    +HEAP memory statistics.
-   Send Diag cluster attributes every meter report period when zapp_DiagReport is 1, by default it is FALSE
-   Send Diag every 24 hours if zapp_DiagReport is 2
-   
-+5. Initiate Comissioning procedure after reboot if device was connected to Network
-
-+6. Long press button (5 seconds) to initiate Comissioning or to deactivate it.
-   Status LED blinks slowly after 5 sec it starts to blink rapidply and if release the button than Status LED sets ON and Comissioning procedure is activated
-   
-+7. Long press button (10 seconds) to reset device to the Factory New State.
-   Status LED blinks rapidly and after 10 seconds all LEDs set ON that indicates that Reset to FN is initiated.
-
-8. Switch debug messages to DebugTrace.h
-
-+9. Update WorkingHours attribute every Hour
-   update to function osal_GetSystemClockSec
-
-+10. Move the attribute processing algorithms to *_data.c file.
-
-+11. Reporting
-  update function CfgReporting. It must add attributes into reporting list
-  and send CfgReortingRsp.
-  It is realized by adding #define ZCL_REPORT_DESTINATION_DEVICE
+   +Send Diag cluster attributes every meter report period when zapp_DiagReport is 1, by default it is FALSE
+   +Send Diag every 24 hours if zapp_DiagReport is 2
   
-+12. "CONST" code memory constant allocation
-     "const" XDATA flash memory constant allocation
-     
-+13. OSAL_Timers.c
-  Added function uint32 osal_GetSystemClockSec()
-  which return time elapsed since last boot in seconds
+-  Switch debug messages to DebugTrace.h
   
-14. Send alarm when Low Battery, Reboot, Flash Write Error
+- Send alarm when Low Battery, Reboot, Flash Write Error

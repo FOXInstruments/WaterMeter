@@ -118,6 +118,9 @@
             x = (SLEEPSTA & 0x18)>>3;  \
             x |= (SLEEPCMD & 0x03)<<2; \
             x |= CLKCONSTA<<4;
+
+// On A Network condition, True if on a network
+#define IS_ON_A_NETWORK       (bdbAttributes.bdbNodeIsOnANetwork && ((bdbAttributes.bdbCommissioningStatus == BDB_COMMISSIONING_NETWORK_RESTORED) || (bdbAttributes.bdbCommissioningStatus == BDB_COMMISSIONING_SUCCESS)))
 /*********************************************************************
  * TYPEDEFS
  */
@@ -131,6 +134,7 @@ uint8 zapp_SeqNum;
 
 uint8 zapp_TimeHasSynced;             // True if time has synced
 uint16 zapp_TimeSynchElapsedMinutes;  // Minutes elapsed since Time synchronization
+uint8 zapp_isMissedTransmission;   // Set True if trasmission was missed because of lost connection
 
 const zclReadCmd_t zapp_ReadCmdTime = {4, {ATTRID_TIME_TIME, ATTRID_TIME_TIME_STATUS, ATTRID_TIME_TIME_ZONE, ATTRID_TIME_LOCAL_TIME}};
 
@@ -509,6 +513,7 @@ void zapp_Init(byte task_id)
   
   zapp_TimeSynchElapsedMinutes = 0;   // Initialize counter for time synchronization
   zapp_TimeHasSynced = false;
+  zapp_isMissedTransmission = false;
   
   if (zapp_FlowUpdatePeriod != 0xFF )
     status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATEINSTDEMAND, zapp_FlowUpdatePeriod*1000L);
@@ -519,8 +524,13 @@ void zapp_Init(byte task_id)
   
   status = 0;
   if (osal_nv_read(ZCD_NV_BDBNODEISONANETWORK, 0, sizeof(bdbAttributes.bdbNodeIsOnANetwork), &status) == SUCCESS &&
-      (status == true) && (status != 0xFF))  // Connect to network after reboot if device was commissioned OnNetwork
+     (status == true) && (status != 0xFF))  // Connect to network after reboot if device was commissioned OnNetwork
+  {
     bdb_StartCommissioning(BDB_COMMISSIONING_MODE_INITIATOR_TL | BDB_COMMISSIONING_MODE_NWK_STEERING /*| BDB_COMMISSIONING_MODE_FINDING_BINDING*/);
+#ifdef MT_DEBUG_FUNC
+    MT_ProcessDebugString("Start Commissioning");
+#endif
+  }
   
   //status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE, 10000);
   status = osal_set_event(zapp_TaskID, ZAPP_EVT_UPDATE);
@@ -596,13 +606,17 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
   if (events & ZAPP_EVT_BATTERY)
   {
     zapp_fUpdateBatteryAttributes();
-    if (bdbAttributes.bdbNodeIsOnANetwork)
+    if (IS_ON_A_NETWORK)
     {
         zapp_DstAddr.addrMode = afAddr16Bit;
         zapp_DstAddr.addr.shortAddr = 0;
         zapp_DstAddr.endPoint = 1;
         zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_GEN_POWER_CFG, &zapp_ReportCmdBattery, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++);
+        zapp_isMissedTransmission = 0;
     }
+    else
+      zapp_isMissedTransmission = 1;
+    
     return (events ^ ZAPP_EVT_BATTERY);
   }
   // ------------------------------------------------------------------
@@ -639,15 +653,21 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
       zapp_Flow2CurrDay = 0;
     }
     // Every interval attributes update
-    if (bdbAttributes.bdbNodeIsOnANetwork && ((bdbAttributes.bdbCommissioningStatus == BDB_COMMISSIONING_NETWORK_RESTORED) ||
-                                              (bdbAttributes.bdbCommissioningStatus == BDB_COMMISSIONING_SUCCESS)))
+    if (IS_ON_A_NETWORK)
     {
       zapp_DstAddr.addrMode = afAddr16Bit;
       zapp_DstAddr.addr.shortAddr = 0;
       zapp_DstAddr.endPoint = 1;
-      zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_GEN_POWER_CFG, &zapp_ReportCmdBattery, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++);
-      zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zapp_ReportCmdEveryHour, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++);
-      zcl_SendReportCmd(ZAPP_ENDPOINT2, &zapp_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zapp_ReportCmdEveryHour2, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++);
+      status = zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_GEN_POWER_CFG, &zapp_ReportCmdBattery, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++) == ZSuccess;
+      status += zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zapp_ReportCmdEveryHour, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++) == ZSuccess;
+      status += zcl_SendReportCmd(ZAPP_ENDPOINT2, &zapp_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zapp_ReportCmdEveryHour2, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++) == ZSuccess;
+      if (status == ZSuccess)
+        zapp_isMissedTransmission = 0;
+      else
+        zapp_isMissedTransmission = 1;
+      
+      if ((zapp_DiagReport == 1) || ((zapp_DiagReport == 2) && (time.hour == 0 && time.minutes <= 1)))
+        zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_HA_DIAGNOSTIC, &zapp_ReportCmdDiag, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++);
       
       // Try time sync with coodinator every 24 hours or more
       if ((zapp_TimeHasSynced == false) || (zapp_TimeSynchElapsedMinutes >= 24*60))
@@ -667,6 +687,8 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
         }
       }
     }
+    else
+      zapp_isMissedTransmission = 1;
 
     uint16 timeRemain = (23 - time.hour)*60 + (59 - time.minutes);
     if (timeRemain <= zapp_FlowIntervalReporting)
@@ -865,7 +887,7 @@ static void zapp_fProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
         {
           osal_stop_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE);
           osal_set_event(zapp_TaskID, ZAPP_EVT_UPDATE);
-        }
+        }        
       }
       else
       {
@@ -914,7 +936,6 @@ static void zapp_fProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
         HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN2, HAL_LED_MODE_ON);
-
       }
     break;
 #endif 
@@ -1213,7 +1234,7 @@ uint8 zapp_fValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
         if ((*pAttrInfo->attrData != zapp_FlowUpdatePeriod) && (*pAttrInfo->attrData != ZAPP_METER_INSTDEMAND_UPDATEPERIOD_MAX))
           osal_set_event(zapp_TaskID, ZAPP_EVT_UPDATEINSTDEMAND);
         #ifdef MT_DEBUG_FUNC
-          MT_ProcessDebugString("Write.UpdatePeriod");
+          MT_ProcessDebugString("Write.UpdateInstDemandPeriod");
         #endif
         break;
         
