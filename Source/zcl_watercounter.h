@@ -100,6 +100,10 @@ extern "C"
 #define ZAPP_REPORT_CHANGE_VOLTAGE          1     // Change values for BDB_REPORTING (0.1V unit)
 #define ZAPP_VOLUME_PER_REPORT             10
   
+#define ZAPP_DIAG_REPORT_DONT           0
+#define ZAPP_DIAG_REPORT_EVERY_UPDATE   1
+#define ZAPP_DIAG_REPORT_EVERY24h       2
+  
 #define TIME_SYNC_DIFF          5L       // Difference between device time and gate time
   
 #define ATTRID_METER_0READINGSET_CURRSUMDELIVERED        0x0000  // uint48, CurrentSummationDelivered

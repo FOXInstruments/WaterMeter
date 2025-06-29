@@ -658,15 +658,13 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
       zapp_DstAddr.addrMode = afAddr16Bit;
       zapp_DstAddr.addr.shortAddr = 0;
       zapp_DstAddr.endPoint = 1;
-      status = zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_GEN_POWER_CFG, &zapp_ReportCmdBattery, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++) == ZSuccess;
-      status += zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zapp_ReportCmdEveryHour, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++) == ZSuccess;
-      status += zcl_SendReportCmd(ZAPP_ENDPOINT2, &zapp_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zapp_ReportCmdEveryHour2, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++) == ZSuccess;
-      if (status == ZSuccess)
-        zapp_isMissedTransmission = 0;
-      else
-        zapp_isMissedTransmission = 1;
+      zapp_isMissedTransmission = zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_GEN_POWER_CFG, &zapp_ReportCmdBattery, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++) != ZSuccess;
+      zapp_isMissedTransmission += zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zapp_ReportCmdEveryHour, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++) != ZSuccess;
+      zapp_isMissedTransmission += zcl_SendReportCmd(ZAPP_ENDPOINT2, &zapp_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zapp_ReportCmdEveryHour2, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++) != ZSuccess;
       
-      if ((zapp_DiagReport == 1) || ((zapp_DiagReport == 2) && (time.hour == 0 && time.minutes <= 1)))
+      if ((zapp_DiagReport == ZAPP_DIAG_REPORT_EVERY_UPDATE) ||
+          ((zapp_DiagReport == ZAPP_DIAG_REPORT_EVERY24h) &&
+          (time.hour == 0 && time.minutes <= 1)))
         zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_HA_DIAGNOSTIC, &zapp_ReportCmdDiag, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++);
       
       // Try time sync with coodinator every 24 hours or more
@@ -688,7 +686,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
       }
     }
     else
-      zapp_isMissedTransmission = 1;
+      zapp_isMissedTransmission = 3;
 
     uint16 timeRemain = (23 - time.hour)*60 + (59 - time.minutes);
     if (timeRemain <= zapp_FlowIntervalReporting)
@@ -808,11 +806,18 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
       }
       else
       {
-        HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_TOGGLE);
-        if (zapp_LongPushCounter < 50)
-          status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_LONGPUSH, ZAPP_TIMEOUT_LONGPUSH);
+        //HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_TOGGLE);
+        if (zapp_LongPushCounter < 25)
+        {
+          if (zapp_LongPushCounter > 5)
+            HalLedBlink(HAL_LED_STATUS, 1, 50, ZAPP_TIMEOUT_LONGPUSH*2);
+          status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_LONGPUSH, ZAPP_TIMEOUT_LONGPUSH*2);
+        }
         else
-          status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_LONGPUSH, ZAPP_TIMEOUT_LONGPUSH*5/4);        
+        {
+          HalLedBlink(HAL_LED_STATUS, 1, 50, ZAPP_TIMEOUT_LONGPUSH);
+          status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_LONGPUSH, ZAPP_TIMEOUT_LONGPUSH);
+        }
       }
     }
     else
@@ -883,9 +888,8 @@ static void zapp_fProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
         HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
         
-        if (zapp_TimeHasSynced == false)
+        if ((zapp_TimeHasSynced == false) || (zapp_isMissedTransmission > 0))
         {
-          osal_stop_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE);
           osal_set_event(zapp_TaskID, ZAPP_EVT_UPDATE);
         }        
       }
@@ -928,6 +932,10 @@ static void zapp_fProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
         HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
+        if ((zapp_TimeHasSynced == false) || (zapp_isMissedTransmission > 0))
+        {
+          osal_set_event(zapp_TaskID, ZAPP_EVT_UPDATE);
+        }        
       }
       else
       {

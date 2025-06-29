@@ -327,7 +327,7 @@ CONST zclAttrRec_t zapp_cAttrs[] =
     ZCL_CLUSTER_ID_GEN_POWER_CFG,
     { //12
       ATTRID_POWER_CFG_BATTERY_PERCENTAGE_REMAINING,
-      ZCL_DATATYPE_UINT8, ACCESS_CONTROL_AUTH_READ | ACCESS_REPORTABLE,
+      ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ | ACCESS_CONTROL_AUTH_READ | ACCESS_REPORTABLE,
       (void *)&zapp_BatteryLevel
     }
   },
@@ -585,7 +585,7 @@ CONST zclAttrRec_t zapp_cAttrs[] =
     ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
     { //43
       ATTRID_DIAG_4MEMALLOCATEDBLOCKS,
-      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_AUTH_READ),
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_AUTH_READ),
       (void *)&zapp_DiagMemAllocatedBlocks
     }
   },
@@ -593,7 +593,7 @@ CONST zclAttrRec_t zapp_cAttrs[] =
     ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
     { //44
       ATTRID_DIAG_5MEMFREEBLOCKS,
-      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_AUTH_READ),
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_AUTH_READ),
       (void *)&zapp_DiagMemFreeBlocks
     }
   },
@@ -601,7 +601,7 @@ CONST zclAttrRec_t zapp_cAttrs[] =
     ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
     { //45
       ATTRID_DIAG_6MEMUSED,
-      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_AUTH_READ),
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_AUTH_READ),
       (void *)&zapp_DiagMemUsed
     }
   },
@@ -609,7 +609,7 @@ CONST zclAttrRec_t zapp_cAttrs[] =
     ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
     { //46
       ATTRID_DIAG_7MEMHIGHWATER,
-      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_AUTH_READ),
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_AUTH_READ),
       (void *)&zapp_DiagMemHighWater
     }
   },
@@ -617,7 +617,7 @@ CONST zclAttrRec_t zapp_cAttrs[] =
     ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
     { //47
       ATTRID_DIAG_8CPUSTATUS,
-      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_AUTH_READ),
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_AUTH_READ),
       (void *)&zapp_DiagCPUStatus
     }
   },
@@ -625,7 +625,7 @@ CONST zclAttrRec_t zapp_cAttrs[] =
     ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
     { //48
       ATTRID_DIAG_9SYSTEMUPTIME,
-      ZCL_DATATYPE_UINT32, (ACCESS_CONTROL_AUTH_READ),
+      ZCL_DATATYPE_UINT32, (ACCESS_CONTROL_READ | ACCESS_CONTROL_AUTH_READ),
       (void *)&zapp_DiagSystemUpTime
     }
   },
@@ -862,8 +862,8 @@ void zapp_fNVInitItems(void)
 {
   zapp_DiagNVMemFailItems = 0;
   
-  zapp_DiagNVMemFailItems |= osal_nv_item_init(ZAPP_NV_SITEID1, ZAPP_METER_SITEID_SIZE, NULL) != SUCCESS ? 1<<ZAPP_STOREID_SITEID1 : 0;
-  zapp_DiagNVMemFailItems |= osal_nv_item_init(ZAPP_NV_SITEID2, ZAPP_METER_SITEID_SIZE, NULL) != SUCCESS ? 1<<ZAPP_STOREID_SITEID2 : 0;
+  zapp_DiagNVMemFailItems |= osal_nv_item_init(ZAPP_NV_SITEID1, ZAPP_METER_SITEID_SIZE + 1, NULL) != SUCCESS ? 1<<ZAPP_STOREID_SITEID1 : 0;
+  zapp_DiagNVMemFailItems |= osal_nv_item_init(ZAPP_NV_SITEID2, ZAPP_METER_SITEID_SIZE + 1, NULL) != SUCCESS ? 1<<ZAPP_STOREID_SITEID2 : 0;
   zapp_DiagNVMemFailItems |= osal_nv_item_init(ZAPP_NV_UNIT1, sizeof(zapp_Flow1Unit), NULL) != SUCCESS ? 1<<ZAPP_STOREID_UNIT1 : 0;
   zapp_DiagNVMemFailItems |= osal_nv_item_init(ZAPP_NV_UNIT2, sizeof(zapp_Flow2Unit), NULL) != SUCCESS ? 1<<ZAPP_STOREID_UNIT2 : 0;
   zapp_DiagNVMemFailItems |= osal_nv_item_init(ZAPP_NV_MULTIPLIER1, sizeof(zapp_Flow1Multiplier), NULL) != SUCCESS ? 1<<ZAPP_STOREID_MULTIPLIER1 : 0;
@@ -1096,8 +1096,8 @@ void zapp_fResetAttributesToDefaultValues(void)
   //osal_memcpy(zapp_Flow1SiteId, zapp_cDesc1, ZAPP_METER_SITEID_SIZE + 1);
   //osal_memcpy(zapp_Flow2SiteId, zapp_cDesc2, ZAPP_METER_SITEID_SIZE + 1);
   
-  zapp_fInitAttrValue(ZAPP_NV_SITEID1, ZAPP_METER_SITEID_SIZE, zapp_cDesc1, zapp_Flow1SiteId);
-  zapp_fInitAttrValue(ZAPP_NV_SITEID2, ZAPP_METER_SITEID_SIZE, zapp_cDesc2, zapp_Flow2SiteId);
+  zapp_fInitAttrValue(ZAPP_NV_SITEID1, ZAPP_METER_SITEID_SIZE + 1, zapp_cDesc1, zapp_Flow1SiteId);
+  zapp_fInitAttrValue(ZAPP_NV_SITEID2, ZAPP_METER_SITEID_SIZE + 1, zapp_cDesc2, zapp_Flow2SiteId);
   
   src = 0;
   zapp_fInitAttrValue(ZAPP_NV_VALUES1, sizeof(zapp_Flow1Value.dw.lowDW), &src, &zapp_Flow1Value.dw.lowDW);
@@ -1162,7 +1162,7 @@ void zapp_fResetAttributesToDefaultValues(void)
   zapp_DiagMemUsed = osal_heap_mem_used();
   zapp_DiagMemHighWater = osal_heap_high_water();
   zapp_DiagSystemUpTime = osal_GetSystemClockSec();
-  zapp_DiagReport = 0;
+  zapp_DiagReport = ZAPP_DIAG_REPORT_DONT;
   
   osal_memset(zapp_StoreQueueItems, 0x00, sizeof(zapp_StoreQueueItems[0]) * ZAPP_STOREQUEUE_LEN);
   osal_memset(zapp_StoreQueueSizes, 0x00, sizeof(zapp_StoreQueueSizes[0]) * ZAPP_STOREQUEUE_LEN);
