@@ -87,8 +87,8 @@ extern "C"
 #define VDD_VOLTAGE_RATED36     36           // 0.1V unit
 #define VDD_VOLTAGE_RATED33     33           // 0.1V unit
 #define VDD_VOLTAGE_RATED30     30           // 0.1V unit
-#define VDD_VOLTAGE36_MIN         26           // 0.1V unit
-#define VDD_VOLTAGE36_THRES1      30           // 0.1V unit
+#define VDD_VOLTAGE36_MIN       26           // 0.1V unit
+#define VDD_VOLTAGE36_THRES1    29           // 0.1V unit
 #define VDD3TOVOLTAGE(v)        (v * 11.5 * 3 / 127.0)   // Convert ADC value to Voltage 0.1V unit
   
 #define ZAPP_METER_SITEID_SIZE              10

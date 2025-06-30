@@ -132,7 +132,7 @@ byte zapp_TaskID;
 
 uint8 zapp_SeqNum;
 
-uint8 zapp_TimeHasSynced;             // True if time has synced
+uint8 zapp_isTimeSynced;             // True if time has synced
 uint16 zapp_TimeSynchElapsedMinutes;  // Minutes elapsed since Time synchronization
 uint8 zapp_isMissedTransmission;   // Set True if trasmission was missed because of lost connection
 
@@ -512,7 +512,7 @@ void zapp_Init(byte task_id)
   IEN2 |= BV(4);           // Enable interrupt Port1
   
   zapp_TimeSynchElapsedMinutes = 0;   // Initialize counter for time synchronization
-  zapp_TimeHasSynced = false;
+  zapp_isTimeSynced = false;
   zapp_isMissedTransmission = false;
   
   if (zapp_FlowUpdatePeriod != 0xFF )
@@ -533,7 +533,7 @@ void zapp_Init(byte task_id)
   }
   
   //status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE, 10000);
-  status = osal_set_event(zapp_TaskID, ZAPP_EVT_UPDATE);
+  //status = osal_set_event(zapp_TaskID, ZAPP_EVT_UPDATE);
 #ifdef MT_DEBUG_FUNC
   MT_ProcessDebugString("Init completed");
 #endif
@@ -611,8 +611,10 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
         zapp_DstAddr.addrMode = afAddr16Bit;
         zapp_DstAddr.addr.shortAddr = 0;
         zapp_DstAddr.endPoint = 1;
-        zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_GEN_POWER_CFG, &zapp_ReportCmdBattery, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++);
-        zapp_isMissedTransmission = 0;
+        if (zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_GEN_POWER_CFG, &zapp_ReportCmdBattery, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++) == ZSuccess)
+          zapp_isMissedTransmission = 0;
+        else
+          zapp_isMissedTransmission = 1;
     }
     else
       zapp_isMissedTransmission = 1;
@@ -626,7 +628,10 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
     
     if (mask != 0)
     { // Send error message to coordinator
-      //zclGeneral_SendAlarm();
+      zapp_DstAddr.addrMode = afAddr16Bit;
+      zapp_DstAddr.addr.shortAddr = 0;
+      zapp_DstAddr.endPoint = 1;
+      zclGeneral_SendAlarm(ZAPP_ENDPOINT, &zapp_DstAddr, 1, ZCL_CLUSTER_ID_GEN_BASIC, false, zapp_SeqNum++);
     }
     
     return (events ^ ZAPP_EVT_STOREATTR);
@@ -642,10 +647,10 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
     // Battery voltage check
     zapp_fUpdateBatteryAttributes();
     // Calculate HoursInOperation attribute
-    zapp_Flow1HoursInOperation = osal_GetSystemClockSec() / (60*60);
+    zapp_Flow1HoursInOperation = osal_GetSystemClockSec() / (60L*60L);
     zapp_Flow2HoursInOperation = zapp_Flow1HoursInOperation;
     // Every 24 hours attribute update
-    if (time.hour == 0 && time.minutes <= 1)
+    if (time.hour == 0 && time.minutes <= 1 && zapp_isTimeSynced)
     {
       zapp_Flow1PrevDay = zapp_Flow1CurrDay;
       zapp_Flow2PrevDay = zapp_Flow2CurrDay;
@@ -668,7 +673,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
         zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_HA_DIAGNOSTIC, &zapp_ReportCmdDiag, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++);
       
       // Try time sync with coodinator every 24 hours or more
-      if ((zapp_TimeHasSynced == false) || (zapp_TimeSynchElapsedMinutes >= 24*60))
+      if ((zapp_isTimeSynced == false) || (zapp_TimeSynchElapsedMinutes >= 24*60))
       {     
         zapp_DstAddr.addrMode = afAddr16Bit;
         zapp_DstAddr.addr.shortAddr = 0;
@@ -716,7 +721,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
         zapp_TimeSynchElapsedMinutes += zapp_FlowIntervalReporting;
       }
     }
-    if (zapp_TimeSynchElapsedMinutes > 0x7FFF) zapp_TimeSynchElapsedMinutes = 24*60; // if HourCounter was 255, time sync was not completed more than 255 hours
+    if (zapp_TimeSynchElapsedMinutes > 0x7FFF) zapp_TimeSynchElapsedMinutes = 24*60;
     
     //status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_EVERYHOUR, /*(3600L - time.minutes*60 - time.seconds)*/ 120000L);
     
@@ -822,7 +827,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
     }
     else
     { //Button is released
-        if (zapp_LongPushCounter > 50)
+        if (zapp_LongPushCounter > 25)
           bdb_StartCommissioning(BDB_COMMISSIONING_MODE_INITIATOR_TL | BDB_COMMISSIONING_MODE_NWK_STEERING /*| BDB_COMMISSIONING_MODE_FINDING_BINDING*/);
     }
     return (events ^ ZAPP_EVT_LONGPUSH);
@@ -888,10 +893,19 @@ static void zapp_fProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
         HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
         
-        if ((zapp_TimeHasSynced == false) || (zapp_isMissedTransmission > 0))
+        if ((zapp_isTimeSynced == false) || (zapp_isMissedTransmission > 0))
         {
           osal_set_event(zapp_TaskID, ZAPP_EVT_UPDATE);
-        }        
+          
+          if (zapp_isTimeSynced == false)
+          {
+            zapp_DstAddr.addrMode = afAddr16Bit;                
+            zapp_DstAddr.addr.shortAddr = 0;
+            zapp_DstAddr.endPoint = 1;
+            if (zclGeneral_SendAlarm(ZAPP_ENDPOINT, &zapp_DstAddr, 0, ZCL_CLUSTER_ID_GEN_BASIC, false, zapp_SeqNum++) != ZSuccess)
+              MT_ProcessDebugString("SendAlarm(0) fail");
+          }
+        }
       }
       else
       {
@@ -932,18 +946,18 @@ static void zapp_fProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
         HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
-        if ((zapp_TimeHasSynced == false) || (zapp_isMissedTransmission > 0))
+        if ((zapp_isTimeSynced == false) || (zapp_isMissedTransmission > 0))
         {
           osal_set_event(zapp_TaskID, ZAPP_EVT_UPDATE);
-        }        
+        }
       }
       else
       {
-        //Parent not found, attempt to rejoin again after a fixed delay
-        osal_start_timerEx(zapp_TaskID, ZAPP_EVT_END_DEVICE_REJOIN, ZAPP_TIMEOUT_END_DEVICE_REJOIN);
         HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN2, HAL_LED_MODE_ON);
+        //Parent not found, attempt to rejoin again after a fixed delay
+        osal_start_timerEx(zapp_TaskID, ZAPP_EVT_END_DEVICE_REJOIN, ZAPP_TIMEOUT_END_DEVICE_REJOIN);
       }
     break;
 #endif 
@@ -1014,7 +1028,7 @@ static void zapp_fUpdateBatteryAttributes(void)
   else
     zapp_BatteryLevel = (zapp_BatteryVoltage - zapp_BatteryVoltageThresMin)*200/(zapp_BatteryVoltageRated - zapp_BatteryVoltageThresMin);
   
-  if (zapp_BatteryVoltage <= zapp_BatteryVoltageThres1)
+  if (zapp_BatteryVoltage < zapp_BatteryVoltageThres1)
   {
     zapp_Flow1Status |= METER_2STATUS_LOWBATT;
     zapp_Flow2Status |= METER_2STATUS_LOWBATT;
@@ -1172,7 +1186,7 @@ static uint8 zapp_fProcessInReadRspCmd(zclIncomingMsg_t *pInMsg)
                 (ABS((int32)(*((uint32*)readRspCmd->attrList[i].data) - time)) > TIME_SYNC_DIFF))
             {
               osal_setClock(*((uint32*)readRspCmd->attrList[i].data));
-              zapp_TimeHasSynced = true;
+              zapp_isTimeSynced = true;
               zapp_TimeSynchElapsedMinutes = 0;
 
               #if defined MT_DEBUG_FUNC

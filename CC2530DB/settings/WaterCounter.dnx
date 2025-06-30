@@ -12,7 +12,7 @@
         <ByteLimit>50</ByteLimit>
     </Stack>
     <DebugChecksum>
-        <Checksum>1823692456</Checksum>
+        <Checksum>1658328502</Checksum>
     </DebugChecksum>
     <CallStack>
         <ShowArgs>0</ShowArgs>
@@ -102,18 +102,6 @@
         <Fmt3>{W}1:zclWC_BatteryVoltageThresMin	3	0</Fmt3>
         <Fmt4>{W}1:zclWC_TaskID	3	0</Fmt4>
     </watch_formats>
-    <Breakpoints>
-        <Bp0>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.862.3" 1 0 0 0 "" 0 ""</Bp0>
-        <Bp1>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.799.9" 0 0 0 0 "" 0 ""</Bp1>
-        <Bp2>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter_data.c}.1044.3" 1 0 0 0 "" 0 ""</Bp2>
-        <Bp3>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.1356.7" 1 0 0 0 "" 0 ""</Bp3>
-        <Bp4>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter.c}.444.3" 0 0 0 0 "" 0 ""</Bp4>
-        <Count>5</Count>
-    </Breakpoints>
-    <ChipconEmu>
-        <StopTimersOnHalt>0</StopTimersOnHalt>
-        <LeaveTargetRunning>0</LeaveTargetRunning>
-    </ChipconEmu>
     <TermIOLog>
         <LoggingEnabled>_ 0</LoggingEnabled>
         <LogFile>_ ""</LogFile>
@@ -123,6 +111,15 @@
         <LogFile>_ ""</LogFile>
         <Category>_ 0</Category>
     </LogFile>
+    <Breakpoints>
+        <Bp0>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter_data.c}.1057.4" 1 0 0 0 "" 0 ""</Bp0>
+        <Bp1>_ "STD_CODE" "{D:\TI\Z-Stack 3.0.2\Components\stack\bdb\bdb_Reporting.c}.531.3" 0 0 0 0 "" 0 ""</Bp1>
+        <Count>2</Count>
+    </Breakpoints>
+    <ChipconEmu>
+        <StopTimersOnHalt>0</StopTimersOnHalt>
+        <LeaveTargetRunning>0</LeaveTargetRunning>
+    </ChipconEmu>
     <Aliases>
         <Count>0</Count>
         <SuppressDialog>0</SuppressDialog>

@@ -35,8 +35,9 @@
 #define ZCL_TIME
 #define ZCL_POWER_CONFIG
 #define ZCL_ALARMS
-#define BDB_REPORTING
-#define ZCL_REPORT_DESTINATION_DEVICE   // to enable BDB report receiving/processing functionality
+//#define BDB_REPORTING
+#define ZCL_REPORTING_DEVICE
+//#define ZCL_REPORT_DESTINATION_DEVICE   // to enable BDB report receiving/processing functionality
 //#define DPRINTF_OSALHEAPTRACE
 #define OSALMEM_METRICS         TRUE
 #define OSAL_TOTAL_MEM

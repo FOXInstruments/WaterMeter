@@ -48,4 +48,4 @@ TODO list.
   
 -  Switch debug messages to DebugTrace.h
   
-- Send alarm when Low Battery, Reboot, Flash Write Error
+- Send alarm when Low Battery, Reboot, Flash Write Error, or may be send alarms through Diagnostic

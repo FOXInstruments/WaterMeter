@@ -119,6 +119,7 @@
 
 #define ZAPP_STOREQUEUE_LEN          10
 
+#pragma message(__DATE__)
 /*********************************************************************
  * TYPEDEFS
  */
@@ -139,7 +140,8 @@ const uint8 zapp_HWRevision = ZAPP_HWVERSION;
 const uint8 zapp_ZCLVersion = ZAPP_ZCLVERSION;
 const uint8 zapp_ManufacturerName[] = { 15, 'F','o','x','.','I','n','s','t','r','u','m','e','n','t','s' };
 const uint8 zapp_ModelId[] = { 12, 'F','O','X','-','M','e','t','e','r','0','0','1',};
-const uint8 zapp_DateCode[] = { 10, '2','0','2','4','-','0','2','-','0','2'};
+const uint8 zapp_DateCode[] = { 11, __DATE__[0], __DATE__[1], __DATE__[2], __DATE__[3], __DATE__[4], __DATE__[5], __DATE__[6], __DATE__[7], __DATE__[8], __DATE__[9], __DATE__[10]};
+const uint8 zapp_SWBuildID[] = { 11, 'b', 'u', 'i', 'l', 'd', ' ', 48 + __BUILD_NUMBER__/10000, 48 + ((__BUILD_NUMBER__/1000)%10), 48 + ((__BUILD_NUMBER__/100)%10), 48 + ((__BUILD_NUMBER__/10)%10), 48 + (__BUILD_NUMBER__%10)};
 
 const uint8 zapp_DeviceType = 0x02;    // Water meter
 const uint8 zapp_PowerSource = POWER_SOURCE_BATTERY;
@@ -218,7 +220,7 @@ const uint16 zapp_cReportIntervals[] = {5, 10, 15, 20, 30, 60, 2*60, 3*60, 4*60,
 CONST uint8 zapp_cReportIntervalsSize_1 = sizeof(zapp_cReportIntervals) / sizeof(zapp_cReportIntervals[0]) - 1;
 const uint8 zapp_cRatedVoltages[] = {VDD_VOLTAGE_RATED30, VDD_VOLTAGE_RATED33, VDD_VOLTAGE_RATED36, VDD_VOLTAGE_RATED42};
 CONST uint8 zapp_cRatedVoltagesSize_1 = sizeof(zapp_cRatedVoltages) / sizeof(zapp_cRatedVoltages[0]) - 1;
-const uint8 zapp_cRatedVoltageThres[] = {28, 28, VDD_VOLTAGE36_THRES1, 30};
+const uint8 zapp_cRatedVoltageThres[] = {28, 28, VDD_VOLTAGE36_THRES1, 29};
 const uint8 zapp_cRatedVoltageThresMin[] = {27, 27, VDD_VOLTAGE36_MIN, 26};
 
 /*********************************************************************
@@ -307,6 +309,14 @@ CONST zclAttrRec_t zapp_cAttrs[] =
   {
     ZCL_CLUSTER_ID_GEN_BASIC,
     { //10
+      ATTRID_BASIC_SW_BUILD_ID,
+      ZCL_DATATYPE_CHAR_STR, ACCESS_CONTROL_READ,
+      (void *)&zapp_SWBuildID
+    }
+  },  
+  {
+    ZCL_CLUSTER_ID_GEN_BASIC,
+    { //10
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, ACCESS_CONTROL_READ,
       (void *)&zapp_clusterRevision_all
@@ -319,7 +329,7 @@ CONST zclAttrRec_t zapp_cAttrs[] =
     ZCL_CLUSTER_ID_GEN_POWER_CFG,
     { //11
       ATTRID_POWER_CFG_BATTERY_VOLTAGE,
-      ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ | ACCESS_REPORTABLE,
+      ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ,
       (void *)&zapp_BatteryVoltage
     }
   },
@@ -327,7 +337,7 @@ CONST zclAttrRec_t zapp_cAttrs[] =
     ZCL_CLUSTER_ID_GEN_POWER_CFG,
     { //12
       ATTRID_POWER_CFG_BATTERY_PERCENTAGE_REMAINING,
-      ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ | ACCESS_CONTROL_AUTH_READ | ACCESS_REPORTABLE,
+      ZCL_DATATYPE_UINT8, ACCESS_CONTROL_READ | ACCESS_CONTROL_AUTH_READ,
       (void *)&zapp_BatteryLevel
     }
   },
@@ -367,7 +377,7 @@ CONST zclAttrRec_t zapp_cAttrs[] =
     ZCL_CLUSTER_ID_GEN_POWER_CFG,
     { //17
       ATTRID_POWER_CFG_BAT_ALARM_STATE,
-      ZCL_DATATYPE_BITMAP32, ACCESS_CONTROL_READ | ACCESS_REPORTABLE,
+      ZCL_DATATYPE_BITMAP32, ACCESS_CONTROL_READ,
       (void *)&zapp_BatteryAlarmState
     }
   },
@@ -423,7 +433,7 @@ CONST zclAttrRec_t zapp_cAttrs[] =
     ZCL_CLUSTER_ID_SE_METERING,
     { //23
       ATTRID_METER_0READINGSET_CURRSUMDELIVERED,
-      ZCL_DATATYPE_UINT48, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE | ACCESS_REPORTABLE),
+      ZCL_DATATYPE_UINT48, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zapp_Flow1Value
     }
   },
@@ -519,7 +529,7 @@ CONST zclAttrRec_t zapp_cAttrs[] =
     ZCL_CLUSTER_ID_SE_METERING,
     { //35
       ATTRID_METER_4HISTORY_INSTANTDEMAND,
-      ZCL_DATATYPE_INT24, (ACCESS_CONTROL_READ | ACCESS_REPORTABLE),
+      ZCL_DATATYPE_INT24, (ACCESS_CONTROL_READ),
       (void *)&zapp_Flow1InstDemand
     }
   },
@@ -657,7 +667,7 @@ CONST zclAttrRec_t zapp_cAttrs2[] =
     ZCL_CLUSTER_ID_SE_METERING,
     { //1
       ATTRID_METER_0READINGSET_CURRSUMDELIVERED,
-      ZCL_DATATYPE_UINT48, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE | ACCESS_REPORTABLE),
+      ZCL_DATATYPE_UINT48, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zapp_Flow2Value
     }
   },
@@ -753,7 +763,7 @@ CONST zclAttrRec_t zapp_cAttrs2[] =
     ZCL_CLUSTER_ID_SE_METERING,
     { //13
       ATTRID_METER_4HISTORY_INSTANTDEMAND,
-      ZCL_DATATYPE_INT24, (ACCESS_CONTROL_READ | ACCESS_REPORTABLE),
+      ZCL_DATATYPE_INT24, (ACCESS_CONTROL_READ),
       (void *)&zapp_Flow2InstDemand
     }
   },
@@ -795,7 +805,8 @@ const cId_t zapp_InClusterList[] =
   ZCL_CLUSTER_ID_GEN_BASIC,
   ZCL_CLUSTER_ID_GEN_POWER_CFG,
   ZCL_CLUSTER_ID_GEN_IDENTIFY,
-  ZCL_CLUSTER_ID_SE_METERING
+  ZCL_CLUSTER_ID_SE_METERING,
+  ZCL_CLUSTER_ID_HA_DIAGNOSTIC
 };
 
 #define zapp_MAX_INCLUSTERS    ( sizeof( zapp_InClusterList ) / sizeof( zapp_InClusterList[0] ))
@@ -803,7 +814,8 @@ const cId_t zapp_InClusterList[] =
 const cId_t zapp_OutClusterList[] =
 {
   ZCL_CLUSTER_ID_GEN_IDENTIFY,
-  ZCL_CLUSTER_ID_GEN_GROUPS
+  ZCL_CLUSTER_ID_GEN_GROUPS,
+  ZCL_CLUSTER_ID_GEN_TIME
 };
 
 #define zapp_MAX_OUTCLUSTERS   ( sizeof( zapp_OutClusterList ) / sizeof( zapp_OutClusterList[0] ))
