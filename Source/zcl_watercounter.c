@@ -204,6 +204,11 @@ const zclReportCmd_t zapp_ReportCmdEveryHour =
       (void*)&zapp_Flow1Value
     },
     {
+      ATTRID_METER_2STATUS_HOURSINOPERATION,
+      ZCL_DATATYPE_UINT24,
+      (void*)&zapp_Flow1HoursInOperation
+    },
+    {
       ATTRID_METER_4HISTORY_CURRDAYCONSUMPTIONDELIVER,
       ZCL_DATATYPE_UINT24,
       (void*)&zapp_Flow1CurrDay
@@ -353,6 +358,7 @@ static void zapp_fProcessOTAMsgs(zclOTA_CallbackMsg_t* pMsg);
 
 static void zapp_fBatteryWarningCB(uint8 voltLevel);
 static void zapp_fUpdateBatteryAttributes(void);
+static void zapp_fUpdateDiagnosticAttributes(void);
 
 //#ifdef MT_DEBUG_FUNC
 //void MT_ProcessDebugString(const char *str);
@@ -668,9 +674,12 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
       zapp_isMissedTransmission += zcl_SendReportCmd(ZAPP_ENDPOINT2, &zapp_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zapp_ReportCmdEveryHour2, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++) != ZSuccess;
       
       if ((zapp_DiagReport == ZAPP_DIAG_REPORT_EVERY_UPDATE) ||
-          ((zapp_DiagReport == ZAPP_DIAG_REPORT_EVERY24h) &&
-          (time.hour == 0 && time.minutes <= 1)))
+         ((zapp_DiagReport == ZAPP_DIAG_REPORT_EVERY24h) &&
+         (time.hour == 0 && time.minutes <= 1)))
+      {
+        zapp_fUpdateDiagnosticAttributes();
         zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_HA_DIAGNOSTIC, &zapp_ReportCmdDiag, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++);
+      }
       
       // Try time sync with coodinator every 24 hours or more
       if ((zapp_isTimeSynced == false) || (zapp_TimeSynchElapsedMinutes >= 24*60))
@@ -1056,6 +1065,25 @@ static void zapp_fUpdateBatteryAttributes(void)
   {
     zapp_BatteryAlarmState &= ~BAT_ALARM_STATE_BAT_VOLT_MIN_THRES_BAT_SRC_1;
   } 
+}
+
+/*********************************************************************
+ * @fn      zapp_fUpdateBatteryAttributes
+ *
+ * @brief   Called to update Battery voltage and level attributes of power cluster
+ *
+ * @param   volt, level - voltage and level attributes
+ *
+ * @return  none
+ */
+static void zapp_fUpdateDiagnosticAttributes(void)
+{
+  GET_CPU_STATUS(zapp_DiagCPUStatus);
+  zapp_DiagSystemUpTime = osal_GetSystemClockSec();
+  zapp_DiagMemAllocatedBlocks = osal_heap_block_cnt();
+  zapp_DiagMemFreeBlocks = osal_heap_block_free();
+  zapp_DiagMemHighWater = osal_heap_high_water();
+  zapp_DiagMemUsed = osal_heap_mem_used();
 }
 
 /******************************************************************************

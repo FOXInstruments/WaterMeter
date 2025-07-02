@@ -1184,7 +1184,7 @@
                     <item>cfgReportCmd</item>
                     <item>reportRec</item>
                     <item>pInMsg</item>
-                    <item></item>
+                    <item />
                 </expressions>
                 <col-names>
                     <item>Expression</item>
