@@ -76,6 +76,7 @@
 #include "MT_SYS.h"
 #if defined MT_DEBUG_FUNC
 #include "MT_DEBUG.h"
+#include "DebugTrace.h"
 #endif
 
 #include "zcl.h"
@@ -133,7 +134,7 @@ byte zapp_TaskID;
 uint8 zapp_SeqNum;
 
 uint8 zapp_isTimeSynced;             // True if time has synced
-uint16 zapp_TimeSynchElapsedMinutes;  // Minutes elapsed since Time synchronization
+uint16 zapp_TimeSyncElapsedMinutes;  // Minutes elapsed since Time synchronization
 uint8 zapp_isMissedTransmission;   // Set True if trasmission was missed because of lost connection
 
 const zclReadCmd_t zapp_ReadCmdTime = {4, {ATTRID_TIME_TIME, ATTRID_TIME_TIME_STATUS, ATTRID_TIME_TIME_ZONE, ATTRID_TIME_LOCAL_TIME}};
@@ -517,7 +518,7 @@ void zapp_Init(byte task_id)
   P1IFG &= ~BV(1);
   IEN2 |= BV(4);           // Enable interrupt Port1
   
-  zapp_TimeSynchElapsedMinutes = 0;   // Initialize counter for time synchronization
+  zapp_TimeSyncElapsedMinutes = 0;   // Initialize counter for time synchronization
   zapp_isTimeSynced = false;
   zapp_isMissedTransmission = false;
   
@@ -682,7 +683,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
       }
       
       // Try time sync with coodinator every 24 hours or more
-      if ((zapp_isTimeSynced == false) || (zapp_TimeSynchElapsedMinutes >= 24*60))
+      if ((zapp_isTimeSynced == false) || (zapp_TimeSyncElapsedMinutes >= TIME_SYNC_PERIOD_MIN))
       {     
         zapp_DstAddr.addrMode = afAddr16Bit;
         zapp_DstAddr.addr.shortAddr = 0;
@@ -706,7 +707,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
     if (timeRemain <= zapp_FlowIntervalReporting)
     {
       status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE, (timeRemain*60 + (60 - time.seconds))*1000L);
-      zapp_TimeSynchElapsedMinutes += timeRemain;
+      zapp_TimeSyncElapsedMinutes += timeRemain;
     }
     else
     {
@@ -716,21 +717,21 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
         if (timeRemain <= zapp_FlowIntervalReporting)
         {
           status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE, (timeRemain*60 + (60 - time.seconds))*1000L);
-          zapp_TimeSynchElapsedMinutes += timeRemain;
+          zapp_TimeSyncElapsedMinutes += timeRemain;
         }
         else
         {
           status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE, (zapp_FlowIntervalReporting*60 + (60 - time.seconds))*1000L);          
-          zapp_TimeSynchElapsedMinutes += zapp_FlowIntervalReporting;
+          zapp_TimeSyncElapsedMinutes += zapp_FlowIntervalReporting;
         }
       }
       else
       {          
         status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE, ((zapp_FlowIntervalReporting - 60)*60 + (59 - time.minutes)*60 + (60 - time.seconds))*1000L);                  
-        zapp_TimeSynchElapsedMinutes += zapp_FlowIntervalReporting;
+        zapp_TimeSyncElapsedMinutes += zapp_FlowIntervalReporting;
       }
     }
-    if (zapp_TimeSynchElapsedMinutes > 0x7FFF) zapp_TimeSynchElapsedMinutes = 24*60;
+    if (zapp_TimeSyncElapsedMinutes > 0x7FFF) zapp_TimeSyncElapsedMinutes = TIME_SYNC_PERIOD_MIN;
     
     //status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_EVERYHOUR, /*(3600L - time.minutes*60 - time.seconds)*/ 120000L);
     
@@ -1211,11 +1212,11 @@ static uint8 zapp_fProcessInReadRspCmd(zclIncomingMsg_t *pInMsg)
             time = osal_getClock();
             if ((status & TIME_STATUS_MASTER) && (status & TIME_STATUS_SYNCH) &&
                 (*((uint32*)readRspCmd->attrList[i].data) > 0L) &&
-                (ABS((int32)(*((uint32*)readRspCmd->attrList[i].data) - time)) > TIME_SYNC_DIFF))
+                (ABS((int32)(*((uint32*)readRspCmd->attrList[i].data) - time)) > TIME_SYNC_DIFF_SEC))
             {
               osal_setClock(*((uint32*)readRspCmd->attrList[i].data));
               zapp_isTimeSynced = true;
-              zapp_TimeSynchElapsedMinutes = 0;
+              zapp_TimeSyncElapsedMinutes = 0;
 
               #if defined MT_DEBUG_FUNC
                 MT_ProcessDebugString("ReadRsp.TimeSync");
@@ -1277,6 +1278,16 @@ uint8 zapp_fValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
     switch (pAttrInfo->attrID)
     {
       case ATTRID_METER_0READINGSET_CURRSUMDELIVERED:
+        if ((*(uint48_t*)pAttrInfo->attrData).dw.lowDW != (*(uint48_t*)pAttr->attr.dataPtr).dw.lowDW)
+        {
+          if (pAttr->attr.dataPtr == &zapp_Flow1Value)
+            status = zapp_fStoreQueueAdd(ZAPP_STOREID_VALUES1, sizeof(zapp_Flow1Value.dw.lowDW), &zapp_Flow1Value);
+          else
+            status = zapp_fStoreQueueAdd(ZAPP_STOREID_VALUES2, sizeof(zapp_Flow2Value.dw.lowDW), &zapp_Flow2Value);
+        }
+        #ifdef MT_DEBUG_FUNC
+        /*MT_ProcessDebugString*/debug_str("Write.CurrSumDelivered");
+        #endif
         break;
       case ATTRID_METER_0READINGSET_DEFAULTUPDATEPERIOD:
         if (*pAttrInfo->attrData < ZAPP_METER_INSTDEMAND_UPDATEPERIOD_MIN)

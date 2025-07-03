@@ -104,7 +104,8 @@ extern "C"
 #define ZAPP_DIAG_REPORT_EVERY_UPDATE   1
 #define ZAPP_DIAG_REPORT_EVERY24h       2
   
-#define TIME_SYNC_DIFF          5L       // Difference between device time and gate time
+#define TIME_SYNC_DIFF_SEC          5L       // Difference between device time and gate time, seconds
+#define TIME_SYNC_PERIOD_MIN        24*60    // Minutes
   
 #define ATTRID_METER_0READINGSET_CURRSUMDELIVERED        0x0000  // uint48, CurrentSummationDelivered
 #define ATTRID_METER_0READINGSET_CURRSUMRECIVED          0x0001  // uint48, CurrentSummationRecived

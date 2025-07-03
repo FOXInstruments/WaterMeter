@@ -1,6 +1,6 @@
 TODO list.
 
-+  Time syncronization.
++  Time synchronization.
    After commissioning initiates TimeSync if it has not done yet or time elapsed from last sync more then 24 hours
    
 
@@ -32,7 +32,7 @@ TODO list.
   Added function uint32 osal_GetSystemClockSec()
   which return time elapsed since last boot in seconds
    
-- Write and restore the attributes to-from NV
++ Write and restore the attributes to-from NV
   Queue 10 items length
   NV item ID, Data len, Pointer to Data
   function NVItemQueueAdd. If item is already in queue than it doesnt add an item to queue
