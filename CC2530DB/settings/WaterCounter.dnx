@@ -12,7 +12,7 @@
         <ByteLimit>50</ByteLimit>
     </Stack>
     <DebugChecksum>
-        <Checksum>1658328502</Checksum>
+        <Checksum>294814277</Checksum>
     </DebugChecksum>
     <CallStack>
         <ShowArgs>0</ShowArgs>
@@ -112,12 +112,12 @@
         <Category>_ 0</Category>
     </LogFile>
     <Breakpoints>
-        <Bp0>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter_data.c}.1057.4" 1 0 0 0 "" 0 ""</Bp0>
+        <Bp0>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter_data.c}.1058.5" 1 0 0 0 "" 0 ""</Bp0>
         <Bp1>_ "STD_CODE" "{D:\TI\Z-Stack 3.0.2\Components\stack\bdb\bdb_Reporting.c}.531.3" 0 0 0 0 "" 0 ""</Bp1>
         <Count>2</Count>
     </Breakpoints>
     <ChipconEmu>
-        <StopTimersOnHalt>0</StopTimersOnHalt>
+        <StopTimersOnHalt>1</StopTimersOnHalt>
         <LeaveTargetRunning>0</LeaveTargetRunning>
     </ChipconEmu>
     <Aliases>

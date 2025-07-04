@@ -650,6 +650,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
     osal_ConvertUTCTime(&time, osal_getClock());
 #ifdef MT_DEBUG_FUNC
     MT_ProcessDebugMsg4(osal_heap_block_cnt(), osal_heap_block_free(), osal_heap_mem_used(), osal_heap_high_water());
+    MT_ProcessDebugMsg4(zapp_TimeSyncElapsedMinutes, 0, 0, 0);
 #endif    
     // Battery voltage check
     zapp_fUpdateBatteryAttributes();
@@ -721,7 +722,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
         }
         else
         {
-          status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE, (zapp_FlowIntervalReporting*60 + (60 - time.seconds))*1000L);          
+          status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE, (zapp_FlowIntervalReporting*60)*1000L);          
           zapp_TimeSyncElapsedMinutes += zapp_FlowIntervalReporting;
         }
       }
@@ -732,8 +733,6 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
       }
     }
     if (zapp_TimeSyncElapsedMinutes > 0x7FFF) zapp_TimeSyncElapsedMinutes = TIME_SYNC_PERIOD_MIN;
-    
-    //status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_EVERYHOUR, /*(3600L - time.minutes*60 - time.seconds)*/ 120000L);
     
 #warning For testing only
     osal_set_event(zapp_TaskID, ZAPP_EVT_IMPULSE1);
@@ -1194,8 +1193,7 @@ static uint8 zapp_fProcessInReadRspCmd(zclIncomingMsg_t *pInMsg)
   zclReadRspCmd_t *readRspCmd;
   uint8 i;
   uint8 status = 0;
-  uint32 time;
-
+  
   readRspCmd = (zclReadRspCmd_t *)pInMsg->attrCmd;
   
   // Processing TIME read response command for time sync
@@ -1209,18 +1207,28 @@ static uint8 zapp_fProcessInReadRspCmd(zclIncomingMsg_t *pInMsg)
           if (readRspCmd->attrList[i].attrID == ATTRID_TIME_TIME_STATUS) status = *readRspCmd->attrList[i].data;
           if (readRspCmd->attrList[i].attrID == ATTRID_TIME_LOCAL_TIME)
           {
-            time = osal_getClock();
+            int32 timediff = *(uint32*)readRspCmd->attrList[i].data - osal_getClock();
+            timediff = ABS(timediff);
+#if defined MT_DEBUG_FUNC
+              MT_ProcessDebugMsg4(timediff, timediff>>16, status, 0);
+#endif
             if ((status & TIME_STATUS_MASTER) && (status & TIME_STATUS_SYNCH) &&
                 (*((uint32*)readRspCmd->attrList[i].data) > 0L) &&
-                (ABS((int32)(*((uint32*)readRspCmd->attrList[i].data) - time)) > TIME_SYNC_DIFF_SEC))
+                (timediff > TIME_SYNC_DIFF_SEC))
             {
               osal_setClock(*((uint32*)readRspCmd->attrList[i].data));
               zapp_isTimeSynced = true;
               zapp_TimeSyncElapsedMinutes = 0;
 
-              #if defined MT_DEBUG_FUNC
-                MT_ProcessDebugString("ReadRsp.TimeSync");
-              #endif
+#if defined MT_DEBUG_FUNC
+              debug_str("ReadRsp.TimeSync");
+#endif
+            }
+            else
+            {
+#if defined MT_DEBUG_FUNC
+              debug_str("ReadRsp.TimeNOTSync");
+#endif
             }
           }
         }

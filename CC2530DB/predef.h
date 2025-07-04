@@ -3,7 +3,7 @@
 #define TC_LINKKEY_JOIN
 #define NV_INIT
 #define NV_RESTORE
-//#define POWER_SAVING
+#define POWER_SAVING
 #define NWK_AUTO_POLL
 #define ZTOOL_P2
 #define MT_UART_DEFAULT_OVERFLOW        FALSE
