@@ -532,7 +532,7 @@ void HalLedEnterSleep( void )
   HalSleepLedState |= HAL_STATE_LED2() << 2;
 #endif
 #if (HAL_LED3_ENABLE == 1)
-  HalSleepLedState |= HAL_STATE_LED4() << 3;
+  HalSleepLedState |= HAL_STATE_LED3() << 3;
 #endif
 #if (HAL_LED4_ENABLE == 1)
   HalSleepLedState |= HAL_STATE_LED4() << 4;

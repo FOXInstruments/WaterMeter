@@ -7,6 +7,7 @@
 #define NWK_AUTO_POLL
 #define ZTOOL_P2
 #define MT_UART_DEFAULT_OVERFLOW        FALSE
+#define HAL_UART_DMA    0       // Disable P2 UART DMA to Enable P2 UART ISR
 #define MT_TASK
 #define MT_APP_FUNC
 #define MT_SYS_FUNC

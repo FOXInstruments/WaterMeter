@@ -69,6 +69,7 @@
 #include "ZComDef.h"
 #include "OSAL.h"
 #include "OSAL_Clock.h"
+#include "OSAL_PwrMgr.h"
 #include "AF.h"
 #include "ZDApp.h"
 #include "ZDObject.h"
@@ -152,7 +153,7 @@ uint8 zapp_LongPushCounter;
 
 const zclReportCmd_t zapp_ReportCmdBattery =
 {
-  sizeof(zapp_ReportCmdBattery) / sizeof(zclReportCmd_t),
+  3,
   {
     {
       ATTRID_POWER_CFG_BATTERY_VOLTAGE,
@@ -198,7 +199,7 @@ const zclReportCmd_t zapp_ReportCmdInstDemand2 =
 
 const zclReportCmd_t zapp_ReportCmdEveryUpdate =
 {
-  sizeof(zapp_ReportCmdEveryUpdate) / sizeof(zclReportCmd_t),
+  4,
   {
     {
       ATTRID_METER_0READINGSET_CURRSUMDELIVERED,
@@ -225,7 +226,7 @@ const zclReportCmd_t zapp_ReportCmdEveryUpdate =
 
 const zclReportCmd_t zapp_ReportCmdEveryUpdate2 =
 {
-  sizeof(zapp_ReportCmdEveryUpdate2) / sizeof(zclReportCmd_t),
+  3,
   {
     {
       ATTRID_METER_0READINGSET_CURRSUMDELIVERED,
@@ -247,49 +248,49 @@ const zclReportCmd_t zapp_ReportCmdEveryUpdate2 =
 
 const zclReportCmd_t zapp_ReportCmdEveryReboot =
 {
-  sizeof(zapp_ReportCmdEveryReboot) / sizeof(zclReportCmd_t),
+  9,
   {
-    {
+    { //1
       ATTRID_METER_0READINGSET_DEFAULTUPDATEPERIOD,
       ZCL_DATATYPE_UINT8,
       (void*)&zapp_FlowUpdatePeriod
     },
-    {
+    { //2
       ATTRID_METER_0READINGSET_INTERVALREPORTING,
       ZCL_DATATYPE_UINT16,
       (void*)&zapp_FlowIntervalReporting
     },
-    {
+    { //3
       ATTRID_METER_0READINGSET_VOLUMEPERREPORT,
       ZCL_DATATYPE_UINT16,
       (void*)&zapp_Flow1VolumePerReport
     },
-    {
+    { //4
       ATTRID_METER_2STATUS_STATUS,
       ZCL_DATATYPE_BITMAP8,
       (void*)&zapp_Flow1Status
     },
-    {
+    { //5
       ATTRID_METER_3FORMATTING_UNIT,
       ZCL_DATATYPE_ENUM8,
       (void*)&zapp_Flow1Unit
     },
-    {
+    { //6
       ATTRID_METER_3FORMATTING_MULTIPLIER,
       ZCL_DATATYPE_UINT24,
       (void*)&zapp_Flow1Multiplier
     },
-    {
+    { //7
       ATTRID_METER_3FORMATTING_DIVISOR,
       ZCL_DATATYPE_UINT24,
       (void*)&zapp_Flow1Divisor
     },
-    {
+    { //8
       ATTRID_METER_3FORMATTING_METERDEVICETYPE,
       ZCL_DATATYPE_BITMAP8,
       (void*)&zapp_DeviceType
     },
-    {
+    { //9
       ATTRID_METER_3FORMATTING_SITEID,
       ZCL_DATATYPE_OCTET_STR,
       (void*)&zapp_Flow1SiteId
@@ -299,34 +300,34 @@ const zclReportCmd_t zapp_ReportCmdEveryReboot =
 
 const zclReportCmd_t zapp_ReportCmdEveryReboot2 =
 {
-  sizeof(zapp_ReportCmdEveryReboot2) / sizeof(zclReportCmd_t),
+  6,
   {
-    {
+    { //1
       ATTRID_METER_0READINGSET_VOLUMEPERREPORT,
       ZCL_DATATYPE_UINT16,
       (void*)&zapp_Flow2VolumePerReport
     },
-    {
+    { //2
       ATTRID_METER_2STATUS_STATUS,
       ZCL_DATATYPE_BITMAP8,
       (void*)&zapp_Flow2Status
     },
-    {
+    { //3
       ATTRID_METER_3FORMATTING_UNIT,
       ZCL_DATATYPE_ENUM8,
       (void*)&zapp_Flow2Unit
     },
-    {
+    { //4
       ATTRID_METER_3FORMATTING_MULTIPLIER,
       ZCL_DATATYPE_UINT24,
       (void*)&zapp_Flow2Multiplier
     },
-    {
+    { //5
       ATTRID_METER_3FORMATTING_DIVISOR,
       ZCL_DATATYPE_UINT24,
       (void*)&zapp_Flow2Divisor
     },
-    {
+    { //6
       ATTRID_METER_3FORMATTING_SITEID,
       ZCL_DATATYPE_OCTET_STR,
       (void*)&zapp_Flow2SiteId
@@ -336,7 +337,7 @@ const zclReportCmd_t zapp_ReportCmdEveryReboot2 =
 
 const zclReportCmd_t zapp_ReportCmdDiag =
 {
-  sizeof(zapp_ReportCmdDiag) / sizeof(zclReportCmd_t),
+  11,
   {
     { //1
       ATTRID_DIAG_0NUMOFRESETS,
@@ -520,6 +521,7 @@ void zapp_Init(byte task_id)
   zapp_SeqNum = 0;
   uint8 status;
 
+  osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_HOLD);
   // Set destination address to indirect
   zapp_DstAddr.addrMode = (afAddrMode_t)AddrNotPresent;
   zapp_DstAddr.endPoint = 0;
@@ -631,14 +633,14 @@ void zapp_Init(byte task_id)
   {
     bdb_StartCommissioning(BDB_COMMISSIONING_MODE_INITIATOR_TL | BDB_COMMISSIONING_MODE_NWK_STEERING /*| BDB_COMMISSIONING_MODE_FINDING_BINDING*/);
 #ifdef MT_DEBUG_FUNC
-    MT_ProcessDebugString("Start Commissioning");
+    debug_str("Start Commissioning");
 #endif
   }
   
   //status = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE, 10000);
   //status = osal_set_event(zapp_TaskID, ZAPP_EVT_UPDATE);
 #ifdef MT_DEBUG_FUNC
-  MT_ProcessDebugString("Init completed");
+  debug_str("Init completed");
 #endif
 }
 
@@ -786,7 +788,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
       
       // Try time sync with coodinator every 24 hours or more
       if ((zapp_isTimeSynced == false) || (zapp_TimeSyncElapsedMinutes >= TIME_SYNC_PERIOD_MIN))
-      {     
+      {
         zapp_DstAddr.addrMode = afAddr16Bit;
         zapp_DstAddr.addr.shortAddr = 0;
         zapp_DstAddr.endPoint = 1;
@@ -1325,6 +1327,7 @@ static uint8 zapp_fProcessInReadRspCmd(zclIncomingMsg_t *pInMsg)
 #if defined MT_DEBUG_FUNC
               debug_str("ReadRsp.TimeSync");
 #endif
+              osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_CONSERVE);
             }
             else
             {
