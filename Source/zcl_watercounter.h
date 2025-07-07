@@ -61,7 +61,7 @@ extern "C"
 #define ZAPP_TIMEOUT_DEBOUNCE             50
 #define ZAPP_TIMEOUT_LONGPUSH             100
 #define ZAPP_TIMEOUT_STOREATTR            60000
-#define ZAPP_TIMEOUT_END_DEVICE_REJOIN    60000        // msec
+#define ZAPP_TIMEOUT_END_DEVICE_REJOIN    30000        // msec
 
 // Events for the sample app
 #define ZAPP_EVT_END_DEVICE_REJOIN   0x0001        // event_flag is a 2-byte bitmap with each bit specifying an event
@@ -225,6 +225,8 @@ extern CONST zclAttrRec_t zapp_cAttrs[];
 extern CONST zclAttrRec_t zapp_cAttrs2[];
 extern CONST uint8 zapp_cNumAttributes;
 extern CONST uint8 zapp_cNumAttributes2;
+
+extern const uint8 zapp_DeviceType;
 
 extern uint8 zapp_Flow1SiteId[];
 extern uint48_t zapp_Flow1Value;

@@ -5989,7 +5989,7 @@
             <name>$ZSTACKDIR$\Projects\zstack\Tools\CC2530DB\f8w2530.xcl</name>
         </file>
         <file>
-            <name>$ZSTACKDIR$\Projects\zstack\Tools\CC2530DB\f8wConfig.cfg</name>
+            <name>$PROJ_DIR$\f8wConfig.cfg</name>
         </file>
         <file>
             <name>$ZSTACKDIR$\Projects\zstack\Tools\CC2530DB\f8wCoord.cfg</name>

@@ -133,6 +133,7 @@ byte zapp_TaskID;
 
 uint8 zapp_SeqNum;
 
+uint8 zapp_isFirstTransmission;
 uint8 zapp_isTimeSynced;             // True if time has synced
 uint16 zapp_TimeSyncElapsedMinutes;  // Minutes elapsed since Time synchronization
 uint8 zapp_isMissedTransmission;   // Set True if trasmission was missed because of lost connection
@@ -151,7 +152,7 @@ uint8 zapp_LongPushCounter;
 
 const zclReportCmd_t zapp_ReportCmdBattery =
 {
-  3,
+  sizeof(zapp_ReportCmdBattery) / sizeof(zclReportCmd_t),
   {
     {
       ATTRID_POWER_CFG_BATTERY_VOLTAGE,
@@ -195,9 +196,9 @@ const zclReportCmd_t zapp_ReportCmdInstDemand2 =
   },
 };
 
-const zclReportCmd_t zapp_ReportCmdEveryHour =
+const zclReportCmd_t zapp_ReportCmdEveryUpdate =
 {
-  3,
+  sizeof(zapp_ReportCmdEveryUpdate) / sizeof(zclReportCmd_t),
   {
     {
       ATTRID_METER_0READINGSET_CURRSUMDELIVERED,
@@ -222,9 +223,9 @@ const zclReportCmd_t zapp_ReportCmdEveryHour =
   },
 };
 
-const zclReportCmd_t zapp_ReportCmdEveryHour2 =
+const zclReportCmd_t zapp_ReportCmdEveryUpdate2 =
 {
-  3,
+  sizeof(zapp_ReportCmdEveryUpdate2) / sizeof(zclReportCmd_t),
   {
     {
       ATTRID_METER_0READINGSET_CURRSUMDELIVERED,
@@ -244,9 +245,98 @@ const zclReportCmd_t zapp_ReportCmdEveryHour2 =
   },
 };
 
+const zclReportCmd_t zapp_ReportCmdEveryReboot =
+{
+  sizeof(zapp_ReportCmdEveryReboot) / sizeof(zclReportCmd_t),
+  {
+    {
+      ATTRID_METER_0READINGSET_DEFAULTUPDATEPERIOD,
+      ZCL_DATATYPE_UINT8,
+      (void*)&zapp_FlowUpdatePeriod
+    },
+    {
+      ATTRID_METER_0READINGSET_INTERVALREPORTING,
+      ZCL_DATATYPE_UINT16,
+      (void*)&zapp_FlowIntervalReporting
+    },
+    {
+      ATTRID_METER_0READINGSET_VOLUMEPERREPORT,
+      ZCL_DATATYPE_UINT16,
+      (void*)&zapp_Flow1VolumePerReport
+    },
+    {
+      ATTRID_METER_2STATUS_STATUS,
+      ZCL_DATATYPE_BITMAP8,
+      (void*)&zapp_Flow1Status
+    },
+    {
+      ATTRID_METER_3FORMATTING_UNIT,
+      ZCL_DATATYPE_ENUM8,
+      (void*)&zapp_Flow1Unit
+    },
+    {
+      ATTRID_METER_3FORMATTING_MULTIPLIER,
+      ZCL_DATATYPE_UINT24,
+      (void*)&zapp_Flow1Multiplier
+    },
+    {
+      ATTRID_METER_3FORMATTING_DIVISOR,
+      ZCL_DATATYPE_UINT24,
+      (void*)&zapp_Flow1Divisor
+    },
+    {
+      ATTRID_METER_3FORMATTING_METERDEVICETYPE,
+      ZCL_DATATYPE_BITMAP8,
+      (void*)&zapp_DeviceType
+    },
+    {
+      ATTRID_METER_3FORMATTING_SITEID,
+      ZCL_DATATYPE_OCTET_STR,
+      (void*)&zapp_Flow1SiteId
+    },
+  },
+};
+
+const zclReportCmd_t zapp_ReportCmdEveryReboot2 =
+{
+  sizeof(zapp_ReportCmdEveryReboot2) / sizeof(zclReportCmd_t),
+  {
+    {
+      ATTRID_METER_0READINGSET_VOLUMEPERREPORT,
+      ZCL_DATATYPE_UINT16,
+      (void*)&zapp_Flow2VolumePerReport
+    },
+    {
+      ATTRID_METER_2STATUS_STATUS,
+      ZCL_DATATYPE_BITMAP8,
+      (void*)&zapp_Flow2Status
+    },
+    {
+      ATTRID_METER_3FORMATTING_UNIT,
+      ZCL_DATATYPE_ENUM8,
+      (void*)&zapp_Flow2Unit
+    },
+    {
+      ATTRID_METER_3FORMATTING_MULTIPLIER,
+      ZCL_DATATYPE_UINT24,
+      (void*)&zapp_Flow2Multiplier
+    },
+    {
+      ATTRID_METER_3FORMATTING_DIVISOR,
+      ZCL_DATATYPE_UINT24,
+      (void*)&zapp_Flow2Divisor
+    },
+    {
+      ATTRID_METER_3FORMATTING_SITEID,
+      ZCL_DATATYPE_OCTET_STR,
+      (void*)&zapp_Flow2SiteId
+    },
+  },
+};
+
 const zclReportCmd_t zapp_ReportCmdDiag =
 {
-  10,
+  sizeof(zapp_ReportCmdDiag) / sizeof(zclReportCmd_t),
   {
     { //1
       ATTRID_DIAG_0NUMOFRESETS,
@@ -297,6 +387,11 @@ const zclReportCmd_t zapp_ReportCmdDiag =
       ATTRID_DIAG_9SYSTEMUPTIME,
       ZCL_DATATYPE_UINT32,
       (void *)&zapp_DiagSystemUpTime
+    },
+    { //11
+      ATTRID_DIAG_10REPORT,
+      ZCL_DATATYPE_UINT8,
+      (void*)&zapp_DiagReport
     },
   },
 };
@@ -520,6 +615,7 @@ void zapp_Init(byte task_id)
   
   zapp_TimeSyncElapsedMinutes = 0;   // Initialize counter for time synchronization
   zapp_isTimeSynced = false;
+  zapp_isFirstTransmission = true;
   zapp_isMissedTransmission = false;
   
   if (zapp_FlowUpdatePeriod != 0xFF )
@@ -672,12 +768,17 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
       zapp_DstAddr.addr.shortAddr = 0;
       zapp_DstAddr.endPoint = 1;
       zapp_isMissedTransmission = zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_GEN_POWER_CFG, &zapp_ReportCmdBattery, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++) != ZSuccess;
-      zapp_isMissedTransmission += zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zapp_ReportCmdEveryHour, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++) != ZSuccess;
-      zapp_isMissedTransmission += zcl_SendReportCmd(ZAPP_ENDPOINT2, &zapp_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zapp_ReportCmdEveryHour2, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++) != ZSuccess;
+      zapp_isMissedTransmission += zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zapp_ReportCmdEveryUpdate, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++) != ZSuccess;
+      zapp_isMissedTransmission += zcl_SendReportCmd(ZAPP_ENDPOINT2, &zapp_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zapp_ReportCmdEveryUpdate2, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++) != ZSuccess;
+      if (zapp_isFirstTransmission)
+      {
+        zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zapp_ReportCmdEveryReboot, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++);
+        zcl_SendReportCmd(ZAPP_ENDPOINT2, &zapp_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zapp_ReportCmdEveryReboot2, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++);
+      }
       
       if ((zapp_DiagReport == ZAPP_DIAG_REPORT_EVERY_UPDATE) ||
-         ((zapp_DiagReport == ZAPP_DIAG_REPORT_EVERY24h) &&
-         (time.hour == 0 && time.minutes <= 1)))
+          ((zapp_DiagReport == ZAPP_DIAG_REPORT_EVERY24h) && (time.hour == 0 && time.minutes <= 1)) ||
+            zapp_isFirstTransmission) // If first trasmission after Power-up
       {
         zapp_fUpdateDiagnosticAttributes();
         zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_HA_DIAGNOSTIC, &zapp_ReportCmdDiag, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++);
@@ -700,6 +801,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
           status = zcl_SendDiscoverAttrsCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_GEN_TIME, &discoverAttr, ZCL_FRAME_CLIENT_SERVER_DIR, false, zapp_SeqNum++);
         }
       }
+      zapp_isFirstTransmission = false;
     }
     else
       zapp_isMissedTransmission = 3;
