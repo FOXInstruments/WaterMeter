@@ -1,0 +1,84 @@
+// Z-Tool Test Script Example
+// Written in JScript.NET
+import System;
+import System.Text;
+import TI.ZPI1;
+import TI.ZPI2;
+
+class ZScriptSampleClass
+{
+    // define states
+    enum TEST_STATE
+    {
+         STATE1,
+         STATE2,
+    }
+
+    // create private state variable
+    private var currentState : TEST_STATE;
+    function Start()
+    {
+        // subscribe to message handler
+        ZEngine.add_OnMessageZPI1(this.MessageHandler);
+        // initialize state
+        currentState = TEST_STATE.STATE1;
+        // Send SYS_VERSION command to Device1
+        var req : SYS_VERSION = new SYS_VERSION();
+        ZEngine.Send("COM7", req);
+	var reqNV : SYS_OSAL_NV_READ = new SYS_OSAL_NV_READ(0x0405, 0);
+        ZEngine.Send("COM7", reqNV);
+    }
+
+    function MessageHandler(zportName:String, id:MESSAGE_ID, msg:Object)
+    {
+        switch(currentState)
+        {
+            case TEST_STATE.STATE1:
+            {
+                // set state to STATE2
+                currentState = TEST_STATE.STATE2;
+
+                // send SYS_LED_CONTROL command to Device2
+                var req : SYS_LED_CONTROL = new SYS_LED_CONTROL();
+                req.LedID = SYS_LED_CONTROL.LED_NUM.LED_1;
+                req.Mode = SYS_LED_CONTROL.LED_MODE.BLINK;
+                ZEngine.Send("COM7", req);
+            }
+            break;
+
+            case TEST_STATE.STATE2:
+            {
+                // get the response message
+                var ledRsp : SYS_LED_CONTROL_RESPONSE = msg;
+
+                // check response status
+                if (ledRsp.Status == SYS_LED_CONTROL_RESPONSE.CMD_STATUS.SUCCESS) 
+                {
+                    // quit script to Passed status
+                    ZEngine.Complete(true);
+                }
+                else
+                {
+                    // write message to log screen
+                    ZEngine.WriteLog("Failed changing LED for " + zportName);
+
+                    // quit script with Failed status
+                    ZEngine.Complete(false);
+                }
+            }
+            break;
+
+            default:
+            {
+
+            }
+
+        }
+    }
+}
+
+ 
+
+var zTestScript:ZScriptSampleClass = new ZScriptSampleClass();
+zTestScript.Start();
+

@@ -50,7 +50,7 @@ TODO list.
   
 - Send alarm when Low Battery, Reboot, Flash Write Error, or may be send alarms through Diagnostic
 
-- PowerManager
-    Add time delay to enable PWRMGR_CONSERVE when press BUTTON (1 minutes)
-    Add time delay to enable PWRMGR_CONSERVE when send Read Time attributes and FirstTrasmission (5 seconds)
++ PowerManager
+    +Add time delay to enable PWRMGR_CONSERVE when press BUTTON (1 minutes)
+    +Add time delay to enable PWRMGR_CONSERVE when send Read Time attributes and FirstTrasmission (5 seconds)
     

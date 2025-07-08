@@ -74,7 +74,7 @@ extern "C"
 #define ZAPP_EVT_UPDATEINSTDEMAND    0x0020       // InstanteniousDemand update event
 #define ZAPP_EVT_BATTERY             0x0040
 #define ZAPP_EVT_TIMESYNC            0x0080
-#define ZAPP_EVT_COMMISSION          0x0100       // Init commission if device was connected to network
+#define ZAPP_EVT_PWRMGR              0x0100       // Enable Power manager (Timeout of operations)
 #define ZAPP_EVT_STOREATTR           0x0200       // Store changed attributes into NV memory
 
 // Vdd/3 / Internal Reference X ENOB --> (Vdd / 3) / 1.15 X 127
@@ -203,6 +203,12 @@ enum
   ZAPP_STOREID_DATE1,
   ZAPP_STOREID_VALUES2,
   ZAPP_STOREID_DATE2,
+};
+
+enum
+{
+  ZAPP_PWRMGR_TIMESYNC,
+  ZAPP_PWRMGR_KEY,
 };
 
 typedef union
