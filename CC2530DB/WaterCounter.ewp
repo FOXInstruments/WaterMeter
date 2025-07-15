@@ -3105,7 +3105,7 @@
             <archiveVersion>1</archiveVersion>
             <data>
                 <prebuild></prebuild>
-                <postbuild></postbuild>
+                <postbuild>findstr /C:"of CODE" /C:"of DATA" /C:"of XDATA" /C:"of IDATA" /C:"of BIT" /C:"of CONST" $PROJ_DIR$\EndDeviceEB\List\WaterCounter.map</postbuild>
             </data>
         </settings>
         <settings>

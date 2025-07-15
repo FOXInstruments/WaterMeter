@@ -167,9 +167,9 @@ extern "C"
 #define METER_2STATUS_TAMPERDETECT      0x04
    
 #define ATTRID_DIAG_0NUMOFRESETS                0x0000  // uint16
-#define ATTRID_DIAG_1PERSISTMEMORYWRITES        0x0001  // uint16
-#define ATTRID_DIAG_2PERSISTMEMORYWRITEFAILS    0x0002  // uint16
-#define ATTRID_DIAG_3PERSISTMEMORYFAILITEMS     0x0003  // uint32
+#define ATTRID_DIAG_1NVWRITES                   0x0001  // uint16
+#define ATTRID_DIAG_2NVWRITEFAILS               0x0002  // uint16
+#define ATTRID_DIAG_3NVFAILITEMS                0x0003  // uint32
 #define ATTRID_DIAG_4MEMALLOCATEDBLOCKS         0x0004  // uint16
 #define ATTRID_DIAG_5MEMFREEBLOCKS              0x0005  // uint16
 #define ATTRID_DIAG_6MEMUSED                    0x0006  // uint16

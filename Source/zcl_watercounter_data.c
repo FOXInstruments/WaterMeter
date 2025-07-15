@@ -149,6 +149,7 @@ const uint8 zapp_PowerSource = POWER_SOURCE_BATTERY;
 const uint8 zapp_cDesc1[ZAPP_METER_SITEID_SIZE + 1] = {ZAPP_METER_SITEID_SIZE, 'C', 'o', 'l', 'd', ' ', ' ', ' ', ' ', ' ', ' '};   // Constants to initialize default values
 const uint8 zapp_cDesc2[ZAPP_METER_SITEID_SIZE + 1] = {ZAPP_METER_SITEID_SIZE, 'H', 'o', 't', ' ', ' ', ' ', ' ', ' ', ' ', ' '};
 
+// SE Metering cluster attribute
 uint8 zapp_Flow1SiteId[ZAPP_METER_SITEID_SIZE + 1];
 uint48_t zapp_Flow1Value;
 int24 zapp_Flow1InstDemand;
@@ -173,7 +174,7 @@ uint24 zapp_Flow2CurrDay;
 uint24 zapp_Flow2PrevDay;
 uint8 zapp_Flow2Status;
 
-// Power cluster variable
+// Power cluster attributes
 uint8 zapp_BatteryVoltage;            // 0.1V unit
 uint8 zapp_BatteryVoltageRated;        // 0.1V unit, 3.6V LiFePO4
 uint8 zapp_BatteryVoltageThresMin;    // 0.1V unit, 2.5V LiFePO4 T>0 degC
@@ -182,7 +183,10 @@ uint8 zapp_BatteryLevel;              // 0 - 100%
 uint8 zapp_BatteryAlarmMask;
 uint32 zapp_BatteryAlarmState;
 
-// Time cluster variables
+// Alarm cluster attributes
+uint16 zapp_AlarmCount;
+
+// Time cluster attributes
 /* uint32 zapp_Time;
 uint8 zapp_TimeStatus;
 uint32 zapp_TimeLocal; */
@@ -417,6 +421,24 @@ CONST zclAttrRec_t zapp_cAttrs[] =
       (void *)&zapp_clusterRevision_all
     }
   },
+  // ********* Alarm Cluster ********* //
+  // ********************************** //
+  {
+    ZCL_CLUSTER_ID_GEN_ALARMS,
+    { //22
+      ATTRID_ALARM_COUNT,
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
+      (void *)&zapp_AlarmCount
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_GEN_ALARMS,
+    { //22
+      ATTRID_CLUSTER_REVISION,
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
+      (void *)&zapp_clusterRevision_all
+    }
+  },
   // ********* Time Cluster ********* //
   // ********************************** //
   {
@@ -570,7 +592,7 @@ CONST zclAttrRec_t zapp_cAttrs[] =
   {
     ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
     { //40
-      ATTRID_DIAG_1PERSISTMEMORYWRITES,
+      ATTRID_DIAG_1NVWRITES,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ),
       (void *)&zapp_DiagNVMemWrites
     }
@@ -578,7 +600,7 @@ CONST zclAttrRec_t zapp_cAttrs[] =
   {
     ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
     { //41
-      ATTRID_DIAG_2PERSISTMEMORYWRITEFAILS,
+      ATTRID_DIAG_2NVWRITEFAILS,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ),
       (void *)&zapp_DiagNVMemWriteFails
     }
@@ -586,7 +608,7 @@ CONST zclAttrRec_t zapp_cAttrs[] =
   {
     ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
     { //42
-      ATTRID_DIAG_3PERSISTMEMORYFAILITEMS,
+      ATTRID_DIAG_3NVFAILITEMS,
       ZCL_DATATYPE_UINT32, (ACCESS_CONTROL_READ),
       (void *)&zapp_DiagNVMemFailItems
     }
@@ -805,6 +827,7 @@ const cId_t zapp_InClusterList[] =
   ZCL_CLUSTER_ID_GEN_BASIC,
   ZCL_CLUSTER_ID_GEN_POWER_CFG,
   ZCL_CLUSTER_ID_GEN_IDENTIFY,
+  ZCL_CLUSTER_ID_GEN_ALARMS,
   ZCL_CLUSTER_ID_SE_METERING,
   ZCL_CLUSTER_ID_HA_DIAGNOSTIC
 };
@@ -1175,6 +1198,8 @@ void zapp_fResetAttributesToDefaultValues(void)
   zapp_DiagMemHighWater = osal_heap_high_water();
   zapp_DiagSystemUpTime = osal_GetSystemClockSec();
   zapp_DiagReport = ZAPP_DIAG_REPORT_DONT;
+  
+  zapp_AlarmCount = 0;
   
   osal_memset(zapp_StoreQueueItems, 0x00, sizeof(zapp_StoreQueueItems[0]) * ZAPP_STOREQUEUE_LEN);
   osal_memset(zapp_StoreQueueSizes, 0x00, sizeof(zapp_StoreQueueSizes[0]) * ZAPP_STOREQUEUE_LEN);

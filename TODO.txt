@@ -33,9 +33,10 @@ TODO list.
   which return time elapsed since last boot in seconds
    
 + Write and restore the attributes to-from NV
-  Queue 10 items length
-  NV item ID, Data len, Pointer to Data
-  function NVItemQueueAdd. If item is already in queue than it doesnt add an item to queue
+  + Queue 10 items length
+  + NV item ID, Data len, Pointer to Data
+  + function NVItemQueueAdd. If item is already in queue than it doesnt add an item to queue
+  + VAULES1 and 2 save without change chacking
 
 + Diagnostic cluster.
    +Last reboot reason.
@@ -46,11 +47,17 @@ TODO list.
    +Send Diag cluster attributes every meter report period when zapp_DiagReport is 1, by default it is FALSE
    +Send Diag every 24 hours if zapp_DiagReport is 2
   
--  Switch debug messages to DebugTrace.h
-  
-- Send alarm when Low Battery, Reboot, Flash Write Error, or may be send alarms through Diagnostic
-
 + PowerManager
     +Add time delay to enable PWRMGR_CONSERVE when press BUTTON (1 minutes)
     +Add time delay to enable PWRMGR_CONSERVE when send Read Time attributes and FirstTrasmission (5 seconds)
+    
+-  Switch debug messages to DebugTrace.h
+  
+- Send alarm when Low Battery, Reboot, Flash Write Error, or may be send alarms through Diagnostic
+  + added send alarm "General HW fault" and diag NV attributes if there was flash write error
+  + added send alarm "Check meter" when device connects to network after reboot
+  + added server alarm cluster
+  - add send Bettary Low alarm
+
+- Add queue with the failed types of trasmissions
     
