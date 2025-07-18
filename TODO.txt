@@ -51,6 +51,10 @@ TODO list.
     +Add time delay to enable PWRMGR_CONSERVE when press BUTTON (1 minutes)
     +Add time delay to enable PWRMGR_CONSERVE when send Read Time attributes and FirstTrasmission (5 seconds)
     
++ Parent Lost rejoin counter "zapp_ParentLostRejoinCounter"
+  Increased the time delay to next rejoin attempt with each rejoin fail (min 30 seconds, max 30 minutes)
+
+    
 -  Switch debug messages to DebugTrace.h
   
 - Send alarm when Low Battery, Reboot, Flash Write Error, or may be send alarms through Diagnostic
@@ -59,5 +63,5 @@ TODO list.
   + added server alarm cluster
   - add send Bettary Low alarm
 
-- Add queue with the failed types of trasmissions
++ Add "MissedTransmissions" with the failed type of trasmissions
     

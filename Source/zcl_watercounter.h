@@ -57,12 +57,20 @@ extern "C"
  */
 #define ZAPP_ENDPOINT              8
 #define ZAPP_ENDPOINT2             (ZAPP_ENDPOINT + 1)
-// Timeouts
-#define ZAPP_TIMEOUT_DEBOUNCE             50
-#define ZAPP_TIMEOUT_LONGPUSH             100
-#define ZAPP_TIMEOUT_STOREATTR            60000
-#define ZAPP_TIMEOUT_END_DEVICE_REJOIN    30000        // msec
-
+// Timeouts, msec
+#define ZAPP_TIMEOUT_DEBOUNCE             50L
+#define ZAPP_TIMEOUT_LONGPUSH             100L
+#define ZAPP_TIMEOUT_STOREATTR            60000L
+#define ZAPP_TIMEOUT_END_DEVICE_REJOIN    30000L
+#define ZAPP_TIMEOUT_RESEND               10000L
+#define ZAPP_TIMEOUT_1SEC                 1000L
+#define ZAPP_TIMEOUT_5SEC                 5000L
+#define ZAPP_TIMEOUT_10SEC                10000L
+#define ZAPP_TIMEOUT_1MIN                 1L*60L*1000L
+#define ZAPP_TIMEOUT_10MIN                10L*60L*1000L
+#define ZAPP_TIMEOUT_PWRMGR_KEY           2L*60L*1000L
+#define ZAPP_TIMEOUT_TIMESYNC             25L*60L*60L*1000L
+  
 // Events for the sample app
 #define ZAPP_EVT_END_DEVICE_REJOIN   0x0001        // event_flag is a 2-byte bitmap with each bit specifying an event
 
@@ -76,6 +84,7 @@ extern "C"
 #define ZAPP_EVT_TIMESYNC            0x0080
 #define ZAPP_EVT_PWRMGR              0x0100       // Enable Power manager (Timeout of operations)
 #define ZAPP_EVT_STOREATTR           0x0200       // Store changed attributes into NV memory
+#define ZAPP_EVT_RESEND              0x0400       // ReSend data that were not send
 
 // Vdd/3 / Internal Reference X ENOB --> (Vdd / 3) / 1.15 X 127
 #define VDD3_2_0                74   // 2.0 V required to safely read/write internal flash.
@@ -211,6 +220,17 @@ enum
   ZAPP_PWRMGR_KEY,
 };
 
+enum
+{
+  ZAPP_REPORTCMD_BATTERY,
+  ZAPP_REPORTCMD_EVERYUPDATE,
+  ZAPP_REPORTCMD_EVERYUPDATE2,
+  ZAPP_REPORTCMD_EVERYREBOOT,
+  ZAPP_REPORTCMD_EVERYREBOOT2,
+  ZAPP_REPORTCMD_DIAG,
+  ZAPP_REPORTCMD_DIAGNV,
+};
+
 typedef union
 {
   uint8       array[5];
@@ -303,7 +323,7 @@ extern UINT16 zapp_event_loop(byte task_id, UINT16 events);
  *  Reset all writable attributes to their default values.
  */
 extern void zapp_fResetAttributesToDefaultValues(void); //implemented in zcl_watercounter_data.c
-extern void zapp_fNVInitItems(void);
+extern uint8 zapp_fNVInitItems(void);
 extern uint8 zapp_fNVCheckItem(uint16 id, uint16 len);
 extern Status_t zapp_fStoreQueueAdd(uint8 idx, uint8 size, void *src);
 extern uint32 zapp_fStoreAttrToNV(void);

@@ -117,7 +117,7 @@
 #define ZAPP_NV_FIRST             ZAPP_NV_SITEID1
 #define ZAPP_NV_FIRST_1           (ZAPP_NV_FIRST - 1)
 
-#define ZAPP_STOREQUEUE_LEN          10
+#define ZAPP_STOREQUEUE_LEN          14
 
 #pragma message(__DATE__)
 /*********************************************************************
@@ -893,26 +893,46 @@ SimpleDescriptionFormat_t zapp_SimpleDesc2 =
  *
  * @return  SUCCESS, FAILURE
  */
-void zapp_fNVInitItems(void)
+uint8 zapp_fNVInitItems(void)
 {
+  uint8 st;
   zapp_DiagNVMemFailItems = 0;
-  
-  zapp_DiagNVMemFailItems |= osal_nv_item_init(ZAPP_NV_SITEID1, ZAPP_METER_SITEID_SIZE + 1, NULL) != SUCCESS ? 1<<ZAPP_STOREID_SITEID1 : 0;
-  zapp_DiagNVMemFailItems |= osal_nv_item_init(ZAPP_NV_SITEID2, ZAPP_METER_SITEID_SIZE + 1, NULL) != SUCCESS ? 1<<ZAPP_STOREID_SITEID2 : 0;
-  zapp_DiagNVMemFailItems |= osal_nv_item_init(ZAPP_NV_UNIT1, sizeof(zapp_Flow1Unit), NULL) != SUCCESS ? 1<<ZAPP_STOREID_UNIT1 : 0;
-  zapp_DiagNVMemFailItems |= osal_nv_item_init(ZAPP_NV_UNIT2, sizeof(zapp_Flow2Unit), NULL) != SUCCESS ? 1<<ZAPP_STOREID_UNIT2 : 0;
-  zapp_DiagNVMemFailItems |= osal_nv_item_init(ZAPP_NV_MULTIPLIER1, sizeof(zapp_Flow1Multiplier), NULL) != SUCCESS ? 1<<ZAPP_STOREID_MULTIPLIER1 : 0;
-  zapp_DiagNVMemFailItems |= osal_nv_item_init(ZAPP_NV_MULTIPLIER2, sizeof(zapp_Flow2Multiplier), NULL) != SUCCESS ? 1<<ZAPP_STOREID_MULTIPLIER2 : 0;
-  zapp_DiagNVMemFailItems |= osal_nv_item_init(ZAPP_NV_DIVISOR1, sizeof(zapp_Flow1Divisor), NULL) != SUCCESS ? 1<<ZAPP_STOREID_DIVISOR1 : 0;
-  zapp_DiagNVMemFailItems |= osal_nv_item_init(ZAPP_NV_DIVISOR2, sizeof(zapp_Flow2Divisor), NULL) != SUCCESS ? 1<<ZAPP_STOREID_DIVISOR2 : 0;
-  zapp_DiagNVMemFailItems |= osal_nv_item_init(ZAPP_NV_VOLUMEREPORT1, sizeof(zapp_Flow1VolumePerReport), NULL) != SUCCESS ? 1<<ZAPP_STOREID_VOLUMEREPORT1 : 0;
-  zapp_DiagNVMemFailItems |= osal_nv_item_init(ZAPP_NV_VOLUMEREPORT2, sizeof(zapp_Flow2VolumePerReport), NULL) != SUCCESS ? 1<<ZAPP_STOREID_VOLUMEREPORT2 : 0;
-  zapp_DiagNVMemFailItems |= osal_nv_item_init(ZAPP_NV_REPORTPERIOD, sizeof(zapp_FlowIntervalReporting), NULL) != SUCCESS ? 1<<ZAPP_STOREID_REPORTPERIOD : 0;  
-  zapp_DiagNVMemFailItems |= osal_nv_item_init(ZAPP_NV_VOLTAGERATED, sizeof(zapp_BatteryVoltageRated), NULL) != SUCCESS ? 1<<ZAPP_STOREID_VOLTAGERATED : 0;  
-  zapp_DiagNVMemFailItems |= osal_nv_item_init(ZAPP_NV_VALUES1, sizeof(zapp_Flow1Value.dw.lowDW), NULL) != SUCCESS ? 1<<ZAPP_STOREID_VALUES1 : 0;;
-  zapp_DiagNVMemFailItems |= osal_nv_item_init(ZAPP_NV_DATE1, sizeof(uint32), NULL) != SUCCESS ? 1<<ZAPP_STOREID_DATE1 : 0;
-  zapp_DiagNVMemFailItems |= osal_nv_item_init(ZAPP_NV_VALUES2, sizeof(zapp_Flow2Value.dw.lowDW), NULL) != SUCCESS ? 1<<ZAPP_STOREID_VALUES2 : 0;
-  zapp_DiagNVMemFailItems |= osal_nv_item_init(ZAPP_NV_DATE2, sizeof(uint32), NULL) != SUCCESS ? 1<<ZAPP_STOREID_DATE2 : 0;
+  // NV_ITEM_UNINIT - Id did not exist and was created successfully.
+  // SUCCESS        - Id already existed, no action taken 
+  st = osal_nv_item_init(ZAPP_NV_SITEID1, ZAPP_METER_SITEID_SIZE + 1, NULL);
+  zapp_DiagNVMemFailItems |= ((st != SUCCESS) && (st != NV_ITEM_UNINIT)) ? 1<<ZAPP_STOREID_SITEID1 : 0;
+  st = osal_nv_item_init(ZAPP_NV_SITEID2, ZAPP_METER_SITEID_SIZE + 1, NULL);
+  zapp_DiagNVMemFailItems |= ((st != SUCCESS) && (st != NV_ITEM_UNINIT)) ? 1<<ZAPP_STOREID_SITEID2 : 0;
+  st = osal_nv_item_init(ZAPP_NV_UNIT1, sizeof(zapp_Flow1Unit), NULL);
+  zapp_DiagNVMemFailItems |= ((st != SUCCESS) && (st != NV_ITEM_UNINIT)) ? 1<<ZAPP_STOREID_UNIT1 : 0;
+  st = osal_nv_item_init(ZAPP_NV_UNIT2, sizeof(zapp_Flow2Unit), NULL);
+  zapp_DiagNVMemFailItems |= ((st != SUCCESS) && (st != NV_ITEM_UNINIT)) ? 1<<ZAPP_STOREID_UNIT2 : 0;
+  st = osal_nv_item_init(ZAPP_NV_MULTIPLIER1, sizeof(zapp_Flow1Multiplier), NULL);
+  zapp_DiagNVMemFailItems |= ((st != SUCCESS) && (st != NV_ITEM_UNINIT)) ? 1<<ZAPP_STOREID_MULTIPLIER1 : 0;
+  st = osal_nv_item_init(ZAPP_NV_MULTIPLIER2, sizeof(zapp_Flow2Multiplier), NULL);
+  zapp_DiagNVMemFailItems |= ((st != SUCCESS) && (st != NV_ITEM_UNINIT)) ? 1<<ZAPP_STOREID_MULTIPLIER2 : 0;
+  st = osal_nv_item_init(ZAPP_NV_DIVISOR1, sizeof(zapp_Flow1Divisor), NULL);
+  zapp_DiagNVMemFailItems |= ((st != SUCCESS) && (st != NV_ITEM_UNINIT)) ? 1<<ZAPP_STOREID_DIVISOR1 : 0;
+  st = osal_nv_item_init(ZAPP_NV_DIVISOR2, sizeof(zapp_Flow2Divisor), NULL);
+  zapp_DiagNVMemFailItems |= ((st != SUCCESS) && (st != NV_ITEM_UNINIT)) ? 1<<ZAPP_STOREID_DIVISOR2 : 0;
+  st = osal_nv_item_init(ZAPP_NV_VOLUMEREPORT1, sizeof(zapp_Flow1VolumePerReport), NULL);
+  zapp_DiagNVMemFailItems |= ((st != SUCCESS) && (st != NV_ITEM_UNINIT)) ? 1<<ZAPP_STOREID_VOLUMEREPORT1 : 0;
+  st = osal_nv_item_init(ZAPP_NV_VOLUMEREPORT2, sizeof(zapp_Flow2VolumePerReport), NULL);
+  zapp_DiagNVMemFailItems |= ((st != SUCCESS) && (st != NV_ITEM_UNINIT)) ? 1<<ZAPP_STOREID_VOLUMEREPORT2 : 0;
+  st = osal_nv_item_init(ZAPP_NV_REPORTPERIOD, sizeof(zapp_FlowIntervalReporting), NULL);
+  zapp_DiagNVMemFailItems |= ((st != SUCCESS) && (st != NV_ITEM_UNINIT)) ? 1<<ZAPP_STOREID_REPORTPERIOD : 0;  
+  st = osal_nv_item_init(ZAPP_NV_VOLTAGERATED, sizeof(zapp_BatteryVoltageRated), NULL);
+  zapp_DiagNVMemFailItems |= ((st != SUCCESS) && (st != NV_ITEM_UNINIT)) ? 1<<ZAPP_STOREID_VOLTAGERATED : 0;  
+  st = osal_nv_item_init(ZAPP_NV_VALUES1, sizeof(zapp_Flow1Value.dw.lowDW), NULL);
+  zapp_DiagNVMemFailItems |= ((st != SUCCESS) && (st != NV_ITEM_UNINIT)) ? 1<<ZAPP_STOREID_VALUES1 : 0;;
+  st = osal_nv_item_init(ZAPP_NV_DATE1, sizeof(uint32), NULL);
+  zapp_DiagNVMemFailItems |= st != SUCCESS && st != NV_ITEM_UNINIT ? 1<<ZAPP_STOREID_DATE1 : 0;
+  st = osal_nv_item_init(ZAPP_NV_VALUES2, sizeof(zapp_Flow2Value.dw.lowDW), NULL);
+  zapp_DiagNVMemFailItems |= ((st != SUCCESS) && (st != NV_ITEM_UNINIT)) ? 1<<ZAPP_STOREID_VALUES2 : 0;
+  st = osal_nv_item_init(ZAPP_NV_DATE2, sizeof(uint32), NULL);
+  zapp_DiagNVMemFailItems |= ((st != SUCCESS) && (st != NV_ITEM_UNINIT)) ? 1<<ZAPP_STOREID_DATE2 : 0;
+  //zapp_DiagNVMemFailItems |= osal_nv_item_init(ZAPP_NV_DATE2, sizeof(uint32), NULL) != SUCCESS ? 1<<ZAPP_STOREID_DATE2 : 0;
+  return (st);
 }
 
 /*********************************************************************
@@ -1074,7 +1094,7 @@ Status_t zapp_fStoreQueueAdd(uint8 idx, uint8 size, void *src)
 uint32 zapp_fStoreAttrToNV(void)
 {
   uint8 i;
-  uint32 status = 0;
+  uint32 st = 0;
   
   for (i = 0; i < ZAPP_STOREQUEUE_LEN; i++)
   {
@@ -1085,7 +1105,7 @@ uint32 zapp_fStoreAttrToNV(void)
       else
       {
         zapp_DiagNVMemWriteFails++;
-        status |=  1 << (zapp_StoreQueueItems[i] - 1);
+        st |=  1 << (zapp_StoreQueueItems[i] - 1);
       }
       
       zapp_StoreQueueItems[i] = 0;
@@ -1096,10 +1116,10 @@ uint32 zapp_fStoreAttrToNV(void)
       break;
   }
   
-  if (status != 0)
-    zapp_DiagNVMemFailItems |= status;
+  if (st != 0)
+    zapp_DiagNVMemFailItems |= st; // add New failed items to existed ones
   
-  return (status);
+  return (st); // return New failed items
 }
 
 /*********************************************************************
