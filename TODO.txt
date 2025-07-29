@@ -53,15 +53,19 @@ TODO list.
     
 + Parent Lost rejoin counter "zapp_ParentLostRejoinCounter"
   Increased the time delay to next rejoin attempt with each rejoin fail (min 30 seconds, max 30 minutes)
-
-    
--  Switch debug messages to DebugTrace.h
+   
++ Add "Transmissions" with the desired or missed type of trasmissions
+  All SendReport calls were moved to special event (ZAPP_EVT_SENDCMD) and calls from DefaultRsp and ZAPP_EVT_UPDATE
   
+- Add Write counter to OSAL_Nv.c
+
 - Send alarm when Low Battery, Reboot, Flash Write Error, or may be send alarms through Diagnostic
   + added send alarm "General HW fault" and diag NV attributes if there was flash write error
   + added send alarm "Check meter" when device connects to network after reboot
   + added server alarm cluster
   - add send Bettary Low alarm
 
-+ Add "MissedTransmissions" with the failed type of trasmissions
+-  Switch debug messages to DebugTrace.h
+  
+
     

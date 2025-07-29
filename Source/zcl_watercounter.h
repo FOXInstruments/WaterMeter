@@ -70,7 +70,10 @@ extern "C"
 #define ZAPP_TIMEOUT_10MIN                10L*60L*1000L
 #define ZAPP_TIMEOUT_PWRMGR_KEY           2L*60L*1000L
 #define ZAPP_TIMEOUT_TIMESYNC             25L*60L*60L*1000L
-  
+
+#define ZAPP_TRANSMISSION_RETRY           10
+#define ZAPP_PARENTLOST_RETRY             60
+
 // Events for the sample app
 #define ZAPP_EVT_END_DEVICE_REJOIN   0x0001        // event_flag is a 2-byte bitmap with each bit specifying an event
 
@@ -84,7 +87,7 @@ extern "C"
 #define ZAPP_EVT_TIMESYNC            0x0080
 #define ZAPP_EVT_PWRMGR              0x0100       // Enable Power manager (Timeout of operations)
 #define ZAPP_EVT_STOREATTR           0x0200       // Store changed attributes into NV memory
-#define ZAPP_EVT_RESEND              0x0400       // ReSend data that were not send
+#define ZAPP_EVT_SENDCMD             0x0400       // ReSend data that were not send
 
 // Vdd/3 / Internal Reference X ENOB --> (Vdd / 3) / 1.15 X 127
 #define VDD3_2_0                74   // 2.0 V required to safely read/write internal flash.
@@ -229,6 +232,7 @@ enum
   ZAPP_REPORTCMD_EVERYREBOOT2,
   ZAPP_REPORTCMD_DIAG,
   ZAPP_REPORTCMD_DIAGNV,
+  ZAPP_REPORTCMD_LAST,
 };
 
 typedef union
@@ -240,6 +244,14 @@ typedef union
     uint16      hiW;
   } dw;
 } uint48_t;
+
+// Sended Cmd to analyze DefaultRspCmd
+typedef struct
+{
+  uint8         Cmd;
+  uint16        clusterID;
+  void          *ptrCmd;
+} zapp_SendedCmd_t;
 
 /*********************************************************************
  * VARIABLES

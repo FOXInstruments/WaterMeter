@@ -827,9 +827,7 @@ const cId_t zapp_InClusterList[] =
   ZCL_CLUSTER_ID_GEN_BASIC,
   ZCL_CLUSTER_ID_GEN_POWER_CFG,
   ZCL_CLUSTER_ID_GEN_IDENTIFY,
-  ZCL_CLUSTER_ID_GEN_ALARMS,
-  ZCL_CLUSTER_ID_SE_METERING,
-  ZCL_CLUSTER_ID_HA_DIAGNOSTIC
+  ZCL_CLUSTER_ID_GEN_TIME
 };
 
 #define zapp_MAX_INCLUSTERS    ( sizeof( zapp_InClusterList ) / sizeof( zapp_InClusterList[0] ))
@@ -838,7 +836,9 @@ const cId_t zapp_OutClusterList[] =
 {
   ZCL_CLUSTER_ID_GEN_IDENTIFY,
   ZCL_CLUSTER_ID_GEN_GROUPS,
-  ZCL_CLUSTER_ID_GEN_TIME
+  ZCL_CLUSTER_ID_GEN_ALARMS,
+  ZCL_CLUSTER_ID_SE_METERING,
+  ZCL_CLUSTER_ID_HA_DIAGNOSTIC
 };
 
 #define zapp_MAX_OUTCLUSTERS   ( sizeof( zapp_OutClusterList ) / sizeof( zapp_OutClusterList[0] ))

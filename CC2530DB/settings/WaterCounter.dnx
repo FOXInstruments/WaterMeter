@@ -12,7 +12,7 @@
         <ByteLimit>50</ByteLimit>
     </Stack>
     <DebugChecksum>
-        <Checksum>2608250446</Checksum>
+        <Checksum>120060676</Checksum>
     </DebugChecksum>
     <CallStack>
         <ShowArgs>0</ShowArgs>
@@ -112,8 +112,7 @@
         <Category>_ 0</Category>
     </LogFile>
     <Breakpoints>
-        <Bp0>_ "STD_CODE" "{$PROJ_DIR$\..\Source\zcl_watercounter_data.c}.902.3" 1 0 0 0 "" 0 ""</Bp0>
-        <Count>1</Count>
+        <Count>0</Count>
     </Breakpoints>
     <ChipconEmu>
         <StopTimersOnHalt>1</StopTimersOnHalt>
