@@ -379,7 +379,7 @@ const zclReportCmd_t zapp_ReportCmdEveryReboot2 =
 
 const zclReportCmd_t zapp_ReportCmdDiag =
 {
-  11,
+  12,
   {
     { //1
       ATTRID_DIAG_0NUMOFRESETS,
@@ -435,6 +435,11 @@ const zclReportCmd_t zapp_ReportCmdDiag =
       ATTRID_DIAG_10REPORT,
       ZCL_DATATYPE_UINT8,
       (void*)&zapp_DiagReport
+    },
+    { //12
+      ATTRID_DIAG_11ERASEDPAGES,
+      ZCL_DATATYPE_UINT16,
+      (void*)&zapp_DiagNVMemErasedPages
     },
   },
 };
@@ -844,9 +849,9 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
         #ifdef MT_DEBUG_FUNC
           MT_ProcessDebugString("Send First data");
         #endif
-        osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_HOLD);
-        if (osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_PWRMGR) < ZAPP_TIMEOUT_10SEC)
-          osal_start_timerEx(zapp_TaskID, ZAPP_EVT_PWRMGR, ZAPP_TIMEOUT_10SEC);
+//        osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_HOLD);
+//        if (osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_PWRMGR) < ZAPP_TIMEOUT_10SEC)
+//          osal_start_timerEx(zapp_TaskID, ZAPP_EVT_PWRMGR, ZAPP_TIMEOUT_10SEC);
           
         SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_EVERYREBOOT);
         SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_EVERYREBOOT2);
@@ -927,16 +932,13 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
     if (IS_ON_A_NETWORK)
     {
       zapp_TransmissionsCounter++;
-      if (zapp_TransmissionsCounter > ZAPP_TRANSMISSION_RETRY)
+      if ((zapp_TransmissionsCounter > ZAPP_TRANSMISSION_RETRY) || (zapp_Transmissions == 0))
       {
         osal_stop_timerEx(zapp_TaskID, ZAPP_EVT_SENDCMD);
         return (events ^ ZAPP_EVT_SENDCMD);
       }
       
-      if (zapp_Transmissions != 0)
-        osal_start_timerEx(zapp_TaskID, ZAPP_EVT_SENDCMD, ZAPP_TIMEOUT_RESEND);
-      else
-        return (events ^ ZAPP_EVT_SENDCMD);
+      osal_start_timerEx(zapp_TaskID, ZAPP_EVT_SENDCMD, ZAPP_TIMEOUT_RESEND);
       
       zapp_DstAddr.addrMode = afAddr16Bit;
       zapp_DstAddr.addr.shortAddr = 0;
@@ -1432,6 +1434,8 @@ static void zapp_fUpdateDiagnosticAttributes(void)
   zapp_DiagMemFreeBlocks = osal_heap_block_free();
   zapp_DiagMemHighWater = osal_heap_high_water();
   zapp_DiagMemUsed = osal_heap_mem_used();
+  zapp_DiagNVMemWrites = osal_nv_get_writtenbytes();
+  zapp_DiagNVMemErasedPages = osal_nv_get_erasedpages();
 }
 
 /******************************************************************************
@@ -1779,7 +1783,9 @@ ZStatus_t zapp_fAuthorizeCB( afAddrType_t *srcAddr, zclAttrRec_t *pAttr, uint8 o
         zapp_fUpdateBatteryAttributes();
       break;
     case ZCL_CLUSTER_ID_HA_DIAGNOSTIC:
-      if (pAttr->attr.attrId == ATTRID_DIAG_4MEMALLOCATEDBLOCKS)
+      if (pAttr->attr.attrId == ATTRID_DIAG_1NVWRITES)
+        zapp_DiagNVMemWrites = osal_nv_get_writtenbytes();
+      else if (pAttr->attr.attrId == ATTRID_DIAG_4MEMALLOCATEDBLOCKS)
         zapp_DiagMemAllocatedBlocks = osal_heap_block_cnt();
       else if (pAttr->attr.attrId == ATTRID_DIAG_5MEMFREEBLOCKS)
         zapp_DiagMemFreeBlocks = osal_heap_block_free();
@@ -1793,6 +1799,8 @@ ZStatus_t zapp_fAuthorizeCB( afAddrType_t *srcAddr, zclAttrRec_t *pAttr, uint8 o
       }
       else if (pAttr->attr.attrId == ATTRID_DIAG_9SYSTEMUPTIME)
         zapp_DiagSystemUpTime = osal_GetSystemClockSec();
+      else if (pAttr->attr.attrId == ATTRID_DIAG_11ERASEDPAGES)
+        zapp_DiagNVMemWrites = osal_nv_get_erasedpages();
       break;
   }    
   return ZCL_STATUS_SUCCESS;
@@ -1810,7 +1818,7 @@ static uint8 zapp_fProcessInDefaultRspCmd(zclIncomingMsg_t *pInMsg)
 {
   zclDefaultRspCmd_t *defaultRspCmd = (zclDefaultRspCmd_t *)pInMsg->attrCmd;
   // Device is notified of the Default Response command.
-  if (zapp_Transmissions == 0)
+  if (zapp_Transmissions != 0)
   {
     if (defaultRspCmd->commandID == ZCL_CMD_REPORT)
     {
@@ -1822,12 +1830,11 @@ static uint8 zapp_fProcessInDefaultRspCmd(zclIncomingMsg_t *pInMsg)
           i++;
         }
         CLR_BIT(&zapp_Transmissions, i);
+        zapp_TransmissionsCounter = 0;
         
-        if ((i == ZAPP_REPORTCMD_EVERYREBOOT) || (i == ZAPP_REPORTCMD_EVERYREBOOT2))
-        {
-          if (zapp_isFirstTransmission != 0)
+        if (zapp_isFirstTransmission != 0)
+          if ((i == ZAPP_REPORTCMD_EVERYREBOOT) || (i == ZAPP_REPORTCMD_EVERYREBOOT2))
             zapp_isFirstTransmission--;
-        }
         
         if (zapp_Transmissions != 0)
           osal_set_event(zapp_TaskID, ZAPP_EVT_SENDCMD);

@@ -203,6 +203,7 @@ uint8 zapp_DeviceEnable = DEVICE_ENABLED;
 // Diagnostic cluster
 uint16 zapp_DiagNumOfResets;
 uint16 zapp_DiagNVMemWrites;
+uint16 zapp_DiagNVMemErasedPages;
 uint16 zapp_DiagNVMemWriteFails;
 uint32 zapp_DiagNVMemFailItems;
 uint16 zapp_DiagMemAllocatedBlocks;
@@ -672,6 +673,14 @@ CONST zclAttrRec_t zapp_cAttrs[] =
   {
     ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
     { //50
+      ATTRID_DIAG_11ERASEDPAGES,
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ),
+      (void *)&zapp_DiagNVMemErasedPages
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
+    { //50
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
       (void *)&zapp_clusterRevision_all
@@ -1101,7 +1110,7 @@ uint32 zapp_fStoreAttrToNV(void)
     if (zapp_StoreQueueItems[i] != 0)
     {
       if (osal_nv_write(ZAPP_NV_FIRST_1 + zapp_StoreQueueItems[i], 0, zapp_StoreQueueSizes[i], zapp_StoreQueueSources[i]) == SUCCESS)
-        zapp_DiagNVMemWrites++;
+        zapp_DiagNVMemWrites = osal_nv_get_writtenbytes();
       else
       {
         zapp_DiagNVMemWriteFails++;
@@ -1210,7 +1219,8 @@ void zapp_fResetAttributesToDefaultValues(void)
   zapp_BatteryAlarmState = 0;
   
   zapp_DiagNumOfResets = 0;
-  zapp_DiagNVMemWrites = 0;
+  zapp_DiagNVMemWrites = osal_nv_get_writtenbytes();
+  zapp_DiagNVMemErasedPages = osal_nv_get_erasedpages();
   zapp_DiagNVMemWriteFails = 0;
   zapp_DiagMemAllocatedBlocks = osal_heap_block_cnt();
   zapp_DiagMemFreeBlocks = osal_heap_block_free();

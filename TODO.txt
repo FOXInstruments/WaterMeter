@@ -57,8 +57,10 @@ TODO list.
 + Add "Transmissions" with the desired or missed type of trasmissions
   All SendReport calls were moved to special event (ZAPP_EVT_SENDCMD) and calls from DefaultRsp and ZAPP_EVT_UPDATE
   
-- Add Write counter to OSAL_Nv.c
-
++ Add ErasedPages and WrittenBytes to the OSAL_Nv.c and new functions:
+  uint16 osal_nv_get_erasedpages()
+  uint16 osal_nv_get_writtenbytes()
+  
 - Send alarm when Low Battery, Reboot, Flash Write Error, or may be send alarms through Diagnostic
   + added send alarm "General HW fault" and diag NV attributes if there was flash write error
   + added send alarm "Check meter" when device connects to network after reboot

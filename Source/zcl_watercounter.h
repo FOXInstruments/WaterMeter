@@ -179,7 +179,7 @@ extern "C"
 #define METER_2STATUS_TAMPERDETECT      0x04
    
 #define ATTRID_DIAG_0NUMOFRESETS                0x0000  // uint16
-#define ATTRID_DIAG_1NVWRITES                   0x0001  // uint16
+#define ATTRID_DIAG_1NVWRITES                   0x0001  // uint16 Written bytes
 #define ATTRID_DIAG_2NVWRITEFAILS               0x0002  // uint16
 #define ATTRID_DIAG_3NVFAILITEMS                0x0003  // uint32
 #define ATTRID_DIAG_4MEMALLOCATEDBLOCKS         0x0004  // uint16
@@ -189,6 +189,7 @@ extern "C"
 #define ATTRID_DIAG_8CPUSTATUS                  0x0008  // uint16
 #define ATTRID_DIAG_9SYSTEMUPTIME               0x0009  // uint32
 #define ATTRID_DIAG_10REPORT                    0x000A  // unit8
+#define ATTRID_DIAG_11ERASEDPAGES               0x000B  // unit16
 /*********************************************************************
  * MACROS
  */
@@ -305,6 +306,7 @@ extern uint24 zapp_Flow2HoursInOperation;
 // Diagnostic cluster
 extern uint16 zapp_DiagNumOfResets;
 extern uint16 zapp_DiagNVMemWrites;
+extern uint16 zapp_DiagNVMemErasedPages;
 extern uint16 zapp_DiagNVMemWriteFails;
 extern uint32 zapp_DiagNVMemFailItems;
 extern uint16 zapp_DiagMemAllocatedBlocks;
