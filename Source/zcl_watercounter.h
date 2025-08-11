@@ -73,6 +73,8 @@ extern "C"
 
 #define ZAPP_TRANSMISSION_RETRY           10
 #define ZAPP_PARENTLOST_RETRY             60
+  
+#define ZAPP_POLL_RATE_FAST               3000
 
 // Events for the sample app
 #define ZAPP_EVT_END_DEVICE_REJOIN   0x0001        // event_flag is a 2-byte bitmap with each bit specifying an event

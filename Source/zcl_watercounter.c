@@ -590,7 +590,6 @@ void zapp_Init(byte task_id)
   zapp_SeqNum = 0;
   uint8 st;
 
-  osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_HOLD);
   // Set destination address to indirect
   zapp_DstAddr.addrMode = (afAddrMode_t)AddrNotPresent;
   zapp_DstAddr.endPoint = 0;
@@ -701,7 +700,7 @@ void zapp_Init(byte task_id)
     st = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATEINSTDEMAND, zapp_FlowUpdatePeriod*1000L);
   
   HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_ON); // to show NoNetwork state
-  HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
+  HalLedSet(HAL_LED_IN1, HAL_LED_MODE_ON);    // ON - Active CPU mode, OFF - PM2 Active
   HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
   
   st = 0;
@@ -717,6 +716,7 @@ void zapp_Init(byte task_id)
   //st = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE, 10000);
   //st = osal_set_event(zapp_TaskID, ZAPP_EVT_UPDATE);
   
+  NLME_SetPollRate(ZAPP_POLL_RATE_FAST);
   osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_HOLD);
   osal_start_timerEx(zapp_TaskID, ZAPP_EVT_PWRMGR, ZAPP_TIMEOUT_PWRMGR_KEY);
 
@@ -1094,6 +1094,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
   // ------------------------------------------------------------------ 
   if(events & ZAPP_EVT_PWRMGR)
   {
+    NLME_SetPollRate(POLL_RATE);
     osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_CONSERVE);
     
     if (CHECK_BIT(zapp_PWRMGRReason, ZAPP_PWRMGR_TIMESYNC))
@@ -1144,7 +1145,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
       if (zapp_LongPushCounter > 100) // Key is pressed more than 10 sec, preform LocalReset and recommission
       {
         HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_ON);
-        HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_IN1, HAL_LED_MODE_ON);
         HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
         bdb_resetLocalAction();
         ZDApp_LeaveReset(TRUE);
@@ -1201,6 +1202,7 @@ static void zapp_fHandleKeys(byte shift, byte keys)
     zapp_LongPushCounter = 0;
   }
   
+  NLME_SetPollRate(ZAPP_POLL_RATE_FAST);
   osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_HOLD);
   osal_start_timerEx(zapp_TaskID, ZAPP_EVT_PWRMGR, ZAPP_TIMEOUT_PWRMGR_KEY);
 }
@@ -1235,7 +1237,7 @@ static void zapp_fProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
       {
         //We are on the nwk, what now?
         HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
-        HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
+        //HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
         
 //        if ((zapp_isTimeSynced == false) || (zapp_Transmissions > 0))
@@ -1260,7 +1262,7 @@ static void zapp_fProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
         //See the possible errors for nwk steering procedure
         //No suitable networks found. Want to try other channels? Try with bdb_setChannelAttribute
         HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_ON);
-        HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
+        //HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
       }
     break;
@@ -1269,14 +1271,14 @@ static void zapp_fProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
       {
         //YOUR JOB:
         HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
-        HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
+        //HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
       }
       else
       {
         //YOUR JOB:
         //HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
-        HalLedSet(HAL_LED_IN1, HAL_LED_MODE_ON);
+        //HalLedSet(HAL_LED_IN1, HAL_LED_MODE_ON);
         HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
       }
     break;
@@ -1292,7 +1294,7 @@ static void zapp_fProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
       {
         //We did recover from losing parent
         HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
-        HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
+        //HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
         
         if (zapp_Transmissions != 0)
@@ -1309,7 +1311,7 @@ static void zapp_fProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
       else
       {
         HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
-        HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
+        //HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN2, HAL_LED_MODE_ON);
         
         osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_CONSERVE);
@@ -1992,8 +1994,11 @@ HAL_ISR_FUNCTION(halPort1Isr, P1INT_VECTOR)
   {
     osal_start_timerEx(zapp_TaskID, ZAPP_EVT_IMPULSE2, ZAPP_TIMEOUT_DEBOUNCE);
   }
+  // Clear the CPU interrupt flag for Port_0 PxIFG has to be cleared before PxIF
   P1IFG = 0;
+  P1IF = 0;
   
+  CLEAR_SLEEP_MODE();
   HAL_EXIT_ISR();
 }
 
