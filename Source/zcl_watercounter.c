@@ -1354,20 +1354,20 @@ static void zapp_fBasicResetCB(void)
  */
 void zapp_fBatteryWarningCB(uint8 voltLevel)
 {
-  if (voltLevel != VOLT_LEVEL_GOOD)
-  {
-    zapp_BatteryAlarmState |= (zapp_BatteryAlarmMask & BAT_ALARM_MASK_VOLT_2_LOW) & BAT_ALARM_STATE_BAT_VOLT_MIN_THRES_BAT_SRC_1 |
-                               (zapp_BatteryAlarmMask & BAT_ALARM_MASK_BATTERY_ALARM_1) & BAT_ALARM_STATE_BAT_VOLT_THRES_1_BAT_SRC_1;
-    zapp_Flow1Status |= METER_2STATUS_LOWBATT;
-    zapp_Flow2Status |= METER_2STATUS_LOWBATT;
-  }
-  if (voltLevel == VOLT_LEVEL_CAUTIOUS)
+  zapp_BatteryAlarmState |= (zapp_BatteryAlarmMask & BAT_ALARM_MASK_VOLT_2_LOW) & BAT_ALARM_STATE_BAT_VOLT_MIN_THRES_BAT_SRC_1 |
+                             (zapp_BatteryAlarmMask & BAT_ALARM_MASK_BATTERY_ALARM_1) & BAT_ALARM_STATE_BAT_VOLT_THRES_1_BAT_SRC_1;
+  zapp_Flow1Status |= METER_2STATUS_LOWBATT;
+  zapp_Flow2Status |= METER_2STATUS_LOWBATT;
+  
+  if (voltLevel == VOLT_LEVEL_CAUTIOUS) // NV write is posible 
   {
     // Send warning message to the gateway and blink LED
+    powerOffSoc();
   }
-  else if (voltLevel == VOLT_LEVEL_BAD)
+  else if (voltLevel == VOLT_LEVEL_BAD) // NV write is INPOSIBLE
   {
     // Shut down the system
+    powerOffSoc();
   }
 }
 
@@ -1384,11 +1384,6 @@ static void zapp_fUpdateBatteryAttributes(void)
 {
   zapp_BatteryVoltage = (uint8)VDD3TOVOLTAGE(HalAdcCheckVddRaw());
 
-  if (zapp_BatteryVoltage < zapp_BatteryVoltageThresMin)
-    zapp_BatteryLevel = 0;
-  else
-    zapp_BatteryLevel = (zapp_BatteryVoltage - zapp_BatteryVoltageThresMin)*200/(zapp_BatteryVoltageRated - zapp_BatteryVoltageThresMin);
-  
   if (zapp_BatteryVoltage < zapp_BatteryVoltageThres1)
   {
     zapp_Flow1Status |= METER_2STATUS_LOWBATT;
@@ -1408,14 +1403,24 @@ static void zapp_fUpdateBatteryAttributes(void)
   
   if (zapp_BatteryVoltage <= zapp_BatteryVoltageThresMin)
   {   
+    zapp_BatteryLevel = 0;
+    
     if (zapp_BatteryAlarmMask & BAT_ALARM_MASK_VOLT_2_LOW)
       zapp_BatteryAlarmState |= BAT_ALARM_STATE_BAT_VOLT_MIN_THRES_BAT_SRC_1;
     else
       zapp_BatteryAlarmState &= ~BAT_ALARM_STATE_BAT_VOLT_MIN_THRES_BAT_SRC_1;
+    
+    // Save current consumption to NV
+    zapp_fStoreQueueAdd(ZAPP_STOREID_VALUES1, sizeof(zapp_Flow1Value.dw.lowDW), &zapp_Flow1Value);
+    zapp_fStoreQueueAdd(ZAPP_STOREID_VALUES2, sizeof(zapp_Flow2Value.dw.lowDW), &zapp_Flow2Value);
+    zapp_fStoreAttrToNV();
+    
+    powerOffSoc();
   }
   else
   {
     zapp_BatteryAlarmState &= ~BAT_ALARM_STATE_BAT_VOLT_MIN_THRES_BAT_SRC_1;
+    zapp_BatteryLevel = (zapp_BatteryVoltage - zapp_BatteryVoltageThresMin)*200/(zapp_BatteryVoltageRated - zapp_BatteryVoltageThresMin);
   } 
 }
 

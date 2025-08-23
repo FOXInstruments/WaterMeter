@@ -15,6 +15,7 @@
 #define MT_ZDO_FUNC
 #define MT_ZDO_MGMT
 #define MT_APP_CNF_FUNC
+#define ENABLE_MT_SYS_RESET_SHUTDOWN
 //#define LCD_SUPPORTED   DEBUG
 #define MULTICAST_ENABLED       FALSE
 #define HAL_LCD                 FALSE
