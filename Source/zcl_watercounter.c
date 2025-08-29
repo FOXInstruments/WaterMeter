@@ -917,8 +917,8 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
       }
     }
     
-#warning Added For testing only
-    if (zapp_DiagReport == ZAPP_DIAG_REPORT_EVERY_UPDATE)
+//#warning Added For testing only
+    if (zapp_DiagReport & ZAPP_DIAG_REPORT_TEST_IMPULSES)
     {
       osal_set_event(zapp_TaskID, ZAPP_EVT_IMPULSE1);
       osal_set_event(zapp_TaskID, ZAPP_EVT_IMPULSE2);
@@ -1110,8 +1110,8 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
   // ------------------------------------------------------------------ 
   if (events & ZAPP_EVT_IMPULSE1) // Event from ISR function to recive impulse from counter
   {
-#warning Diag added For testing only
-    if (POLARITY_IMPULSE(P1_0) || zapp_DiagReport == ZAPP_DIAG_REPORT_EVERY_UPDATE)
+//#warning Diag added For testing only
+    if (POLARITY_IMPULSE(P1_0) || (zapp_DiagReport & ZAPP_DIAG_REPORT_TEST_IMPULSES))
     {
       zapp_Flow1Value.dw.lowDW++;
       zapp_Flow1CurrDay++;
@@ -1123,8 +1123,8 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
   // ------------------------------------------------------------------
   if (events & ZAPP_EVT_IMPULSE2)
   {
-#warning Diag added For testing only
-    if (POLARITY_IMPULSE(P1_1) || zapp_DiagReport == ZAPP_DIAG_REPORT_EVERY_UPDATE)
+//#warning Diag added For testing only
+    if (POLARITY_IMPULSE(P1_1) || (zapp_DiagReport & ZAPP_DIAG_REPORT_TEST_IMPULSES))
     {
       zapp_Flow2Value.dw.lowDW++;
       zapp_Flow2CurrDay++;
@@ -1362,11 +1362,19 @@ void zapp_fBatteryWarningCB(uint8 voltLevel)
   if (voltLevel == VOLT_LEVEL_CAUTIOUS) // NV write is posible 
   {
     // Send warning message to the gateway and blink LED
+    HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
+    HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
+    HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
+    
     powerOffSoc();
   }
   else if (voltLevel == VOLT_LEVEL_BAD) // NV write is INPOSIBLE
   {
     // Shut down the system
+    HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
+    HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
+    HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
+
     powerOffSoc();
   }
 }
@@ -1414,6 +1422,10 @@ static void zapp_fUpdateBatteryAttributes(void)
     zapp_fStoreQueueAdd(ZAPP_STOREID_VALUES1, sizeof(zapp_Flow1Value.dw.lowDW), &zapp_Flow1Value);
     zapp_fStoreQueueAdd(ZAPP_STOREID_VALUES2, sizeof(zapp_Flow2Value.dw.lowDW), &zapp_Flow2Value);
     zapp_fStoreAttrToNV();
+    
+    HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
+    HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
+    HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
     
     powerOffSoc();
   }

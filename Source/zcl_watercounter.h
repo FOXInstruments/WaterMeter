@@ -58,7 +58,7 @@ extern "C"
 #define ZAPP_ENDPOINT              8
 #define ZAPP_ENDPOINT2             (ZAPP_ENDPOINT + 1)
 // Timeouts, msec
-#define ZAPP_TIMEOUT_DEBOUNCE             50L
+#define ZAPP_TIMEOUT_DEBOUNCE             500L
 #define ZAPP_TIMEOUT_LONGPUSH             100L
 #define ZAPP_TIMEOUT_STOREATTR            60000L
 #define ZAPP_TIMEOUT_END_DEVICE_REJOIN    30000L
@@ -117,6 +117,7 @@ extern "C"
 #define ZAPP_DIAG_REPORT_DONT           0
 #define ZAPP_DIAG_REPORT_EVERY_UPDATE   1
 #define ZAPP_DIAG_REPORT_EVERY24h       2
+#define ZAPP_DIAG_REPORT_TEST_IMPULSES  4
   
 #define TIME_SYNC_DIFF_SEC          5L       // Difference between device time and gate time, seconds
 #define TIME_SYNC_PERIOD_MIN        24*60    // Minutes
