@@ -113,11 +113,12 @@
 #define ZAPP_NV_DATE1             0x0411
 #define ZAPP_NV_VALUES2           0x0412
 #define ZAPP_NV_DATE2             0x0413
+#define ZAPP_NV_DIAGDEBOUNCE      0x0414
 
 #define ZAPP_NV_FIRST             ZAPP_NV_SITEID1
 #define ZAPP_NV_FIRST_1           (ZAPP_NV_FIRST - 1)
 
-#define ZAPP_STOREQUEUE_LEN          14
+#define ZAPP_STOREQUEUE_LEN          15
 
 #pragma message(__DATE__)
 /*********************************************************************
@@ -213,6 +214,9 @@ uint16 zapp_DiagMemHighWater;  // Maximum memory allocated
 uint16 zapp_DiagCPUStatus;     // CPU status - Clock, Power mode, Boot reason
 uint32 zapp_DiagSystemUpTime;  // System up time in seconds
 uint8 zapp_DiagReport;         // Send Diag data every meter update period
+uint16 zapp_DiagDebounce;        // ms
+uint16 zapp_DiagDebounceFlow1;
+uint16 zapp_DiagDebounceFlow2;
 
 uint8 zapp_StoreQueueItems[ZAPP_STOREQUEUE_LEN];
 uint8 zapp_StoreQueueSizes[ZAPP_STOREQUEUE_LEN];
@@ -680,7 +684,31 @@ CONST zclAttrRec_t zapp_cAttrs[] =
   },
   {
     ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
-    { //50
+    { //51
+      ATTRID_DIAG_12DEBOUNCE,
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
+      (void *)&zapp_DiagDebounce
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
+    { //52
+      ATTRID_DIAG_13DEBOUNCE_FLOW1,
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ),
+      (void *)&zapp_DiagDebounceFlow1
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
+    { //53
+      ATTRID_DIAG_14DEBOUNCE_FLOW2,
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ),
+      (void *)&zapp_DiagDebounceFlow2
+    }
+  },
+  {
+    ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
+    { //54
       ATTRID_CLUSTER_REVISION,
       ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CLIENT),
       (void *)&zapp_clusterRevision_all
@@ -940,7 +968,8 @@ uint8 zapp_fNVInitItems(void)
   zapp_DiagNVMemFailItems |= ((st != SUCCESS) && (st != NV_ITEM_UNINIT)) ? 1<<ZAPP_STOREID_VALUES2 : 0;
   st = osal_nv_item_init(ZAPP_NV_DATE2, sizeof(uint32), NULL);
   zapp_DiagNVMemFailItems |= ((st != SUCCESS) && (st != NV_ITEM_UNINIT)) ? 1<<ZAPP_STOREID_DATE2 : 0;
-  //zapp_DiagNVMemFailItems |= osal_nv_item_init(ZAPP_NV_DATE2, sizeof(uint32), NULL) != SUCCESS ? 1<<ZAPP_STOREID_DATE2 : 0;
+  st = osal_nv_item_init(ZAPP_NV_DIAGDEBOUNCE, sizeof(zapp_DiagDebounce), NULL);
+  zapp_DiagNVMemFailItems |= ((st != SUCCESS) && (st != NV_ITEM_UNINIT)) ? 1L<<ZAPP_STOREID_DIAGDEBOUNCE : 0;
   return (st);
 }
 
@@ -1228,6 +1257,10 @@ void zapp_fResetAttributesToDefaultValues(void)
   zapp_DiagMemHighWater = osal_heap_high_water();
   zapp_DiagSystemUpTime = osal_GetSystemClockSec();
   zapp_DiagReport = ZAPP_DIAG_REPORT_DONT;
+  src = ZAPP_TIMEOUT_DEBOUNCE;
+  zapp_fInitAttrValue(ZAPP_NV_DIAGDEBOUNCE, sizeof(zapp_DiagDebounce), &src, &zapp_DiagDebounce);
+  zapp_DiagDebounceFlow1 = zapp_DiagDebounce;
+  zapp_DiagDebounceFlow2 = zapp_DiagDebounce;
   
   zapp_AlarmCount = 0;
   

@@ -158,6 +158,9 @@ const zclReadCmd_t zapp_ReadCmdTime = {4, {ATTRID_TIME_TIME, ATTRID_TIME_TIME_ST
 afAddrType_t zapp_DstAddr;
 uint8 zapp_LongPushCounter;
 
+uint16 zapp_DebounceCalc1;
+uint16 zapp_DebounceCalc2;
+
 const zclReportCmd_t zapp_ReportCmdBattery =
 {
   3,
@@ -440,6 +443,21 @@ const zclReportCmd_t zapp_ReportCmdDiag =
       ATTRID_DIAG_11ERASEDPAGES,
       ZCL_DATATYPE_UINT16,
       (void*)&zapp_DiagNVMemErasedPages
+    },
+    { //13
+      ATTRID_DIAG_12DEBOUNCE,
+      ZCL_DATATYPE_UINT16,
+      (void*)&zapp_DiagDebounce
+    },
+    { //14
+      ATTRID_DIAG_13DEBOUNCE_FLOW1,
+      ZCL_DATATYPE_UINT16,
+      (void*)&zapp_DiagDebounceFlow1
+    },
+    { //15
+      ATTRID_DIAG_14DEBOUNCE_FLOW2,
+      ZCL_DATATYPE_UINT16,
+      (void*)&zapp_DiagDebounceFlow2
     },
   },
 };
@@ -1117,6 +1135,9 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
       zapp_Flow1CurrDay++;
       if (zapp_FlowUpdatePeriod != 0xFF) zapp_Flow1InstDemand++;
       HalLedBlink(HAL_LED_IN1, 1, 50, 100);
+      
+      if (zapp_DebounceCalc1 < zapp_DiagDebounceFlow1)
+        zapp_DiagDebounceFlow1 = zapp_DebounceCalc1;
     }
     return (events ^ ZAPP_EVT_IMPULSE1);
   }
@@ -1130,6 +1151,9 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
       zapp_Flow2CurrDay++;
       if (zapp_FlowUpdatePeriod != 0xFF) zapp_Flow2InstDemand++;
       HalLedBlink(HAL_LED_IN2, 1, 50, 100);
+      
+      if (zapp_DebounceCalc2 < zapp_DiagDebounceFlow2)
+        zapp_DiagDebounceFlow2 = zapp_DebounceCalc2;
     }    
     return (events ^ ZAPP_EVT_IMPULSE2);
   }
@@ -1765,13 +1789,30 @@ uint8 zapp_fValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
     switch (pAttrInfo->attrID)
     {
       case ATTRID_POWER_CFG_BAT_RATED_VOLTAGE:
-        zapp_fUpdateAttrRatedVoltage(pAttrInfo->attrData);
         if (*pAttrInfo->attrData != zapp_BatteryVoltageRated)
         {
+          zapp_fUpdateAttrRatedVoltage(pAttrInfo->attrData);
           st = zapp_fStoreQueueAdd(ZAPP_STOREID_VOLTAGERATED, sizeof(zapp_BatteryVoltageRated), &zapp_BatteryVoltageRated);          
           SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_BATTERY);
           osal_set_event(zapp_TaskID, ZAPP_EVT_SENDCMD);
         }
+        break;
+    }
+  }
+  else if (pAttr->clusterID == ZCL_CLUSTER_ID_HA_DIAGNOSTIC)
+  {
+    switch (pAttrInfo->attrID)
+    {
+      case ATTRID_DIAG_12DEBOUNCE:
+        if (((uint16)*pAttrInfo->attrData < ZAPP_TIMEOUT_DEBOUNCE_MIN) || ((uint16)*pAttrInfo->attrData > ZAPP_TIMEOUT_DEBOUNCE_MAX))
+          validate = FALSE;
+        else
+          if (*pAttrInfo->attrData != zapp_DiagDebounce)
+          {
+            st = zapp_fStoreQueueAdd(ZAPP_STOREID_DIAGDEBOUNCE, sizeof(zapp_DiagDebounce), &zapp_DiagDebounce);
+          }
+          zapp_DiagDebounceFlow1 = *pAttrInfo->attrData;
+          zapp_DiagDebounceFlow2 = *pAttrInfo->attrData;
         break;
     }
   }
@@ -2001,15 +2042,39 @@ static void zapp_fProcessOTAMsgs(zclOTA_CallbackMsg_t* pMsg)
  */
 HAL_ISR_FUNCTION(halPort1Isr, P1INT_VECTOR)
 {
+  uint16 timeout;
+
   HAL_ENTER_ISR();
   
   if (P1IFG & BV(0))
   {
-    osal_start_timerEx(zapp_TaskID, ZAPP_EVT_IMPULSE1, ZAPP_TIMEOUT_DEBOUNCE);
+    timeout = osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_IMPULSE1);
+    if (timeout != 0)
+    {
+      zapp_DebounceCalc1 = timeout;
+      //if (timeout < ZAPP_TIMEOUT_DEBOUNCE_MIN)
+      //  osal_start_timerEx(zapp_TaskID, ZAPP_EVT_IMPULSE1, ZAPP_TIMEOUT_DEBOUNCE_MIN);
+    }
+    else
+    {
+      zapp_DebounceCalc1 = zapp_DiagDebounce;
+      osal_start_timerEx(zapp_TaskID, ZAPP_EVT_IMPULSE1, zapp_DiagDebounce);
+    }
   }
   if (P1IFG & BV(1))
   {
-    osal_start_timerEx(zapp_TaskID, ZAPP_EVT_IMPULSE2, ZAPP_TIMEOUT_DEBOUNCE);
+    timeout = osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_IMPULSE2);
+    if (timeout != 0)
+    {
+      zapp_DebounceCalc2 = timeout;
+      //if (timeout < ZAPP_TIMEOUT_DEBOUNCE_MIN)
+      //  osal_start_timerEx(zapp_TaskID, ZAPP_EVT_IMPULSE2, ZAPP_TIMEOUT_DEBOUNCE_MIN);
+    }
+    else
+    {
+      zapp_DebounceCalc2 = zapp_DiagDebounce;
+      osal_start_timerEx(zapp_TaskID, ZAPP_EVT_IMPULSE2, zapp_DiagDebounce);
+    }
   }
   // Clear the CPU interrupt flag for Port_0 PxIFG has to be cleared before PxIF
   P1IFG = 0;

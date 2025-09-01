@@ -58,7 +58,9 @@ extern "C"
 #define ZAPP_ENDPOINT              8
 #define ZAPP_ENDPOINT2             (ZAPP_ENDPOINT + 1)
 // Timeouts, msec
-#define ZAPP_TIMEOUT_DEBOUNCE             500L
+#define ZAPP_TIMEOUT_DEBOUNCE_MAX         5000L
+#define ZAPP_TIMEOUT_DEBOUNCE             800L
+#define ZAPP_TIMEOUT_DEBOUNCE_MIN         100L
 #define ZAPP_TIMEOUT_LONGPUSH             100L
 #define ZAPP_TIMEOUT_STOREATTR            60000L
 #define ZAPP_TIMEOUT_END_DEVICE_REJOIN    30000L
@@ -193,6 +195,9 @@ extern "C"
 #define ATTRID_DIAG_9SYSTEMUPTIME               0x0009  // uint32
 #define ATTRID_DIAG_10REPORT                    0x000A  // unit8
 #define ATTRID_DIAG_11ERASEDPAGES               0x000B  // unit16
+#define ATTRID_DIAG_12DEBOUNCE                  0x000C  // unit16 ms
+#define ATTRID_DIAG_13DEBOUNCE_FLOW1            0x000D  // unit16 ms
+#define ATTRID_DIAG_14DEBOUNCE_FLOW2            0x000E  // unit16 ms
 /*********************************************************************
  * MACROS
  */
@@ -219,6 +224,7 @@ enum
   ZAPP_STOREID_DATE1,
   ZAPP_STOREID_VALUES2,
   ZAPP_STOREID_DATE2,
+  ZAPP_STOREID_DIAGDEBOUNCE,
 };
 
 enum
@@ -319,6 +325,9 @@ extern uint16 zapp_DiagMemHighWater;  // Maximum memory allocated
 extern uint16 zapp_DiagCPUStatus;     // CPU status - Clock, Power mode, Boot reason
 extern uint32 zapp_DiagSystemUpTime;  // System up time in seconds
 extern uint8 zapp_DiagReport; // Send Diag data every meter update period
+extern uint16 zapp_DiagDebounce; // ms
+extern uint16 zapp_DiagDebounceFlow1; // ms
+extern uint16 zapp_DiagDebounceFlow2; // ms
 
 extern uint16 zapp_IdentifyTime;
 
