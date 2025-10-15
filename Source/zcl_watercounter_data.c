@@ -1259,8 +1259,8 @@ void zapp_fResetAttributesToDefaultValues(void)
   zapp_DiagReport = ZAPP_DIAG_REPORT_DONT;
   src = ZAPP_TIMEOUT_DEBOUNCE;
   zapp_fInitAttrValue(ZAPP_NV_DIAGDEBOUNCE, sizeof(zapp_DiagDebounce), &src, &zapp_DiagDebounce);
-  zapp_DiagDebounceFlow1 = zapp_DiagDebounce;
-  zapp_DiagDebounceFlow2 = zapp_DiagDebounce;
+  zapp_DiagDebounceFlow1 = 0;
+  zapp_DiagDebounceFlow2 = 0;
   
   zapp_AlarmCount = 0;
   

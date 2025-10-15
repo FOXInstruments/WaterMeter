@@ -1136,7 +1136,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
       if (zapp_FlowUpdatePeriod != 0xFF) zapp_Flow1InstDemand++;
       HalLedBlink(HAL_LED_IN1, 1, 50, 100);
       
-      if (zapp_DebounceCalc1 < zapp_DiagDebounceFlow1)
+      if (zapp_DebounceCalc1 > zapp_DiagDebounceFlow1)
         zapp_DiagDebounceFlow1 = zapp_DebounceCalc1;
     }
     return (events ^ ZAPP_EVT_IMPULSE1);
@@ -1152,7 +1152,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
       if (zapp_FlowUpdatePeriod != 0xFF) zapp_Flow2InstDemand++;
       HalLedBlink(HAL_LED_IN2, 1, 50, 100);
       
-      if (zapp_DebounceCalc2 < zapp_DiagDebounceFlow2)
+      if (zapp_DebounceCalc2 > zapp_DiagDebounceFlow2)
         zapp_DiagDebounceFlow2 = zapp_DebounceCalc2;
     }    
     return (events ^ ZAPP_EVT_IMPULSE2);
@@ -2051,13 +2051,13 @@ HAL_ISR_FUNCTION(halPort1Isr, P1INT_VECTOR)
     timeout = osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_IMPULSE1);
     if (timeout != 0)
     {
-      zapp_DebounceCalc1 = timeout;
+      zapp_DebounceCalc1 = zapp_DiagDebounce - timeout;
       //if (timeout < ZAPP_TIMEOUT_DEBOUNCE_MIN)
       //  osal_start_timerEx(zapp_TaskID, ZAPP_EVT_IMPULSE1, ZAPP_TIMEOUT_DEBOUNCE_MIN);
     }
     else
     {
-      zapp_DebounceCalc1 = zapp_DiagDebounce;
+      zapp_DebounceCalc1 = 0; //zapp_DiagDebounce;
       osal_start_timerEx(zapp_TaskID, ZAPP_EVT_IMPULSE1, zapp_DiagDebounce);
     }
   }
@@ -2066,13 +2066,13 @@ HAL_ISR_FUNCTION(halPort1Isr, P1INT_VECTOR)
     timeout = osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_IMPULSE2);
     if (timeout != 0)
     {
-      zapp_DebounceCalc2 = timeout;
+      zapp_DebounceCalc2 = zapp_DiagDebounce - timeout;
       //if (timeout < ZAPP_TIMEOUT_DEBOUNCE_MIN)
       //  osal_start_timerEx(zapp_TaskID, ZAPP_EVT_IMPULSE2, ZAPP_TIMEOUT_DEBOUNCE_MIN);
     }
     else
     {
-      zapp_DebounceCalc2 = zapp_DiagDebounce;
+      zapp_DebounceCalc2 = 0;
       osal_start_timerEx(zapp_TaskID, ZAPP_EVT_IMPULSE2, zapp_DiagDebounce);
     }
   }
