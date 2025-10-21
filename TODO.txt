@@ -68,6 +68,8 @@ TODO list.
   - add send Bettary Low alarm
 
 -  Switch debug messages to DebugTrace.h
+
+- After powerup send the first data until the all responce will have been recived
   
 
     
