@@ -65,6 +65,7 @@ extern "C"
 #define ZAPP_TIMEOUT_STOREATTR            60000L
 #define ZAPP_TIMEOUT_END_DEVICE_REJOIN    30000L
 #define ZAPP_TIMEOUT_RESEND               10000L
+#define ZAPP_TIMEOUT_RESEND_MAXRETRY      120000L
 #define ZAPP_TIMEOUT_1SEC                 1000L
 #define ZAPP_TIMEOUT_5SEC                 5000L
 #define ZAPP_TIMEOUT_10SEC                10000L

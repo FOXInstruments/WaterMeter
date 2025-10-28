@@ -709,7 +709,7 @@ void zapp_Init(byte task_id)
   IEN2 |= BV(4);           // Enable interrupt Port1
   
   zapp_isTimeSynced = false;
-  zapp_isFirstTransmission = 2;
+  zapp_isFirstTransmission = 3;
   zapp_Transmissions = 0;
   zapp_PWRMGRReason = 0;
   zapp_ParentLostRejoinCounter = 0;
@@ -860,48 +860,50 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
     // Every interval attributes update
     if (IS_ON_A_NETWORK)
     {
-      SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_BATTERY);
-        
-      if (zapp_isFirstTransmission)
-      { // First trasmission
-        #ifdef MT_DEBUG_FUNC
-          MT_ProcessDebugString("Send First data");
-        #endif
-//        osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_HOLD);
-//        if (osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_PWRMGR) < ZAPP_TIMEOUT_10SEC)
-//          osal_start_timerEx(zapp_TaskID, ZAPP_EVT_PWRMGR, ZAPP_TIMEOUT_10SEC);
-          
-        SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_EVERYREBOOT);
-        SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_EVERYREBOOT2);
-        SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_DIAG);
-      }
-      else
-      { // Next trasmission
-        SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_EVERYUPDATE);
-        SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_EVERYUPDATE2);
-      }
-      
-      if ((zapp_DiagReport == ZAPP_DIAG_REPORT_EVERY_UPDATE) ||
-          ((zapp_DiagReport == ZAPP_DIAG_REPORT_EVERY24h) && (time.hour == 0 && time.minutes <= 1)))
+      if (osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_SENDCMD) == 0)
       {
-        #ifdef MT_DEBUG_FUNC
-          MT_ProcessDebugString("Send Diag");
-        #endif
-        SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_DIAG);
-      }
-      //else
-      //  CLR_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_DIAG);
-      
-      if (zapp_Transmissions != 0)
-        osal_set_event(zapp_TaskID, ZAPP_EVT_SENDCMD);
+        SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_BATTERY);
+          
+        if (zapp_isFirstTransmission)
+        { // First trasmission
+          #ifdef MT_DEBUG_FUNC
+            MT_ProcessDebugString("Send First data");
+          #endif
+  //        osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_HOLD);
+  //        if (osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_PWRMGR) < ZAPP_TIMEOUT_10SEC)
+  //          osal_start_timerEx(zapp_TaskID, ZAPP_EVT_PWRMGR, ZAPP_TIMEOUT_10SEC);
+            
+          if (zapp_isFirstTransmission > 2) SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_EVERYREBOOT);
+          if (zapp_isFirstTransmission > 1) SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_EVERYREBOOT2);
+          if (zapp_isFirstTransmission > 0) SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_DIAG);
+        }
+        else
+        { // Next trasmission
+          SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_EVERYUPDATE);
+          SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_EVERYUPDATE2);
+        }
+        
+        if ((zapp_DiagReport == ZAPP_DIAG_REPORT_EVERY_UPDATE) ||
+            ((zapp_DiagReport == ZAPP_DIAG_REPORT_EVERY24h) && (time.hour == 0 && time.minutes <= 1)))
+        {
+          #ifdef MT_DEBUG_FUNC
+            MT_ProcessDebugString("Send Diag");
+          #endif
+          SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_DIAG);
+        }
+        
+        if (zapp_Transmissions != 0)
+          osal_set_event(zapp_TaskID, ZAPP_EVT_SENDCMD);
+      }      
     }
     else
     { // Trasmission faild
       SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_BATTERY);
       if (zapp_isFirstTransmission)
       { // First trasmission faild
-        SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_EVERYREBOOT);
-        SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_EVERYREBOOT2);
+        if (zapp_isFirstTransmission > 2) SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_EVERYREBOOT);
+        if (zapp_isFirstTransmission > 1) SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_EVERYREBOOT2);
+        if (zapp_isFirstTransmission > 0) SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_DIAG);
       }
       else
       { // Next trasmission faild
@@ -949,14 +951,22 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
   {
     if (IS_ON_A_NETWORK)
     {
-      zapp_TransmissionsCounter++;
       if ((zapp_TransmissionsCounter > ZAPP_TRANSMISSION_RETRY) || (zapp_Transmissions == 0))
       {
-        osal_stop_timerEx(zapp_TaskID, ZAPP_EVT_SENDCMD);
-        return (events ^ ZAPP_EVT_SENDCMD);
+        if (zapp_isFirstTransmission == 0)
+        {
+          zapp_Transmissions = 0;
+          osal_stop_timerEx(zapp_TaskID, ZAPP_EVT_SENDCMD);
+          return (events ^ ZAPP_EVT_SENDCMD);
+        }
+        // If all first transmission data has not been sent it tries to send it in infinitely
+        osal_start_timerEx(zapp_TaskID, ZAPP_EVT_SENDCMD, ZAPP_TIMEOUT_RESEND_MAXRETRY);
       }
-      
-      osal_start_timerEx(zapp_TaskID, ZAPP_EVT_SENDCMD, ZAPP_TIMEOUT_RESEND);
+      else
+      {
+        zapp_TransmissionsCounter++;      
+        osal_start_timerEx(zapp_TaskID, ZAPP_EVT_SENDCMD, ZAPP_TIMEOUT_RESEND);
+      }
       
       zapp_DstAddr.addrMode = afAddr16Bit;
       zapp_DstAddr.addr.shortAddr = 0;
@@ -1330,7 +1340,7 @@ static void zapp_fProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
         if ((zapp_isTimeSynced == false) || (osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_TIMESYNC) == 0))
           osal_start_timerEx(zapp_TaskID, ZAPP_EVT_TIMESYNC, ZAPP_TIMEOUT_10SEC);
         
-        zapp_ParentLostRejoinCounter = 0;
+        zapp_ParentLostRejoinCounter = 1;
       }
       else
       {
@@ -1392,7 +1402,7 @@ void zapp_fBatteryWarningCB(uint8 voltLevel)
     
     powerOffSoc();
   }
-  else if (voltLevel == VOLT_LEVEL_BAD) // NV write is INPOSIBLE
+  else if (voltLevel == VOLT_LEVEL_BAD) // NV write is IMPOSIBLE
   {
     // Shut down the system
     HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
@@ -1893,11 +1903,14 @@ static uint8 zapp_fProcessInDefaultRspCmd(zclIncomingMsg_t *pInMsg)
         zapp_TransmissionsCounter = 0;
         
         if (zapp_isFirstTransmission != 0)
-          if ((i == ZAPP_REPORTCMD_EVERYREBOOT) || (i == ZAPP_REPORTCMD_EVERYREBOOT2))
+          if ((i == ZAPP_REPORTCMD_EVERYREBOOT) || (i == ZAPP_REPORTCMD_EVERYREBOOT2) || (i == ZAPP_REPORTCMD_DIAG))
             zapp_isFirstTransmission--;
         
         if (zapp_Transmissions != 0)
+        {
+          osal_stop_timerEx(zapp_TaskID, ZAPP_EVT_SENDCMD);
           osal_set_event(zapp_TaskID, ZAPP_EVT_SENDCMD);
+        }
       }
     }
   }

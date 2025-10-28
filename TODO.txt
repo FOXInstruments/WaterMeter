@@ -69,7 +69,6 @@ TODO list.
 
 -  Switch debug messages to DebugTrace.h
 
-- After powerup send the first data until the all responce will have been recived
-  
++ After powerup send the first data until the all responce will have been recived
 
-    
+- Smart update. If data has not been changed then skip trasmission
