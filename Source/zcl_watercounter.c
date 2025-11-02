@@ -141,6 +141,7 @@ uint8 zapp_SeqNum, zapp_SeqNumSended;
 uint8 zapp_isFirstTransmission;
 uint8 zapp_isTimeSynced;             // True if time has synced
 uint8 zapp_Transmissions;            // BitMap of Desired or missed trasmissions
+uint8 zapp_TransmissionID;           // Current active transmission
 uint8 zapp_TransmissionsCounter;
 uint8 zapp_ParentLostRejoinCounter;
 
@@ -711,6 +712,7 @@ void zapp_Init(byte task_id)
   zapp_isTimeSynced = false;
   zapp_isFirstTransmission = 3;
   zapp_Transmissions = 0;
+  zapp_TransmissionID = 0;
   zapp_PWRMGRReason = 0;
   zapp_ParentLostRejoinCounter = 0;
   
@@ -836,9 +838,9 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
   {
     UTCTimeStruct time;
     osal_ConvertUTCTime(&time, osal_getClock());
-    zapp_TransmissionsCounter = 0;
+    // zapp_TransmissionsCounter = 0;
     // Battery voltage check
-    zapp_fUpdateBatteryAttributes();
+    // zapp_fUpdateBatteryAttributes();
     // Calculate HoursInOperation attribute
     zapp_Flow1HoursInOperation = osal_GetSystemClockSec() / (60L*60L);
     zapp_Flow2HoursInOperation = zapp_Flow1HoursInOperation;
@@ -860,7 +862,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
     // Every interval attributes update
     if (IS_ON_A_NETWORK)
     {
-      if (osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_SENDCMD) == 0)
+      //if (osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_SENDCMD) == 0)
       {
         SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_BATTERY);
           
@@ -892,7 +894,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
           SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_DIAG);
         }
         
-        if (zapp_Transmissions != 0)
+        if ((zapp_Transmissions != 0) && (zapp_TransmissionID == 0))
           osal_set_event(zapp_TaskID, ZAPP_EVT_SENDCMD);
       }      
     }
@@ -949,6 +951,8 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
   // ------------------------------------------------------------------
   if(events & ZAPP_EVT_SENDCMD) // Resend data witch couldn't send
   {
+    zapp_TransmissionID = 0;
+
     if (IS_ON_A_NETWORK)
     {
       if ((zapp_TransmissionsCounter > ZAPP_TRANSMISSION_RETRY) || (zapp_Transmissions == 0))
@@ -956,6 +960,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
         if (zapp_isFirstTransmission == 0)
         {
           zapp_Transmissions = 0;
+          zapp_TransmissionsCounter = 0;
           osal_stop_timerEx(zapp_TaskID, ZAPP_EVT_SENDCMD);
           return (events ^ ZAPP_EVT_SENDCMD);
         }
@@ -964,10 +969,10 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
       }
       else
       {
-        zapp_TransmissionsCounter++;      
+        zapp_TransmissionsCounter++;
         osal_start_timerEx(zapp_TaskID, ZAPP_EVT_SENDCMD, ZAPP_TIMEOUT_RESEND);
       }
-      
+
       zapp_DstAddr.addrMode = afAddr16Bit;
       zapp_DstAddr.addr.shortAddr = 0;
       zapp_DstAddr.endPoint = 1;
@@ -977,35 +982,50 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
         zapp_fUpdateBatteryAttributes();
         zapp_SeqNumSended = zapp_SeqNum;
         if (zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_GEN_POWER_CFG, &zapp_ReportCmdBattery, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++) == ZSuccess)
+        {
+          zapp_TransmissionID = ZAPP_REPORTCMD_BATTERY + 1;
           return (events ^ ZAPP_EVT_SENDCMD);
+        }
       }
 
       if (CHECK_BIT(zapp_Transmissions, ZAPP_REPORTCMD_EVERYUPDATE))
       {
         zapp_SeqNumSended = zapp_SeqNum;
         if (zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zapp_ReportCmdEveryUpdate, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++) == ZSuccess)
+        {
+          zapp_TransmissionID = ZAPP_REPORTCMD_EVERYUPDATE + 1;
           return (events ^ ZAPP_EVT_SENDCMD);
+        }
       }
       
       if (CHECK_BIT(zapp_Transmissions, ZAPP_REPORTCMD_EVERYUPDATE2))
       {
         zapp_SeqNumSended = zapp_SeqNum;
         if (zcl_SendReportCmd(ZAPP_ENDPOINT2, &zapp_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zapp_ReportCmdEveryUpdate2, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++) == ZSuccess)
+        {
+          zapp_TransmissionID = ZAPP_REPORTCMD_EVERYUPDATE2 + 1;
           return (events ^ ZAPP_EVT_SENDCMD);
+        }
       }
         
       if (CHECK_BIT(zapp_Transmissions, ZAPP_REPORTCMD_EVERYREBOOT))
       {
         zapp_SeqNumSended = zapp_SeqNum;
         if (zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zapp_ReportCmdEveryReboot, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++) == ZSuccess)
+        {
+          zapp_TransmissionID = ZAPP_REPORTCMD_EVERYREBOOT + 1;
           return (events ^ ZAPP_EVT_SENDCMD);
+        }
       }
         
       if (CHECK_BIT(zapp_Transmissions, ZAPP_REPORTCMD_EVERYREBOOT2))
       {
         zapp_SeqNumSended = zapp_SeqNum;
         if (zcl_SendReportCmd(ZAPP_ENDPOINT2, &zapp_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zapp_ReportCmdEveryReboot2, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++) == ZSuccess)
+        {
+          zapp_TransmissionID = ZAPP_REPORTCMD_EVERYREBOOT2 + 1;
           return (events ^ ZAPP_EVT_SENDCMD);
+        }
       }
         
       if (CHECK_BIT(zapp_Transmissions, ZAPP_REPORTCMD_DIAG))
@@ -1013,13 +1033,19 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
         zapp_fUpdateDiagnosticAttributes();
         zapp_SeqNumSended = zapp_SeqNum;
         if (zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_HA_DIAGNOSTIC, &zapp_ReportCmdDiag, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++) == ZSuccess)
+        {
+          zapp_TransmissionID = ZAPP_REPORTCMD_DIAG + 1;
           return (events ^ ZAPP_EVT_SENDCMD);
+        }
       }
         
       if (CHECK_BIT(zapp_Transmissions, ZAPP_REPORTCMD_DIAGNV))
       {
         zapp_SeqNumSended = zapp_SeqNum;
-        zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_HA_DIAGNOSTIC, &zapp_ReportCmdDiagNV, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++);
+        if (zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_HA_DIAGNOSTIC, &zapp_ReportCmdDiagNV, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++) == ZSuccess)
+        {
+          zapp_TransmissionID = ZAPP_REPORTCMD_DIAGNV + 1;
+        }
       }
     }
     else
@@ -1892,19 +1918,18 @@ static uint8 zapp_fProcessInDefaultRspCmd(zclIncomingMsg_t *pInMsg)
   {
     if (defaultRspCmd->commandID == ZCL_CMD_REPORT)
     {
-      if (pInMsg->zclHdr.transSeqNum == zapp_SeqNumSended)
+      if ((pInMsg->zclHdr.transSeqNum == zapp_SeqNumSended) && (zapp_TransmissionID != 0))
       {
-        uint8 i = 0;
-        while (!CHECK_BIT(zapp_Transmissions, i))
-        {
-          i++;
-        }
-        CLR_BIT(&zapp_Transmissions, i);
+        CLR_BIT(&zapp_Transmissions, zapp_TransmissionID - 1);
         zapp_TransmissionsCounter = 0;
+        zapp_TransmissionID--;
         
         if (zapp_isFirstTransmission != 0)
-          if ((i == ZAPP_REPORTCMD_EVERYREBOOT) || (i == ZAPP_REPORTCMD_EVERYREBOOT2) || (i == ZAPP_REPORTCMD_DIAG))
+          if ((zapp_TransmissionID == ZAPP_REPORTCMD_EVERYREBOOT) ||
+              (zapp_TransmissionID == ZAPP_REPORTCMD_EVERYREBOOT2) || (zapp_TransmissionID == ZAPP_REPORTCMD_DIAG))
             zapp_isFirstTransmission--;
+
+        zapp_TransmissionID = 0;
         
         if (zapp_Transmissions != 0)
         {
