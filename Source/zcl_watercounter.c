@@ -719,8 +719,8 @@ void zapp_Init(byte task_id)
   if (zapp_FlowUpdatePeriod != 0xFF )
     st = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATEINSTDEMAND, zapp_FlowUpdatePeriod*1000L);
   
-  HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_ON); // to show NoNetwork state
-  HalLedSet(HAL_LED_IN1, HAL_LED_MODE_ON);    // ON - Active CPU mode, OFF - PM2 Active
+  HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_ON); // ON - Active CPU mode, OFF - PM2 Active
+  HalLedSet(HAL_LED_IN1, HAL_LED_MODE_ON);    // to show NoNetwork state
   HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
   
   st = 0;
@@ -1296,8 +1296,8 @@ static void zapp_fProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
       if(bdbCommissioningModeMsg->bdbCommissioningStatus == BDB_COMMISSIONING_SUCCESS)
       {
         //We are on the nwk, what now?
-        HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
-        //HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
+        //HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
         
 //        if ((zapp_isTimeSynced == false) || (zapp_Transmissions > 0))
@@ -1321,8 +1321,8 @@ static void zapp_fProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
       {
         //See the possible errors for nwk steering procedure
         //No suitable networks found. Want to try other channels? Try with bdb_setChannelAttribute
-        HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_ON);
-        //HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
+        //HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_ON);
+        HalLedSet(HAL_LED_IN1, HAL_LED_MODE_ON);
         HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
       }
     break;
@@ -1330,16 +1330,16 @@ static void zapp_fProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
       if(bdbCommissioningModeMsg->bdbCommissioningStatus == BDB_COMMISSIONING_SUCCESS)
       {
         //YOUR JOB:
-        HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
-        //HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
+        //HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
       }
       else
       {
         //YOUR JOB:
         //HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
-        //HalLedSet(HAL_LED_IN1, HAL_LED_MODE_ON);
-        HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_IN1, HAL_LED_MODE_ON);
+        HalLedSet(HAL_LED_IN2, HAL_LED_MODE_ON);
       }
     break;
     case BDB_COMMISSIONING_INITIALIZATION:
@@ -1353,8 +1353,8 @@ static void zapp_fProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
       if(bdbCommissioningModeMsg->bdbCommissioningStatus == BDB_COMMISSIONING_NETWORK_RESTORED)
       {
         //We did recover from losing parent
-        HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
-        //HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
+        //HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
         
         if (zapp_Transmissions != 0)
@@ -1370,8 +1370,8 @@ static void zapp_fProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
       }
       else
       {
-        HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
-        //HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
+        //HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN2, HAL_LED_MODE_ON);
         
         osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_CONSERVE);
@@ -1922,12 +1922,14 @@ static uint8 zapp_fProcessInDefaultRspCmd(zclIncomingMsg_t *pInMsg)
       {
         CLR_BIT(&zapp_Transmissions, zapp_TransmissionID - 1);
         zapp_TransmissionsCounter = 0;
-        zapp_TransmissionID--;
         
         if (zapp_isFirstTransmission != 0)
+        {
+          zapp_TransmissionID--;
           if ((zapp_TransmissionID == ZAPP_REPORTCMD_EVERYREBOOT) ||
               (zapp_TransmissionID == ZAPP_REPORTCMD_EVERYREBOOT2) || (zapp_TransmissionID == ZAPP_REPORTCMD_DIAG))
             zapp_isFirstTransmission--;
+        }
 
         zapp_TransmissionID = 0;
         
