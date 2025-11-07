@@ -1670,6 +1670,7 @@ static uint8 zapp_fProcessInReadRspCmd(zclIncomingMsg_t *pInMsg)
             {
               #ifdef MT_DEBUG_FUNC
                 MT_ProcessDebugString("ReadRsp.TimeNOTSync");
+                MT_ProcessDebugMsg4(st, *(uint16*)(readRspCmd->attrList[i].data + 2), *(uint16*)readRspCmd->attrList[i].data, 0);
               #endif
             }
           }

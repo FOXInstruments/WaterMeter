@@ -12,7 +12,7 @@
         <ByteLimit>50</ByteLimit>
     </Stack>
     <DebugChecksum>
-        <Checksum>947644785</Checksum>
+        <Checksum>579050608</Checksum>
     </DebugChecksum>
     <CallStack>
         <ShowArgs>0</ShowArgs>
@@ -116,7 +116,7 @@
         <Count>1</Count>
     </Breakpoints>
     <ChipconEmu>
-        <StopTimersOnHalt>0</StopTimersOnHalt>
+        <StopTimersOnHalt>1</StopTimersOnHalt>
         <LeaveTargetRunning>0</LeaveTargetRunning>
     </ChipconEmu>
     <Aliases>
