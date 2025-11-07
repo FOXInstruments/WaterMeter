@@ -71,9 +71,11 @@ extern "C"
 #define ZAPP_TIMEOUT_10SEC                10000L
 #define ZAPP_TIMEOUT_1MIN                 1L*60L*1000L
 #define ZAPP_TIMEOUT_10MIN                10L*60L*1000L
+#define ZAPP_TIMEOUT_1HOUR                60L*60L*1000L
 #define ZAPP_TIMEOUT_PWRMGR_KEY           2L*60L*1000L
 #define ZAPP_TIMEOUT_TIMESYNC             25L*60L*60L*1000L
 
+#define ZAPP_TIMESYNC_RETRY               6
 #define ZAPP_TRANSMISSION_RETRY           10
 #define ZAPP_PARENTLOST_RETRY             60
   

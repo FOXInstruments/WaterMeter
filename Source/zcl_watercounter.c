@@ -144,6 +144,7 @@ uint8 zapp_Transmissions;            // BitMap of Desired or missed trasmissions
 uint8 zapp_TransmissionID;           // Current active transmission
 uint8 zapp_TransmissionsCounter;
 uint8 zapp_ParentLostRejoinCounter;
+uint8 zapp_TimeSyncCounter;
 
 uint8 zapp_PWRMGRReason;             // Reason to PWRMGR_HOLD   
 
@@ -383,7 +384,7 @@ const zclReportCmd_t zapp_ReportCmdEveryReboot2 =
 
 const zclReportCmd_t zapp_ReportCmdDiag =
 {
-  12,
+  15,
   {
     { //1
       ATTRID_DIAG_0NUMOFRESETS,
@@ -715,6 +716,7 @@ void zapp_Init(byte task_id)
   zapp_TransmissionID = 0;
   zapp_PWRMGRReason = 0;
   zapp_ParentLostRejoinCounter = 0;
+  zapp_TimeSyncCounter = 0;
   
   if (zapp_FlowUpdatePeriod != 0xFF )
     st = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATEINSTDEMAND, zapp_FlowUpdatePeriod*1000L);
@@ -1090,14 +1092,16 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
   if(events & ZAPP_EVT_TIMESYNC)
   {
     // Try time sync with coodinator every 24 hours or more
+    
+    if (zapp_TimeSyncCounter < ZAPP_TIMESYNC_RETRY)
+      zapp_TimeSyncCounter++;
+    
     if (IS_ON_A_NETWORK)
     {
       #ifdef MT_DEBUG_FUNC
         MT_ProcessDebugString("Send Read Time");
       #endif
-        
-      osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_HOLD);
-      
+
       zapp_DstAddr.addrMode = afAddr16Bit;
       zapp_DstAddr.addr.shortAddr = 0;
       zapp_DstAddr.endPoint = 1;
@@ -1120,13 +1124,14 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
             MT_ProcessDebugString("DiscTime fail");
             MT_ProcessDebugMsg4(st, 0, 0, 0);
           #endif
-          osal_start_timerEx(zapp_TaskID, ZAPP_EVT_TIMESYNC, ZAPP_TIMEOUT_1MIN); // Cannot send ReadCmd and DiscCmd, another trying
+          osal_start_timerEx(zapp_TaskID, ZAPP_EVT_TIMESYNC, ZAPP_TIMEOUT_10MIN * zapp_TimeSyncCounter); // Cannot send ReadCmd and DiscCmd, another trying
           return (events ^ ZAPP_EVT_TIMESYNC);
         }
       }
       // Next TimeSync
       osal_start_timerEx(zapp_TaskID, ZAPP_EVT_TIMESYNC, ZAPP_TIMEOUT_TIMESYNC);
       // PWRMGR
+      osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_HOLD);
       if (osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_PWRMGR) < ZAPP_TIMEOUT_10SEC)
         osal_start_timerEx(zapp_TaskID, ZAPP_EVT_PWRMGR, ZAPP_TIMEOUT_10SEC);
       
@@ -1140,7 +1145,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
       if (osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_PWRMGR) == 0)
         osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_CONSERVE);
       
-      osal_start_timerEx(zapp_TaskID, ZAPP_EVT_TIMESYNC, ZAPP_TIMEOUT_10MIN);
+      osal_start_timerEx(zapp_TaskID, ZAPP_EVT_TIMESYNC, ZAPP_TIMEOUT_1HOUR);
     }
     
     return (events ^ ZAPP_EVT_TIMESYNC); // return unprocessed events
@@ -1154,9 +1159,9 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
     if (CHECK_BIT(zapp_PWRMGRReason, ZAPP_PWRMGR_TIMESYNC))
     { // Failed to get Time from Coordinator
       if (zapp_isTimeSynced)
-        osal_start_timerEx(zapp_TaskID, ZAPP_EVT_TIMESYNC, 60L*60L*1000L);
+        osal_start_timerEx(zapp_TaskID, ZAPP_EVT_TIMESYNC, ZAPP_TIMEOUT_1HOUR);
       else
-        osal_start_timerEx(zapp_TaskID, ZAPP_EVT_TIMESYNC, ZAPP_TIMEOUT_1MIN);      
+        osal_start_timerEx(zapp_TaskID, ZAPP_EVT_TIMESYNC, ZAPP_TIMEOUT_10MIN * zapp_TimeSyncCounter);      
     }
     
     return (events ^ ZAPP_EVT_PWRMGR); // return unprocessed events
@@ -1654,12 +1659,13 @@ static uint8 zapp_fProcessInReadRspCmd(zclIncomingMsg_t *pInMsg)
               MT_ProcessDebugMsg4(timediff, timediff>>16, st, 0);
             #endif */
                           
-            if ((st & TIME_STATUS_MASTER) && (st & TIME_STATUS_SYNCH) &&
+            if ((st & TIME_STATUS_MASTER) /*&& (st & TIME_STATUS_SYNCH)*/ &&
                 (*((uint32*)readRspCmd->attrList[i].data) > 0L) /*&&
                 (timediff > TIME_SYNC_DIFF_SEC)*/)
             {
               osal_setClock(*((uint32*)readRspCmd->attrList[i].data));
               zapp_isTimeSynced = true;
+              zapp_TimeSyncCounter = 0;
               CLR_BIT(&zapp_PWRMGRReason, ZAPP_PWRMGR_TIMESYNC);
 
               #ifdef MT_DEBUG_FUNC
@@ -1672,6 +1678,12 @@ static uint8 zapp_fProcessInReadRspCmd(zclIncomingMsg_t *pInMsg)
                 MT_ProcessDebugString("ReadRsp.TimeNOTSync");
                 MT_ProcessDebugMsg4(st, *(uint16*)(readRspCmd->attrList[i].data + 2), *(uint16*)readRspCmd->attrList[i].data, 0);
               #endif
+            }
+            
+            if (osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_PWRMGR) < ZAPP_TIMEOUT_10SEC)
+            {
+              osal_stop_timerEx(zapp_TaskID, ZAPP_EVT_PWRMGR);
+              osal_set_event(zapp_TaskID, ZAPP_EVT_PWRMGR);
             }
           }
         }
