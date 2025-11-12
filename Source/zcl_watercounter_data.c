@@ -694,7 +694,7 @@ CONST zclAttrRec_t zapp_cAttrs[] =
     ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
     { //52
       ATTRID_DIAG_13DEBOUNCE_FLOW1,
-      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ),
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zapp_DiagDebounceFlow1
     }
   },
@@ -702,7 +702,7 @@ CONST zclAttrRec_t zapp_cAttrs[] =
     ZCL_CLUSTER_ID_HA_DIAGNOSTIC,
     { //53
       ATTRID_DIAG_14DEBOUNCE_FLOW2,
-      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ),
+      ZCL_DATATYPE_UINT16, (ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE),
       (void *)&zapp_DiagDebounceFlow2
     }
   },
