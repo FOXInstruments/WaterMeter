@@ -1153,8 +1153,10 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
   // ------------------------------------------------------------------ 
   if(events & ZAPP_EVT_PWRMGR)
   {
-    NLME_SetPollRate(POLL_RATE);
     osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_CONSERVE);
+    
+    if (CHECK_BIT(zapp_PWRMGRReason, ZAPP_PWRMGR_KEY))
+      NLME_SetPollRate(POLL_RATE);
     
     if (CHECK_BIT(zapp_PWRMGRReason, ZAPP_PWRMGR_TIMESYNC))
     { // Failed to get Time from Coordinator
@@ -1163,6 +1165,8 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
       else
         osal_start_timerEx(zapp_TaskID, ZAPP_EVT_TIMESYNC, ZAPP_TIMEOUT_10MIN * zapp_TimeSyncCounter);      
     }
+    
+    zapp_PWRMGRReason = 0; 
     
     return (events ^ ZAPP_EVT_PWRMGR); // return unprocessed events
   }
@@ -1270,6 +1274,7 @@ static void zapp_fHandleKeys(byte shift, byte keys)
   NLME_SetPollRate(ZAPP_POLL_RATE_FAST);
   osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_HOLD);
   osal_start_timerEx(zapp_TaskID, ZAPP_EVT_PWRMGR, ZAPP_TIMEOUT_PWRMGR_KEY);
+  SET_BIT(&zapp_PWRMGRReason, ZAPP_PWRMGR_KEY);
 }
 
 /*********************************************************************
@@ -2112,6 +2117,10 @@ HAL_ISR_FUNCTION(halPort1Isr, P1INT_VECTOR)
     {
       zapp_DebounceCalc1 = 0; //zapp_DiagDebounce;
       osal_start_timerEx(zapp_TaskID, ZAPP_EVT_IMPULSE1, zapp_DiagDebounce);
+      // To prevent CPU to fall in sleep mode to resolve the issue when the timer doesn't count the desired time of IMPULSE1 event
+      osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_HOLD);
+      if ((zapp_PWRMGRReason == 0) || ((uint16)osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_PWRMGR) < zapp_DiagDebounce*2))
+        osal_start_timerEx(zapp_TaskID, ZAPP_EVT_PWRMGR, zapp_DiagDebounce*2);
     }
   }
   if (P1IFG & BV(1))
@@ -2127,6 +2136,10 @@ HAL_ISR_FUNCTION(halPort1Isr, P1INT_VECTOR)
     {
       zapp_DebounceCalc2 = 0;
       osal_start_timerEx(zapp_TaskID, ZAPP_EVT_IMPULSE2, zapp_DiagDebounce);
+      
+      osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_HOLD);
+      if ((zapp_PWRMGRReason == 0) || ((uint16)osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_PWRMGR) < zapp_DiagDebounce*2))
+        osal_start_timerEx(zapp_TaskID, ZAPP_EVT_PWRMGR, zapp_DiagDebounce*2);
     }
   }
   // Clear the CPU interrupt flag for Port_0 PxIFG has to be cleared before PxIF
