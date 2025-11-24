@@ -1184,6 +1184,10 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
       if (zapp_DebounceCalc1 > zapp_DiagDebounceFlow1)
         zapp_DiagDebounceFlow1 = zapp_DebounceCalc1;
     }
+    
+    if (zapp_PWRMGRReason == 0) //|| ((uint16)osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_PWRMGR) < zapp_DiagDebounce*2))
+        osal_set_event(zapp_TaskID, ZAPP_EVT_PWRMGR);
+
     return (events ^ ZAPP_EVT_IMPULSE1);
   }
   // ------------------------------------------------------------------
@@ -1200,6 +1204,10 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
       if (zapp_DebounceCalc2 > zapp_DiagDebounceFlow2)
         zapp_DiagDebounceFlow2 = zapp_DebounceCalc2;
     }    
+    
+    if (zapp_PWRMGRReason == 0) //|| ((uint16)osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_PWRMGR) < zapp_DiagDebounce*2))
+        osal_set_event(zapp_TaskID, ZAPP_EVT_PWRMGR);
+
     return (events ^ ZAPP_EVT_IMPULSE2);
   }
   // ------------------------------------------------------------------  
@@ -2119,8 +2127,6 @@ HAL_ISR_FUNCTION(halPort1Isr, P1INT_VECTOR)
       osal_start_timerEx(zapp_TaskID, ZAPP_EVT_IMPULSE1, zapp_DiagDebounce);
       // To prevent CPU to fall in sleep mode to resolve the issue when the timer doesn't count the desired time of IMPULSE1 event
       osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_HOLD);
-      if ((zapp_PWRMGRReason == 0) || ((uint16)osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_PWRMGR) < zapp_DiagDebounce*2))
-        osal_start_timerEx(zapp_TaskID, ZAPP_EVT_PWRMGR, zapp_DiagDebounce*2);
     }
   }
   if (P1IFG & BV(1))
@@ -2136,10 +2142,7 @@ HAL_ISR_FUNCTION(halPort1Isr, P1INT_VECTOR)
     {
       zapp_DebounceCalc2 = 0;
       osal_start_timerEx(zapp_TaskID, ZAPP_EVT_IMPULSE2, zapp_DiagDebounce);
-      
       osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_HOLD);
-      if ((zapp_PWRMGRReason == 0) || ((uint16)osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_PWRMGR) < zapp_DiagDebounce*2))
-        osal_start_timerEx(zapp_TaskID, ZAPP_EVT_PWRMGR, zapp_DiagDebounce*2);
     }
   }
   // Clear the CPU interrupt flag for Port_0 PxIFG has to be cleared before PxIF
