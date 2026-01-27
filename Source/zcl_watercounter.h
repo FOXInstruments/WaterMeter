@@ -95,6 +95,7 @@ extern "C"
 #define ZAPP_EVT_PWRMGR              0x0100       // Enable Power manager (Timeout of operations)
 #define ZAPP_EVT_STOREATTR           0x0200       // Store changed attributes into NV memory
 #define ZAPP_EVT_SENDCMD             0x0400       // ReSend data that were not send
+#define ZAPP_EVT_WAKEUP              0x0800       // Prevent CPU goes sleep mode after interrupt IMP1,2
 
 // Vdd/3 / Internal Reference X ENOB --> (Vdd / 3) / 1.15 X 127
 #define VDD3_2_0                74   // 2.0 V required to safely read/write internal flash.
@@ -209,6 +210,7 @@ extern "C"
 /*********************************************************************
  * TYPEDEFS
  */
+// Bit number of parameter for Status and Store DWORDs
 enum
 {
   ZAPP_STOREID_SITEID1,
@@ -230,10 +232,13 @@ enum
   ZAPP_STOREID_DIAGDEBOUNCE,
 };
 
+// Bit number of PWRMGR_Reason
 enum
 {
   ZAPP_PWRMGR_TIMESYNC,
   ZAPP_PWRMGR_KEY,
+  ZAPP_PWRMGR_IMPULSE1,
+  ZAPP_PWRMGR_IMPULSE2
 };
 
 enum
@@ -250,7 +255,7 @@ enum
 
 typedef union
 {
-  uint8       array[5];
+  uint8       array[6];
   struct
   {
     uint32      lowDW;

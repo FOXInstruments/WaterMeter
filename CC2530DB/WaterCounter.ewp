@@ -870,7 +870,7 @@
                 </option>
                 <option>
                     <name>XclFile</name>
-                    <state>$ZSTACKDIR$\Projects\zstack\Tools\CC2530DB\f8w2530.xcl</state>
+                    <state>$PROJ_DIR$\f8w2530.xcl</state>
                 </option>
                 <option>
                     <name>XclFileSlave</name>
@@ -2040,7 +2040,7 @@
                 </option>
                 <option>
                     <name>XclFile</name>
-                    <state>$ZSTACKDIR$\Projects\zstack\Tools\CC2530DB\f8w2530.xcl</state>
+                    <state>$PROJ_DIR$\f8w2530.xcl</state>
                 </option>
                 <option>
                     <name>XclFileSlave</name>
@@ -3191,7 +3191,7 @@
                 </option>
                 <option>
                     <name>XclFile</name>
-                    <state>$ZSTACKDIR$\Projects\zstack\Tools\CC2530DB\f8w2530.xcl</state>
+                    <state>$PROJ_DIR$\f8w2530.xcl</state>
                 </option>
                 <option>
                     <name>XclFileSlave</name>
@@ -6471,7 +6471,7 @@
     <group>
         <name>Tools</name>
         <file>
-            <name>$ZSTACKDIR$\Projects\zstack\Tools\CC2530DB\f8w2530.xcl</name>
+            <name>$PROJ_DIR$\f8w2530.xcl</name>
         </file>
         <file>
             <name>$PROJ_DIR$\f8wConfig.cfg</name>

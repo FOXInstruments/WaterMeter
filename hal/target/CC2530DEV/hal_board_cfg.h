@@ -406,9 +406,9 @@
 #define HAL_NV_PAGE_END            30
 #define HAL_NV_PAGE_CNT            2
 #else
-#define HAL_FLASH_LOCK_BITS        16
+#define HAL_FLASH_LOCK_BITS        16 // default = 16
 #define HAL_NV_PAGE_END            126
-#define HAL_NV_PAGE_CNT            6
+#define HAL_NV_PAGE_CNT            14 // default = 6
 #endif
 
 // Re-defining Z_EXTADDR_LEN here so as not to include a Z-Stack .h file.

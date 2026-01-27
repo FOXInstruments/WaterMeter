@@ -735,12 +735,10 @@ void zapp_Init(byte task_id)
     #endif
   }
   
-  //st = osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE, 10000);
-  //st = osal_set_event(zapp_TaskID, ZAPP_EVT_UPDATE);
-  
   NLME_SetPollRate(ZAPP_POLL_RATE_FAST);
   osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_HOLD);
   osal_start_timerEx(zapp_TaskID, ZAPP_EVT_PWRMGR, ZAPP_TIMEOUT_PWRMGR_KEY);
+  SET_BIT(&zapp_PWRMGRReason, ZAPP_PWRMGR_KEY);
 
   #ifdef MT_DEBUG_FUNC
     MT_ProcessDebugString("Init completed");
@@ -1152,62 +1150,87 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
   }
   // ------------------------------------------------------------------ 
   if(events & ZAPP_EVT_PWRMGR)
-  {
-    osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_CONSERVE);
-    
+  {    
     if (CHECK_BIT(zapp_PWRMGRReason, ZAPP_PWRMGR_KEY))
+    {
       NLME_SetPollRate(POLL_RATE);
+      CLR_BIT(&zapp_PWRMGRReason, ZAPP_PWRMGR_KEY);
+    }
     
     if (CHECK_BIT(zapp_PWRMGRReason, ZAPP_PWRMGR_TIMESYNC))
     { // Failed to get Time from Coordinator
       if (zapp_isTimeSynced)
         osal_start_timerEx(zapp_TaskID, ZAPP_EVT_TIMESYNC, ZAPP_TIMEOUT_1HOUR);
       else
-        osal_start_timerEx(zapp_TaskID, ZAPP_EVT_TIMESYNC, ZAPP_TIMEOUT_10MIN * zapp_TimeSyncCounter);      
+        osal_start_timerEx(zapp_TaskID, ZAPP_EVT_TIMESYNC, ZAPP_TIMEOUT_10MIN * zapp_TimeSyncCounter);
+      CLR_BIT(&zapp_PWRMGRReason, ZAPP_PWRMGR_TIMESYNC);
     }
     
-    zapp_PWRMGRReason = 0; 
-    
+    if (zapp_PWRMGRReason == 0)
+      osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_CONSERVE);
+
     return (events ^ ZAPP_EVT_PWRMGR); // return unprocessed events
   }
   // ------------------------------------------------------------------ 
   if (events & ZAPP_EVT_IMPULSE1) // Event from ISR function to recive impulse from counter
   {
 //#warning Diag added For testing only
-    if (POLARITY_IMPULSE(P1_0) || (zapp_DiagReport & ZAPP_DIAG_REPORT_TEST_IMPULSES))
+    if (CHECK_BIT(zapp_PWRMGRReason, ZAPP_PWRMGR_IMPULSE1))
     {
-      zapp_Flow1Value.dw.lowDW++;
-      zapp_Flow1CurrDay++;
-      if (zapp_FlowUpdatePeriod != 0xFF) zapp_Flow1InstDemand++;
-      HalLedBlink(HAL_LED_IN1, 1, 50, 100);
+      CLR_BIT(&zapp_PWRMGRReason, ZAPP_PWRMGR_IMPULSE1);
       
-      if (zapp_DebounceCalc1 > zapp_DiagDebounceFlow1)
-        zapp_DiagDebounceFlow1 = zapp_DebounceCalc1;
+      if (POLARITY_IMPULSE(P1_0) || (zapp_DiagReport & ZAPP_DIAG_REPORT_TEST_IMPULSES))
+      {
+        zapp_Flow1Value.dw.lowDW++;
+        zapp_Flow1CurrDay++;
+        if (zapp_FlowUpdatePeriod != 0xFF) zapp_Flow1InstDemand++;
+        HalLedBlink(HAL_LED_IN1, 1, 50, 100);
+        
+        if (zapp_DebounceCalc1 > zapp_DiagDebounceFlow1)
+          zapp_DiagDebounceFlow1 = zapp_DebounceCalc1;
+      }
+      
+      if (zapp_PWRMGRReason == 0)
+        osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_CONSERVE);
+    }
+    else
+    {
+      SET_BIT(&zapp_PWRMGRReason, ZAPP_PWRMGR_IMPULSE1);
+      osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_HOLD);
+      osal_start_timerEx(zapp_TaskID, ZAPP_EVT_IMPULSE1, zapp_DiagDebounce);     
     }
     
-    if (zapp_PWRMGRReason == 0) //|| ((uint16)osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_PWRMGR) < zapp_DiagDebounce*2))
-        osal_set_event(zapp_TaskID, ZAPP_EVT_PWRMGR);
-
     return (events ^ ZAPP_EVT_IMPULSE1);
   }
   // ------------------------------------------------------------------
   if (events & ZAPP_EVT_IMPULSE2)
   {
 //#warning Diag added For testing only
-    if (POLARITY_IMPULSE(P1_1) || (zapp_DiagReport & ZAPP_DIAG_REPORT_TEST_IMPULSES))
+    if (CHECK_BIT(zapp_PWRMGRReason, ZAPP_PWRMGR_IMPULSE2))
     {
-      zapp_Flow2Value.dw.lowDW++;
-      zapp_Flow2CurrDay++;
-      if (zapp_FlowUpdatePeriod != 0xFF) zapp_Flow2InstDemand++;
-      HalLedBlink(HAL_LED_IN2, 1, 50, 100);
+      CLR_BIT(&zapp_PWRMGRReason, ZAPP_PWRMGR_IMPULSE2);
       
-      if (zapp_DebounceCalc2 > zapp_DiagDebounceFlow2)
-        zapp_DiagDebounceFlow2 = zapp_DebounceCalc2;
-    }    
+      if (POLARITY_IMPULSE(P1_1) || (zapp_DiagReport & ZAPP_DIAG_REPORT_TEST_IMPULSES))
+      {
+        zapp_Flow2Value.dw.lowDW++;
+        zapp_Flow2CurrDay++;
+        if (zapp_FlowUpdatePeriod != 0xFF) zapp_Flow2InstDemand++;
+        HalLedBlink(HAL_LED_IN2, 1, 50, 100);
+        
+        if (zapp_DebounceCalc2 > zapp_DiagDebounceFlow2)
+          zapp_DiagDebounceFlow2 = zapp_DebounceCalc2;
+      }    
+      
+      if (zapp_PWRMGRReason == 0)
+        osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_CONSERVE);
+    }
+    else
+    {
+      SET_BIT(&zapp_PWRMGRReason, ZAPP_PWRMGR_IMPULSE2);
+      osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_HOLD);
+      osal_start_timerEx(zapp_TaskID, ZAPP_EVT_IMPULSE2, zapp_DiagDebounce);     
+    }
     
-    if (zapp_PWRMGRReason == 0) //|| ((uint16)osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_PWRMGR) < zapp_DiagDebounce*2))
-        osal_set_event(zapp_TaskID, ZAPP_EVT_PWRMGR);
-
     return (events ^ ZAPP_EVT_IMPULSE2);
   }
   // ------------------------------------------------------------------  
@@ -2108,25 +2131,22 @@ static void zapp_fProcessOTAMsgs(zclOTA_CallbackMsg_t* pMsg)
  */
 HAL_ISR_FUNCTION(halPort1Isr, P1INT_VECTOR)
 {
+  HAL_ENTER_ISR();
+
   uint16 timeout;
 
-  HAL_ENTER_ISR();
-  
   if (P1IFG & BV(0))
   {
     timeout = osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_IMPULSE1);
     if (timeout != 0)
     {
       zapp_DebounceCalc1 = zapp_DiagDebounce - timeout;
-      //if (timeout < ZAPP_TIMEOUT_DEBOUNCE_MIN)
-      //  osal_start_timerEx(zapp_TaskID, ZAPP_EVT_IMPULSE1, ZAPP_TIMEOUT_DEBOUNCE_MIN);
     }
     else
     {
       zapp_DebounceCalc1 = 0; //zapp_DiagDebounce;
-      osal_start_timerEx(zapp_TaskID, ZAPP_EVT_IMPULSE1, zapp_DiagDebounce);
-      // To prevent CPU to fall in sleep mode to resolve the issue when the timer doesn't count the desired time of IMPULSE1 event
-      osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_HOLD);
+      //osal_start_timerEx(zapp_TaskID, ZAPP_EVT_IMPULSE1, 20);
+      osal_set_event(zapp_TaskID, ZAPP_EVT_IMPULSE1);
     }
   }
   if (P1IFG & BV(1))
@@ -2135,14 +2155,12 @@ HAL_ISR_FUNCTION(halPort1Isr, P1INT_VECTOR)
     if (timeout != 0)
     {
       zapp_DebounceCalc2 = zapp_DiagDebounce - timeout;
-      //if (timeout < ZAPP_TIMEOUT_DEBOUNCE_MIN)
-      //  osal_start_timerEx(zapp_TaskID, ZAPP_EVT_IMPULSE2, ZAPP_TIMEOUT_DEBOUNCE_MIN);
     }
     else
     {
       zapp_DebounceCalc2 = 0;
-      osal_start_timerEx(zapp_TaskID, ZAPP_EVT_IMPULSE2, zapp_DiagDebounce);
-      osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_HOLD);
+      //osal_start_timerEx(zapp_TaskID, ZAPP_EVT_IMPULSE2, 20);
+      osal_set_event(zapp_TaskID, ZAPP_EVT_IMPULSE2);
     }
   }
   // Clear the CPU interrupt flag for Port_0 PxIFG has to be cleared before PxIF
@@ -2150,7 +2168,7 @@ HAL_ISR_FUNCTION(halPort1Isr, P1INT_VECTOR)
   P1IF = 0;
   
   CLEAR_SLEEP_MODE();
-  HAL_EXIT_ISR();
+  HAL_EXIT_ISR();  
 }
 
 /****************************************************************************
