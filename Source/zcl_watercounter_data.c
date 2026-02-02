@@ -864,7 +864,9 @@ const cId_t zapp_InClusterList[] =
   ZCL_CLUSTER_ID_GEN_BASIC,
   ZCL_CLUSTER_ID_GEN_POWER_CFG,
   ZCL_CLUSTER_ID_GEN_IDENTIFY,
-  ZCL_CLUSTER_ID_GEN_TIME
+  ZCL_CLUSTER_ID_GEN_TIME,
+  ZCL_CLUSTER_ID_SE_METERING,
+  ZCL_CLUSTER_ID_HA_DIAGNOSTIC
 };
 
 #define zapp_MAX_INCLUSTERS    ( sizeof( zapp_InClusterList ) / sizeof( zapp_InClusterList[0] ))
@@ -873,9 +875,7 @@ const cId_t zapp_OutClusterList[] =
 {
   ZCL_CLUSTER_ID_GEN_IDENTIFY,
   ZCL_CLUSTER_ID_GEN_GROUPS,
-  ZCL_CLUSTER_ID_GEN_ALARMS,
-  ZCL_CLUSTER_ID_SE_METERING,
-  ZCL_CLUSTER_ID_HA_DIAGNOSTIC
+  ZCL_CLUSTER_ID_GEN_ALARMS
 };
 
 #define zapp_MAX_OUTCLUSTERS   ( sizeof( zapp_OutClusterList ) / sizeof( zapp_OutClusterList[0] ))
@@ -889,8 +889,8 @@ SimpleDescriptionFormat_t zapp_SimpleDesc =
   ZAPP_FLAGS,                     //  int   AppFlags:4;
   zapp_MAX_INCLUSTERS,         //  byte  AppNumInClusters;
   (cId_t *)zapp_InClusterList, //  byte *pAppInClusterList;
-  zapp_MAX_OUTCLUSTERS,        //  byte  AppNumInClusters;
-  (cId_t *)zapp_OutClusterList //  byte *pAppInClusterList;
+  zapp_MAX_OUTCLUSTERS,        //  byte  AppNumOutClusters;
+  (cId_t *)zapp_OutClusterList //  byte *pAppOutClusterList;
 };
 
 const cId_t zapp_InClusterList2[] =
@@ -909,8 +909,8 @@ SimpleDescriptionFormat_t zapp_SimpleDesc2 =
   ZAPP_FLAGS,                     //  int   AppFlags:4;
   zapp_MAX_INCLUSTERS2,         //  byte  AppNumInClusters;
   (cId_t *)zapp_InClusterList2, //  byte *pAppInClusterList;
-  0,                            //  byte  AppNumInClusters;
-  NULL                          //  byte *pAppInClusterList;
+  0,                            //  byte  AppNumOutClusters;
+  NULL                          //  byte *pAppOutClusterList;
 };
 
 /*********************************************************************
