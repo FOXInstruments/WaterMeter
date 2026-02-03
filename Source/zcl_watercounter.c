@@ -127,6 +127,14 @@
 
 // On A Network condition, True if on a network
 #define IS_ON_A_NETWORK       (bdbAttributes.bdbNodeIsOnANetwork && ((bdbAttributes.bdbCommissioningStatus == BDB_COMMISSIONING_NETWORK_RESTORED) || (bdbAttributes.bdbCommissioningStatus == BDB_COMMISSIONING_SUCCESS)))
+
+#ifdef MT_DEBUG_FUNC
+#define PRINT_DEBUG_STR(x) st(MT_ProcessDebugString(x);)
+#define PRINT_DEBUG_MSG4(x1, x2, x3, x4) st(MT_ProcessDebugMsg4(x1, x2, x3, x4);)
+#else
+#define PRINT_DEBUG_STR(x)
+#define PRINT_DEBUG_MSG4(x1, x2, x3, x4)
+#endif
 /*********************************************************************
  * TYPEDEFS
  */
@@ -546,10 +554,6 @@ static void zapp_fBatteryWarningCB(uint8 voltLevel);
 static void zapp_fUpdateBatteryAttributes(void);
 static void zapp_fUpdateDiagnosticAttributes(void);
 
-//#ifdef MT_DEBUG_FUNC
-//void MT_ProcessDebugString(const char *str);
-//#endif
-
 /*********************************************************************
  * CONSTANTS
  */
@@ -625,10 +629,8 @@ void zapp_Init(byte task_id)
   st = zapp_fNVInitItems();
   if (zapp_DiagNVMemFailItems != 0)
   {
-    #ifdef MT_DEBUG_FUNC
-      MT_ProcessDebugString("Init NV items fail");
-      MT_ProcessDebugMsg4(st, BREAK16_UINT32(zapp_DiagNVMemFailItems, 1), BREAK16_UINT32(zapp_DiagNVMemFailItems, 0), 0);
-    #endif
+    PRINT_DEBUG_STR("Init NV items fail");
+    PRINT_DEBUG_MSG4(st, BREAK16_UINT32(zapp_DiagNVMemFailItems, 1), BREAK16_UINT32(zapp_DiagNVMemFailItems, 0), 0);
   }
   //zapp_fResetAttributesToDefaultValues();
   zapp_fBasicResetCB();
@@ -730,9 +732,7 @@ void zapp_Init(byte task_id)
      (st == true) && (st != 0xFF))  // Connect to network after reboot if device was commissioned OnNetwork
   {
     bdb_StartCommissioning(BDB_COMMISSIONING_MODE_INITIATOR_TL | BDB_COMMISSIONING_MODE_NWK_STEERING /*| BDB_COMMISSIONING_MODE_FINDING_BINDING*/);
-    #ifdef MT_DEBUG_FUNC
-      MT_ProcessDebugString("Start Commissioning");
-    #endif
+    PRINT_DEBUG_STR("Start Commissioning");
   }
   
   NLME_SetPollRate(ZAPP_POLL_RATE_FAST);
@@ -740,9 +740,7 @@ void zapp_Init(byte task_id)
   osal_start_timerEx(zapp_TaskID, ZAPP_EVT_PWRMGR, ZAPP_TIMEOUT_PWRMGR_KEY);
   SET_BIT(&zapp_PWRMGRReason, ZAPP_PWRMGR_KEY);
 
-  #ifdef MT_DEBUG_FUNC
-    MT_ProcessDebugString("Init completed");
-  #endif
+  PRINT_DEBUG_STR("Init completed");
 }
 
 /*********************************************************************
@@ -776,9 +774,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
 
         case ZDO_STATE_CHANGE:
           // UI_DeviceStateUpdated((devStates_t)(MSGpkt->hdr.st));
-          #ifdef MT_DEBUG_FUNC
-            MT_ProcessDebugString("ZDO_State");
-          #endif
+          PRINT_DEBUG_STR("ZDO_State");
           break;
 
 #if defined (OTA_CLIENT) && (OTA_CLIENT == TRUE)
@@ -798,13 +794,10 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
 #if ZG_BUILD_ENDDEVICE_TYPE    
   if (events & ZAPP_EVT_END_DEVICE_REJOIN)
   {
-    #ifdef MT_DEBUG_FUNC
-      MT_ProcessDebugMsg4(osal_heap_block_cnt(), osal_heap_block_free(), osal_heap_mem_used(), osal_heap_high_water());
-    #endif    
+    PRINT_DEBUG_STR("Rejoin network");
+    PRINT_DEBUG_MSG4(osal_heap_block_cnt(), osal_heap_block_free(), osal_heap_mem_used(), osal_heap_high_water());
     bdb_ZedAttemptRecoverNwk();
-//#ifdef MT_DEBUG_FUNC
-//    MT_ProcessDebugMsg4(osal_heap_block_cnt(), osal_heap_block_free(), osal_heap_mem_used(), osal_heap_high_water());
-//#endif    
+    //PRINT_DEBUG_MSG4(osal_heap_block_cnt(), osal_heap_block_free(), osal_heap_mem_used(), osal_heap_high_water());
     return (events ^ ZAPP_EVT_END_DEVICE_REJOIN);
   }
 #endif
@@ -824,9 +817,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
       zapp_DstAddr.addr.shortAddr = 0;
       zapp_DstAddr.endPoint = 1;
       zclGeneral_SendAlarm(ZAPP_ENDPOINT, &zapp_DstAddr, ALARM_MASK_GEN_HW_FAULT, ZCL_CLUSTER_ID_GEN_BASIC, false, zapp_SeqNum++);
-      #ifdef MT_DEBUG_FUNC
-        MT_ProcessDebugString("Store fail");
-      #endif
+      PRINT_DEBUG_STR("Store.Fail");
       SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_DIAGNV);
       osal_set_event(zapp_TaskID, ZAPP_EVT_SENDCMD);
     }
@@ -844,21 +835,6 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
     // Calculate HoursInOperation attribute
     zapp_Flow1HoursInOperation = osal_GetSystemClockSec() / (60L*60L);
     zapp_Flow2HoursInOperation = zapp_Flow1HoursInOperation;
-    // Every 24 hours attribute update
-    if (zapp_isTimeSynced && time.hour == 0 && time.minutes <= 2)
-    {
-      zapp_Flow1PrevDay = zapp_Flow1CurrDay;
-      zapp_Flow2PrevDay = zapp_Flow2CurrDay;
-      zapp_Flow1CurrDay = 0;
-      zapp_Flow2CurrDay = 0;
-      if (time.day == 1) // Every first day of month
-      {
-          st = zapp_fStoreQueueAdd(ZAPP_STOREID_VALUES1, sizeof(zapp_Flow1Value.dw.lowDW), &zapp_Flow1Value);
-          st |= zapp_fStoreQueueAdd(ZAPP_STOREID_VALUES2, sizeof(zapp_Flow2Value.dw.lowDW), &zapp_Flow2Value);
-          if (st == SUCCESS)
-            osal_start_timerEx(zapp_TaskID, ZAPP_EVT_STOREATTR, ZAPP_TIMEOUT_STOREATTR);
-      }
-    }
     // Every interval attributes update
     if (IS_ON_A_NETWORK)
     {
@@ -868,9 +844,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
           
         if (zapp_isFirstTransmission)
         { // First trasmission
-          #ifdef MT_DEBUG_FUNC
-            MT_ProcessDebugString("Send First data");
-          #endif
+            PRINT_DEBUG_STR("Send First data");
   //        osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_HOLD);
   //        if (osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_PWRMGR) < ZAPP_TIMEOUT_10SEC)
   //          osal_start_timerEx(zapp_TaskID, ZAPP_EVT_PWRMGR, ZAPP_TIMEOUT_10SEC);
@@ -888,13 +862,11 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
         if ((zapp_DiagReport == ZAPP_DIAG_REPORT_EVERY_UPDATE) ||
             ((zapp_DiagReport == ZAPP_DIAG_REPORT_EVERY24h) && (time.hour == 0 && time.minutes <= 1)))
         {
-          #ifdef MT_DEBUG_FUNC
-            MT_ProcessDebugString("Send Diag");
-          #endif
+          PRINT_DEBUG_STR("Send Diag");
           SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_DIAG);
         }
         
-        if ((zapp_Transmissions != 0) && (zapp_TransmissionID == 0))
+        if ((zapp_Transmissions != 0) && (osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_SENDCMD) == 0))
           osal_set_event(zapp_TaskID, ZAPP_EVT_SENDCMD);
       }      
     }
@@ -912,8 +884,23 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
         SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_EVERYUPDATE);
         SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_EVERYUPDATE2);
       }
-    }   
-
+    }
+    // Every 24 hours attribute update
+    if (zapp_isTimeSynced && time.hour == 0 && time.minutes < 2)
+    {
+      zapp_Flow1PrevDay = zapp_Flow1CurrDay;
+      zapp_Flow2PrevDay = zapp_Flow2CurrDay;
+      zapp_Flow1CurrDay = 0;
+      zapp_Flow2CurrDay = 0;
+      if (time.day == 1) // Every first day of month
+      {
+          st = zapp_fStoreQueueAdd(ZAPP_STOREID_VALUES1, sizeof(zapp_Flow1Value.dw.lowDW), &zapp_Flow1Value);
+          st |= zapp_fStoreQueueAdd(ZAPP_STOREID_VALUES2, sizeof(zapp_Flow2Value.dw.lowDW), &zapp_Flow2Value);
+          if (st == SUCCESS)
+            osal_set_event(zapp_TaskID, ZAPP_EVT_STOREATTR);
+      }
+    }
+    // Calculate time interval of next update
     uint16 timeRemain = (23 - time.hour)*60 + (59 - time.minutes);
     if (timeRemain <= zapp_FlowIntervalReporting)
     {
@@ -949,7 +936,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
     return (events ^ ZAPP_EVT_UPDATE); // return unprocessed events
   }
   // ------------------------------------------------------------------
-  if(events & ZAPP_EVT_SENDCMD) // Resend data witch couldn't send
+  if(events & ZAPP_EVT_SENDCMD) // Resend data that couldn't send
   {
     zapp_TransmissionID = 0;
 
@@ -958,24 +945,47 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
       if ((zapp_TransmissionsCounter > ZAPP_TRANSMISSION_RETRY) || (zapp_Transmissions == 0))
       {
         if (zapp_isFirstTransmission == 0)
-        {
+        { // All data were transmitted and last timer is triggered
           zapp_Transmissions = 0;
           zapp_TransmissionsCounter = 0;
           osal_stop_timerEx(zapp_TaskID, ZAPP_EVT_SENDCMD);
           return (events ^ ZAPP_EVT_SENDCMD);
         }
-        // If all first transmission data has not been sent it tries to send it in infinitely
-        osal_start_timerEx(zapp_TaskID, ZAPP_EVT_SENDCMD, ZAPP_TIMEOUT_RESEND_MAXRETRY);
+        // If all first transmission_data has not been sent it tries to send it in infinitely
+        if (zapp_isFirstTransmission > 2) SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_EVERYREBOOT);
+        if (zapp_isFirstTransmission > 1) SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_EVERYREBOOT2);
+        if (zapp_isFirstTransmission > 0) SET_BIT(&zapp_Transmissions, ZAPP_REPORTCMD_DIAG);
+        osal_start_timerEx(zapp_TaskID, ZAPP_EVT_SENDCMD, ZAPP_TIMEOUT_2MIN);
       }
       else
       {
         zapp_TransmissionsCounter++;
-        osal_start_timerEx(zapp_TaskID, ZAPP_EVT_SENDCMD, ZAPP_TIMEOUT_RESEND);
+        osal_start_timerEx(zapp_TaskID, ZAPP_EVT_SENDCMD, ZAPP_TIMEOUT_10SEC);
       }
 
       zapp_DstAddr.addrMode = afAddr16Bit;
       zapp_DstAddr.addr.shortAddr = 0;
       zapp_DstAddr.endPoint = 1;
+      
+      if (CHECK_BIT(zapp_Transmissions, ZAPP_REPORTCMD_EVERYREBOOT))
+      {
+        zapp_SeqNumSended = zapp_SeqNum;
+        if (zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zapp_ReportCmdEveryReboot, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++) == ZSuccess)
+        {
+          zapp_TransmissionID = ZAPP_REPORTCMD_EVERYREBOOT + 1;
+          return (events ^ ZAPP_EVT_SENDCMD);
+        }
+      }
+        
+      if (CHECK_BIT(zapp_Transmissions, ZAPP_REPORTCMD_EVERYREBOOT2))
+      {
+        zapp_SeqNumSended = zapp_SeqNum;
+        if (zcl_SendReportCmd(ZAPP_ENDPOINT2, &zapp_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zapp_ReportCmdEveryReboot2, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++) == ZSuccess)
+        {
+          zapp_TransmissionID = ZAPP_REPORTCMD_EVERYREBOOT2 + 1;
+          return (events ^ ZAPP_EVT_SENDCMD);
+        }
+      }
       
       if (CHECK_BIT(zapp_Transmissions, ZAPP_REPORTCMD_BATTERY))
       {
@@ -1007,27 +1017,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
           return (events ^ ZAPP_EVT_SENDCMD);
         }
       }
-        
-      if (CHECK_BIT(zapp_Transmissions, ZAPP_REPORTCMD_EVERYREBOOT))
-      {
-        zapp_SeqNumSended = zapp_SeqNum;
-        if (zcl_SendReportCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zapp_ReportCmdEveryReboot, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++) == ZSuccess)
-        {
-          zapp_TransmissionID = ZAPP_REPORTCMD_EVERYREBOOT + 1;
-          return (events ^ ZAPP_EVT_SENDCMD);
-        }
-      }
-        
-      if (CHECK_BIT(zapp_Transmissions, ZAPP_REPORTCMD_EVERYREBOOT2))
-      {
-        zapp_SeqNumSended = zapp_SeqNum;
-        if (zcl_SendReportCmd(ZAPP_ENDPOINT2, &zapp_DstAddr, ZCL_CLUSTER_ID_SE_METERING, &zapp_ReportCmdEveryReboot2, ZCL_FRAME_SERVER_CLIENT_DIR, false, zapp_SeqNum++) == ZSuccess)
-        {
-          zapp_TransmissionID = ZAPP_REPORTCMD_EVERYREBOOT2 + 1;
-          return (events ^ ZAPP_EVT_SENDCMD);
-        }
-      }
-        
+                
       if (CHECK_BIT(zapp_Transmissions, ZAPP_REPORTCMD_DIAG))
       {
         zapp_fUpdateDiagnosticAttributes();
@@ -1096,9 +1086,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
     
     if (IS_ON_A_NETWORK)
     {
-      #ifdef MT_DEBUG_FUNC
-        MT_ProcessDebugString("Send Read Time");
-      #endif
+      PRINT_DEBUG_STR("Send ReadTime");
 
       zapp_DstAddr.addrMode = afAddr16Bit;
       zapp_DstAddr.addr.shortAddr = 0;
@@ -1107,10 +1095,8 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
       st = zcl_SendRead(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_GEN_TIME, &zapp_ReadCmdTime, ZCL_FRAME_CLIENT_SERVER_DIR, false, zapp_SeqNum++);
       if (st != ZSuccess) // if SendRead failure, try to discover device to sync the time
       {
-        #ifdef MT_DEBUG_FUNC
-          MT_ProcessDebugString("ReadTime fail. Send DiscTime");
-          MT_ProcessDebugMsg4(st, 0, 0, 0);
-        #endif
+        PRINT_DEBUG_STR("ReadTime Fail. Send DiscoverTime");
+        PRINT_DEBUG_MSG4(st, 0, 0, 0);
         zclDiscoverAttrsCmd_t discoverAttr;
         zapp_DstAddr.addrMode = afAddrBroadcast;
         discoverAttr.startAttr = ATTRID_TIME_TIME;
@@ -1118,10 +1104,8 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
         st = zcl_SendDiscoverAttrsCmd(ZAPP_ENDPOINT, &zapp_DstAddr, ZCL_CLUSTER_ID_GEN_TIME, &discoverAttr, ZCL_FRAME_CLIENT_SERVER_DIR, false, zapp_SeqNum++);
         if ( st != ZSuccess)
         {
-          #ifdef MT_DEBUG_FUNC
-            MT_ProcessDebugString("DiscTime fail");
-            MT_ProcessDebugMsg4(st, 0, 0, 0);
-          #endif
+          PRINT_DEBUG_STR("DiscoverTime Fail");
+          PRINT_DEBUG_MSG4(st, 0, 0, 0);
           osal_start_timerEx(zapp_TaskID, ZAPP_EVT_TIMESYNC, ZAPP_TIMEOUT_10MIN * zapp_TimeSyncCounter); // Cannot send ReadCmd and DiscCmd, another trying
           return (events ^ ZAPP_EVT_TIMESYNC);
         }
@@ -1137,9 +1121,7 @@ uint16 zapp_event_loop(uint8 task_id, uint16 events)
     }
     else
     {
-      #ifdef MT_DEBUG_FUNC
-        MT_ProcessDebugString("TimeSync. No Network");
-      #endif
+      PRINT_DEBUG_STR("TimeSync. No Network");
       if (osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_PWRMGR) == 0)
         osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_CONSERVE);
       
@@ -1337,12 +1319,8 @@ static void zapp_fProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
       if(bdbCommissioningModeMsg->bdbCommissioningStatus == BDB_COMMISSIONING_SUCCESS)
       {
         //We are on the nwk, what now?
-        //HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
-        HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
-        
-//        if ((zapp_isTimeSynced == false) || (zapp_Transmissions > 0))
-        osal_set_event(zapp_TaskID, ZAPP_EVT_UPDATE);
+        HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);        
 
         if ((zapp_isTimeSynced == false) || (osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_TIMESYNC) == 0))
         {          
@@ -1351,18 +1329,16 @@ static void zapp_fProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
           zapp_DstAddr.endPoint = 1;
           if (zapp_isTimeSynced == false)
             if (zclGeneral_SendAlarm(ZAPP_ENDPOINT, &zapp_DstAddr, 0 /*Check meter*/, ZCL_CLUSTER_ID_SE_METERING, false, zapp_SeqNum++) != ZSuccess)
-              #ifdef MT_DEBUG_FUNC
-                MT_ProcessDebugString("SendAlarm(0) fail");
-              #endif
+              PRINT_DEBUG_STR("Send Alarm(0) Fail");
           
-            osal_start_timerEx(zapp_TaskID, ZAPP_EVT_TIMESYNC, ZAPP_TIMEOUT_5SEC);
+            osal_set_event(zapp_TaskID, ZAPP_EVT_TIMESYNC);
         }
+        osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE, ZAPP_TIMEOUT_5SEC);
       }
       else
       {
         //See the possible errors for nwk steering procedure
         //No suitable networks found. Want to try other channels? Try with bdb_setChannelAttribute
-        //HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_ON);
         HalLedSet(HAL_LED_IN1, HAL_LED_MODE_ON);
         HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
       }
@@ -1371,15 +1347,13 @@ static void zapp_fProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
       if(bdbCommissioningModeMsg->bdbCommissioningStatus == BDB_COMMISSIONING_SUCCESS)
       {
         //YOUR JOB:
-        //HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
       }
       else
       {
         //YOUR JOB:
-        //HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
-        HalLedSet(HAL_LED_IN1, HAL_LED_MODE_ON);
+        HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN2, HAL_LED_MODE_ON);
       }
     break;
@@ -1394,7 +1368,6 @@ static void zapp_fProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
       if(bdbCommissioningModeMsg->bdbCommissioningStatus == BDB_COMMISSIONING_NETWORK_RESTORED)
       {
         //We did recover from losing parent
-        //HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
         HalLedSet(HAL_LED_IN2, HAL_LED_MODE_OFF);
         
@@ -1402,17 +1375,16 @@ static void zapp_fProcessCommissioningStatus(bdbCommissioningModeMsg_t *bdbCommi
           osal_set_event(zapp_TaskID, ZAPP_EVT_SENDCMD);
           
         if (osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_UPDATE) == 0)
-          osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE, ZAPP_TIMEOUT_5SEC);
+          osal_start_timerEx(zapp_TaskID, ZAPP_EVT_UPDATE, ZAPP_TIMEOUT_10SEC);
         
         if ((zapp_isTimeSynced == false) || (osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_TIMESYNC) == 0))
-          osal_start_timerEx(zapp_TaskID, ZAPP_EVT_TIMESYNC, ZAPP_TIMEOUT_10SEC);
+          osal_set_event(zapp_TaskID, ZAPP_EVT_TIMESYNC);
         
         zapp_ParentLostRejoinCounter = 1;
       }
       else
       {
-        //HalLedSet(HAL_LED_STATUS, HAL_LED_MODE_OFF);
-        HalLedSet(HAL_LED_IN1, HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_IN1, HAL_LED_MODE_ON);
         HalLedSet(HAL_LED_IN2, HAL_LED_MODE_ON);
         
         osal_pwrmgr_task_state(zapp_TaskID, PWRMGR_CONSERVE);
@@ -1591,46 +1563,34 @@ static void zapp_fProcessIncomingMsg(zclIncomingMsg_t *pInMsg)
     // See ZCL Test Applicaiton (zcl_testapp.c) for sample code on Attribute Reporting
     case ZCL_CMD_CONFIG_REPORT:
       //zapp_ProcessInConfigReportCmd(pInMsg);
-      #ifdef MT_DEBUG_FUNC
-        MT_ProcessDebugString("ZCL_CmdConfigReport");
-      #endif
+      PRINT_DEBUG_STR("ZCL_CmdConfigReport");
       break;
 
     case ZCL_CMD_CONFIG_REPORT_RSP:
       //zapp_ProcessInConfigReportRspCmd(pInMsg);
-      #ifdef MT_DEBUG_FUNC
-        MT_ProcessDebugString("ZCL_CmdConfigReportRsp");
-      #endif
+      PRINT_DEBUG_STR("ZCL_CmdConfigReportRsp");
       break;
 
     case ZCL_CMD_READ_REPORT_CFG:
       //zapp_ProcessInReadReportCfgCmd(pInMsg);
-      #ifdef MT_DEBUG_FUNC
-        MT_ProcessDebugString("ZCL_CmdReadReportCfg");
-      #endif
+      PRINT_DEBUG_STR("ZCL_CmdReadReportCfg");
       break;
 
     case ZCL_CMD_READ_REPORT_CFG_RSP:
       //zapp_ProcessInReadReportCfgRspCmd(pInMsg);
-      #ifdef MT_DEBUG_FUNC
-        MT_ProcessDebugString("ZCL_CmdReadReportCfgRsp");
-      #endif
+      PRINT_DEBUG_STR("ZCL_CmdReadReportCfgRsp");
       break;
 
     case ZCL_CMD_REPORT:
       //zapp_ProcessInReportCmd(pInMsg);
-      #ifdef MT_DEBUG_FUNC
-        MT_ProcessDebugString("ZCL_CmdReport");
-        MT_ProcessDebugMsg4(pInMsg->clusterId,0,0,0);
-      #endif
+      PRINT_DEBUG_STR("ZCL_CmdReport");
+      PRINT_DEBUG_MSG4(pInMsg->clusterId,0,0,0);
       break;
 #endif
     case ZCL_CMD_DEFAULT_RSP:
       zapp_fProcessInDefaultRspCmd(pInMsg);
-      #ifdef MT_DEBUG_FUNC
-        MT_ProcessDebugString("ZCL_CmdDefaultRsp");
-        MT_ProcessDebugMsg4(pInMsg->endPoint, pInMsg->clusterId, ((zclDefaultRspCmd_t*)pInMsg->attrCmd)->commandID, pInMsg->zclHdr.transSeqNum);
-      #endif
+      PRINT_DEBUG_STR("ZCL_CmdDefaultRsp");
+      PRINT_DEBUG_MSG4(pInMsg->endPoint, pInMsg->clusterId, ((zclDefaultRspCmd_t*)pInMsg->attrCmd)->commandID, pInMsg->zclHdr.transSeqNum);
       break;
 #ifdef ZCL_DISCOVER
     case ZCL_CMD_DISCOVER_CMDS_RECEIVED_RSP:
@@ -1643,9 +1603,7 @@ static void zapp_fProcessIncomingMsg(zclIncomingMsg_t *pInMsg)
 
     case ZCL_CMD_DISCOVER_ATTRS_RSP:
       zapp_fProcessInDiscAttrsRspCmd(pInMsg);
-      #ifdef MT_DEBUG_FUNC
-        MT_ProcessDebugString("ZCL_CmdDiscAttrRsp");
-      #endif      
+      PRINT_DEBUG_STR("ZCL_CmdDiscAttrRsp");
       break;
 
     case ZCL_CMD_DISCOVER_ATTRS_EXT_RSP:
@@ -1691,9 +1649,8 @@ static uint8 zapp_fProcessInReadRspCmd(zclIncomingMsg_t *pInMsg)
           {
 /*            int32 timediff = *(uint32*)readRspCmd->attrList[i].data - osal_getClock();
             timediff = ABS(timediff);
-            #ifdef MT_DEBUG_FUNC
-              MT_ProcessDebugMsg4(timediff, timediff>>16, st, 0);
-            #endif */
+            PRINT_DEBUG_STR(timediff, timediff>>16, st, 0);
+            */
                           
             if ((st & TIME_STATUS_MASTER) /*&& (st & TIME_STATUS_SYNCH)*/ &&
                 (*((uint32*)readRspCmd->attrList[i].data) > 0L) /*&&
@@ -1703,17 +1660,12 @@ static uint8 zapp_fProcessInReadRspCmd(zclIncomingMsg_t *pInMsg)
               zapp_isTimeSynced = true;
               zapp_TimeSyncCounter = 0;
               CLR_BIT(&zapp_PWRMGRReason, ZAPP_PWRMGR_TIMESYNC);
-
-              #ifdef MT_DEBUG_FUNC
-                MT_ProcessDebugString("ReadRsp.TimeSync");
-              #endif
+              PRINT_DEBUG_STR("ReadRsp.TimeSync");
             }
             else
             {
-              #ifdef MT_DEBUG_FUNC
-                MT_ProcessDebugString("ReadRsp.TimeNOTSync");
-                MT_ProcessDebugMsg4(st, *(uint16*)(readRspCmd->attrList[i].data + 2), *(uint16*)readRspCmd->attrList[i].data, 0);
-              #endif
+              PRINT_DEBUG_STR("ReadRsp.TimeNOTSync");
+              PRINT_DEBUG_MSG4(st, *(uint16*)(readRspCmd->attrList[i].data + 2), *(uint16*)readRspCmd->attrList[i].data, 0);
             }
             
             if (osal_get_timeoutEx(zapp_TaskID, ZAPP_EVT_PWRMGR) < ZAPP_TIMEOUT_10SEC)
@@ -1784,18 +1736,14 @@ uint8 zapp_fValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
           else
             st = zapp_fStoreQueueAdd(ZAPP_STOREID_VALUES2, sizeof(zapp_Flow2Value.dw.lowDW), &zapp_Flow2Value);
         }
-        #ifdef MT_DEBUG_FUNC
-          MT_ProcessDebugString("Write.CurrSumDelivered");
-        #endif
+        PRINT_DEBUG_STR("Write.CurrSumDelivered");
         break;
       case ATTRID_METER_0READINGSET_DEFAULTUPDATEPERIOD:
         if (*pAttrInfo->attrData < ZAPP_METER_INSTDEMAND_UPDATEPERIOD_MIN)
           *pAttrInfo->attrData = ZAPP_METER_INSTDEMAND_UPDATEPERIOD_MIN;
         if ((*pAttrInfo->attrData != zapp_FlowUpdatePeriod) && (*pAttrInfo->attrData != ZAPP_METER_INSTDEMAND_UPDATEPERIOD_MAX))
           osal_set_event(zapp_TaskID, ZAPP_EVT_UPDATEINSTDEMAND);
-        #ifdef MT_DEBUG_FUNC
-          MT_ProcessDebugString("Write.UpdateInstDemandPeriod");
-        #endif
+        PRINT_DEBUG_STR("Write.UpdateInstDemandPeriod");
         break;
         
       case ATTRID_METER_0READINGSET_INTERVALREPORTING:
@@ -1804,9 +1752,7 @@ uint8 zapp_fValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
           st = zapp_fStoreQueueAdd(ZAPP_STOREID_REPORTPERIOD, sizeof(zapp_FlowIntervalReporting), &zapp_FlowIntervalReporting);
         if (*(uint16*)pAttrInfo->attrData < zapp_FlowIntervalReporting) // If new interval is lower than previous interval
           osal_set_event(zapp_TaskID, ZAPP_EVT_UPDATE);
-        #ifdef MT_DEBUG_FUNC
-          MT_ProcessDebugString("Write.IntervalReporting");
-        #endif
+        PRINT_DEBUG_STR("Write.IntervalReporting");
         break;
         
       case ATTRID_METER_3FORMATTING_SITEID:
@@ -1824,9 +1770,7 @@ uint8 zapp_fValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
               st = zapp_fStoreQueueAdd(ZAPP_STOREID_SITEID2, ZAPP_METER_SITEID_SIZE + 1, zapp_Flow2SiteId);
           }
         }
-        #ifdef MT_DEBUG_FUNC
-          MT_ProcessDebugString("Write.SiteID");
-        #endif
+        PRINT_DEBUG_STR("Write.SiteID");
         break;
         
       case ATTRID_METER_3FORMATTING_UNIT:
@@ -1837,9 +1781,7 @@ uint8 zapp_fValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
           else
             st = zapp_fStoreQueueAdd(ZAPP_STOREID_UNIT2, sizeof(zapp_Flow2Unit), &zapp_Flow2Unit);
         }
-        #ifdef MT_DEBUG_FUNC
-          MT_ProcessDebugString("Write.Unit");
-        #endif
+        PRINT_DEBUG_STR("Write.Unit");
         break;
         
       case ATTRID_METER_3FORMATTING_MULTIPLIER:
@@ -1850,9 +1792,7 @@ uint8 zapp_fValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
           else
             st = zapp_fStoreQueueAdd(ZAPP_STOREID_MULTIPLIER2, sizeof(zapp_Flow2Multiplier), &zapp_Flow2Multiplier);
         }
-        #ifdef MT_DEBUG_FUNC
-          MT_ProcessDebugString("Write.Multiplier");
-        #endif
+        PRINT_DEBUG_STR("Write.Multiplier");
         break;
         
       case ATTRID_METER_3FORMATTING_DIVISOR:
@@ -1863,9 +1803,7 @@ uint8 zapp_fValidateAddrDataCB(zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo)
           else
             st = zapp_fStoreQueueAdd(ZAPP_STOREID_DIVISOR2, sizeof(zapp_Flow2Divisor), &zapp_Flow2Divisor);
         }
-        #ifdef MT_DEBUG_FUNC
-          MT_ProcessDebugString("Write.Divisor");
-        #endif
+        PRINT_DEBUG_STR("Write.Divisor");
         break;
     }
   }
@@ -1971,6 +1909,7 @@ static uint8 zapp_fProcessInDefaultRspCmd(zclIncomingMsg_t *pInMsg)
       {
         CLR_BIT(&zapp_Transmissions, zapp_TransmissionID - 1);
         zapp_TransmissionsCounter = 0;
+        zapp_TransmissionID = 0;
         
         if (zapp_isFirstTransmission != 0)
         {
@@ -1979,10 +1918,8 @@ static uint8 zapp_fProcessInDefaultRspCmd(zclIncomingMsg_t *pInMsg)
               (zapp_TransmissionID == ZAPP_REPORTCMD_EVERYREBOOT2) || (zapp_TransmissionID == ZAPP_REPORTCMD_DIAG))
             zapp_isFirstTransmission--;
         }
-
-        zapp_TransmissionID = 0;
         
-        if (zapp_Transmissions != 0)
+        if (zapp_Transmissions != 0) // There is DATA to transmite
         {
           osal_stop_timerEx(zapp_TaskID, ZAPP_EVT_SENDCMD);
           osal_set_event(zapp_TaskID, ZAPP_EVT_SENDCMD);
@@ -2031,9 +1968,7 @@ static uint8 zapp_fProcessInDiscAttrsRspCmd(zclIncomingMsg_t *pInMsg)
   zclDiscoverAttrsRspCmd_t *discoverRspCmd;
   uint8 i;
 
-#ifdef MT_DEBUG_FUNC
-  MT_ProcessDebugString("Discover Rsp");
-#endif
+  PRINT_DEBUG_STR("DiscoverRsp");
   
   discoverRspCmd = (zclDiscoverAttrsRspCmd_t *)pInMsg->attrCmd;
   for (i = 0; i < discoverRspCmd->numAttr; i++)

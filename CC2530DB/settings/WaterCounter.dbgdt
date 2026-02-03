@@ -1188,7 +1188,7 @@
                     <item>zapp_DiagNVMemFailItems</item>
                     <item>pwrmgr_attribute</item>
                     <item>timeout</item>
-                    <item></item>
+                    <item />
                 </expressions>
                 <col-names>
                     <item>Expression</item>
