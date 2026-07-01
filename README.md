@@ -16,6 +16,9 @@ Long life LiFePO4 or LiIon powered Zigbee device to read Water Flow from meters 
 * SDK TI Z-Stack v3.0.2
 
 ## PCB
-PCB designed in Altium Designer. View PCB folder for more details.
+PCB designed in Altium Designer. View [PCB folder](./PCB/) for more details.
 
 # Home Assistant device configuration and monitoring
+[Z2M Modern external converter](./z2m-external-converter-dev/)
+
+[![Z2M device configuration](https://img.youtube.com/vi/rU_ATCVKx78/mqdefault.jpg)](https://www.youtube.com/watch?v=rU_ATCVKx78)
