@@ -22,3 +22,5 @@ PCB designed in Altium Designer. View [PCB folder](./PCB/) for more details.
 [Z2M Modern external converter](./z2m-external-converter-dev/)
 
 [![Z2M device configuration](https://img.youtube.com/vi/rU_ATCVKx78/mqdefault.jpg)](https://www.youtube.com/watch?v=rU_ATCVKx78)
+
+<img src="assets/cloud_tokens.png" width="1202">
