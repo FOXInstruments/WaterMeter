@@ -1,5 +1,6 @@
 # WaterMeter Texas Intruments CC2530 Zigbee device
 Long life LiFePO4 or LiIon powered Zigbee device to read Water Flow from meters with dry contact output.
+<img src="PCB/WaterMeterPCB_3D_3.png" width="400"><img src="PCB/WaterMeterPCB_3D_4.png" width="400">
 
 ## Specification
 * Controller: CC2530
@@ -19,8 +20,4 @@ Long life LiFePO4 or LiIon powered Zigbee device to read Water Flow from meters 
 PCB designed in Altium Designer. View [PCB folder](./PCB/) for more details.
 
 # Home Assistant device configuration and monitoring
-[Z2M Modern external converter](./z2m-external-converter-dev/)
-
-[![Z2M device configuration](https://img.youtube.com/vi/rU_ATCVKx78/mqdefault.jpg)](https://www.youtube.com/watch?v=rU_ATCVKx78)
-
-<img src="assets/cloud_tokens.png" width="1202">
+[![Z2M device configuration](./z2m-external-converter-dev/WaterMeterZ2M_Exposes_1)](./z2m-external-converter-dev/)
