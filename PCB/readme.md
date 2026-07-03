@@ -9,7 +9,7 @@ PCB is modified to deliver the convenience of DIY manufacturing. VIAs size are i
 <img src="./WaterMeterPCB_3D_2.png">
 
 # Schematic
-[Schematic PDF file](Schematic_Water_meter_device.pdf)
+[Schematic PDF file](WaterMeterSchematic.pdf)
 
 # Power source
 User can use LiFePO4 or Li-Ion accumalator.
