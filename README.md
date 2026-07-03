@@ -20,4 +20,4 @@ Long life LiFePO4 or LiIon powered Zigbee device to read Water Flow from meters 
 PCB designed in Altium Designer. View [PCB folder](./PCB/) for more details.
 
 # Home Assistant device configuration and monitoring
-[![Z2M device configuration](./z2m-external-converter-dev/WaterMeterZ2M_Exposes_1)](./z2m-external-converter-dev/)
+[![Z2M device configuration](./z2m-external-converter-dev/WaterMeterZ2M_Exposes_1.png)](./z2m-external-converter-dev/)
