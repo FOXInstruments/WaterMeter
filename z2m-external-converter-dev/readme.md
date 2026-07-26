@@ -3,10 +3,15 @@
 Zigbee2mqtt modern external converter.
 
 Device Meter Input 1 and 2 configuration and monitoring.
+
 ![Meter](./WaterMeterZ2M_Exposes_1.png)
-Device diagnostics.
+
+Device diagnostic.
+
 ![Diagnostics](./WaterMeterZ2M_Exposes_2.png)
+
 Battery status and configuration.
+
 ![Battery](./WaterMeterZ2M_Exposes_3.png)
 
 # Zigbee2MQTT external converter development
