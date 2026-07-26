@@ -6,7 +6,7 @@ Long life LiFePO4 or LiIon powered Zigbee device to read Water Flow from meters 
 * Controller: CC2530
 * Dry contact inputs: 2
 * Power: LiFePO4 or LiIon accumulator
-* Power consumption: Active ~ 25-30 mA, Sleep mode < 6 uA
+* Power consumption: Active TX/RX ~ 25-30 mA, Active CPU ~ 5-10mA, Sleep mode (PM2 mode) < 6 uA
 * 4 LEDs: Active mode, Input 1, Input 2, Spare
 * 2 Buttons: Control, Reset
 * Home Assistant Z2M integration (z2m-external-converter)
